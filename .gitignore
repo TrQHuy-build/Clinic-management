@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 bin/
 obj/
 .vs/
@@ -5,3 +6,11 @@ obj/
 *.suo
 *.cache
 *.log
+=======
+﻿.vs/
+bin/
+obj/
+*.user
+*.suo
+*.cache
+>>>>>>> ae2b965 (commit dau tien len repo)
