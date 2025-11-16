@@ -1,0 +1,349 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{B11DE3B5-CA67-44E4-9BEF-07D860FC805A}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <RootNamespace>DentalManagement</RootNamespace>
+    <AssemblyName>DentalManagement</AssemblyName>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Dapper, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\Dapper.2.1.66\lib\net461\Dapper.dll</HintPath>
+    </Reference>
+    <Reference Include="Faithlife.Utility.Dapper, Version=2.0.0.1, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\Faithlife.Utility.Dapper.2.0.0\lib\netstandard2.0\Faithlife.Utility.Dapper.dll</HintPath>
+    </Reference>
+    <Reference Include="LiveCharts, Version=0.9.7.0, Culture=neutral, PublicKeyToken=0bc1f845d1ebb8df, processorArchitecture=MSIL">
+      <HintPath>packages\LiveCharts.0.9.7\lib\net45\LiveCharts.dll</HintPath>
+    </Reference>
+    <Reference Include="LiveCharts.WinForms, Version=0.9.7.1, Culture=neutral, PublicKeyToken=0bc1f845d1ebb8df, processorArchitecture=MSIL">
+      <HintPath>packages\LiveCharts.WinForms.0.9.7.1\lib\net45\LiveCharts.WinForms.dll</HintPath>
+    </Reference>
+    <Reference Include="LiveCharts.Wpf, Version=0.9.7.0, Culture=neutral, PublicKeyToken=0bc1f845d1ebb8df, processorArchitecture=MSIL">
+      <HintPath>packages\LiveCharts.Wpf.0.9.7\lib\net45\LiveCharts.Wpf.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Bcl.AsyncInterfaces, Version=9.0.0.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>packages\Microsoft.Bcl.AsyncInterfaces.9.0.1\lib\net462\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
+    </Reference>
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=4.0.4.1, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>packages\System.Runtime.CompilerServices.Unsafe.4.5.3\lib\net461\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Threading.Tasks.Extensions, Version=4.2.0.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>packages\System.Threading.Tasks.Extensions.4.5.4\lib\net461\System.Threading.Tasks.Extensions.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Xaml" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Deployment" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+    <Reference Include="WindowsBase" />
+    <Reference Include="WindowsFormsIntegration" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Controls\SidebarMenuItem.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="DataAccess\DatabaseHelper.cs" />
+    <Compile Include="Forms\frmLogin.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\frmLogin.Designer.cs">
+      <DependentUpon>frmLogin.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\frmMain.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\frmMain.Designer.cs">
+      <DependentUpon>frmMain.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Models\Appointment.cs" />
+    <Compile Include="Models\Inventory.cs" />
+    <Compile Include="Models\Invoice.cs" />
+    <Compile Include="Models\MedicalRecord.cs" />
+    <Compile Include="Models\Medicine.cs" />
+    <Compile Include="Models\Patient.cs" />
+    <Compile Include="Models\Prescription.cs" />
+    <Compile Include="Models\Service.cs" />
+    <Compile Include="Models\Staff.cs" />
+    <Compile Include="Models\User.cs" />
+    <Compile Include="Pages\Admin\AdminDashboard.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Pages\Admin\AdminDashboard.Designer.cs">
+      <DependentUpon>AdminDashboard.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\Admin\AdminInventory.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Pages\Admin\AdminInventory.Designer.cs">
+      <DependentUpon>AdminInventory.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\Admin\AdminInvoices.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Pages\Admin\AdminInvoices.Designer.cs">
+      <DependentUpon>AdminInvoices.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\Admin\AdminLogs.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Pages\Admin\AdminLogs.Designer.cs">
+      <DependentUpon>AdminLogs.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\Admin\AdminMedicines.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Pages\Admin\AdminMedicines.Designer.cs">
+      <DependentUpon>AdminMedicines.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\Admin\AdminReports.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Pages\Admin\AdminReports.Designer.cs">
+      <DependentUpon>AdminReports.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\Admin\AdminSalary.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Pages\Admin\AdminSalary.Designer.cs">
+      <DependentUpon>AdminSalary.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\Admin\AdminServices.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Pages\Admin\AdminServices.Designer.cs">
+      <DependentUpon>AdminServices.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\Admin\AdminShifts.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Pages\Admin\AdminShifts.Designer.cs">
+      <DependentUpon>AdminShifts.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\Admin\AdminStaff.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Pages\Admin\AdminStaff.Designer.cs">
+      <DependentUpon>AdminStaff.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\Common\SettingsPage.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Pages\Common\SettingsPage.Designer.cs">
+      <DependentUpon>SettingsPage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\Doctor\DoctorAppointments.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Pages\Doctor\DoctorAppointments.Designer.cs">
+      <DependentUpon>DoctorAppointments.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\Doctor\DoctorDashboard.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Pages\Doctor\DoctorDashboard.Designer.cs">
+      <DependentUpon>DoctorDashboard.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\Doctor\DoctorExamine.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Pages\Doctor\DoctorExamine.Designer.cs">
+      <DependentUpon>DoctorExamine.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\Doctor\DoctorMedicalRecords.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Pages\Doctor\DoctorMedicalRecords.Designer.cs">
+      <DependentUpon>DoctorMedicalRecords.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\Doctor\DoctorPatients.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Pages\Doctor\DoctorPatients.Designer.cs">
+      <DependentUpon>DoctorPatients.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\Doctor\DoctorShifts.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Pages\Doctor\DoctorShifts.Designer.cs">
+      <DependentUpon>DoctorShifts.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\Patient\PatientAppointmentHistory.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Pages\Patient\PatientAppointmentHistory.Designer.cs">
+      <DependentUpon>PatientAppointmentHistory.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\Patient\PatientBookAppointment.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Pages\Patient\PatientBookAppointment.Designer.cs">
+      <DependentUpon>PatientBookAppointment.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\Patient\PatientDashboard.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Pages\Patient\PatientDashboard.Designer.cs">
+      <DependentUpon>PatientDashboard.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\Patient\PatientInvoices.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Pages\Patient\PatientInvoices.Designer.cs">
+      <DependentUpon>PatientInvoices.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\Patient\PatientMedicalRecords.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Pages\Patient\PatientMedicalRecords.Designer.cs">
+      <DependentUpon>PatientMedicalRecords.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\Patient\PatientProfile.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Pages\Patient\PatientProfile.Designer.cs">
+      <DependentUpon>PatientProfile.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Utils\Auth.cs" />
+    <Compile Include="Utils\Formatter.cs" />
+    <Compile Include="Utils\Logger.cs" />
+    <Compile Include="Utils\MessageBoxHelper.cs" />
+    <Compile Include="Utils\Validator.cs" />
+    <EmbeddedResource Include="Forms\frmLogin.resx">
+      <DependentUpon>frmLogin.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Pages\Admin\AdminDashboard.resx">
+      <DependentUpon>AdminDashboard.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Pages\Admin\AdminInventory.resx">
+      <DependentUpon>AdminInventory.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Pages\Admin\AdminInvoices.resx">
+      <DependentUpon>AdminInvoices.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Pages\Admin\AdminMedicines.resx">
+      <DependentUpon>AdminMedicines.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Pages\Admin\AdminReports.resx">
+      <DependentUpon>AdminReports.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Pages\Admin\AdminSalary.resx">
+      <DependentUpon>AdminSalary.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Pages\Admin\AdminShifts.resx">
+      <DependentUpon>AdminShifts.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Pages\Admin\AdminStaff.resx">
+      <DependentUpon>AdminStaff.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Pages\Common\SettingsPage.resx">
+      <DependentUpon>SettingsPage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Pages\Doctor\DoctorAppointments.resx">
+      <DependentUpon>DoctorAppointments.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Pages\Doctor\DoctorDashboard.resx">
+      <DependentUpon>DoctorDashboard.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Pages\Doctor\DoctorExamine.resx">
+      <DependentUpon>DoctorExamine.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Pages\Doctor\DoctorMedicalRecords.resx">
+      <DependentUpon>DoctorMedicalRecords.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Pages\Doctor\DoctorPatients.resx">
+      <DependentUpon>DoctorPatients.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Pages\Doctor\DoctorShifts.resx">
+      <DependentUpon>DoctorShifts.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Pages\Patient\PatientAppointmentHistory.resx">
+      <DependentUpon>PatientAppointmentHistory.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Pages\Patient\PatientBookAppointment.resx">
+      <DependentUpon>PatientBookAppointment.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Pages\Patient\PatientDashboard.resx">
+      <DependentUpon>PatientDashboard.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Pages\Patient\PatientInvoices.resx">
+      <DependentUpon>PatientInvoices.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Pages\Patient\PatientMedicalRecords.resx">
+      <DependentUpon>PatientMedicalRecords.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Pages\Patient\PatientProfile.resx">
+      <DependentUpon>PatientProfile.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Content Include="fonts\fontawesome-webfont.eot" />
+    <Content Include="fonts\fontawesome-webfont.ttf" />
+    <Content Include="fonts\fontawesome-webfont.woff" />
+    <Content Include="fonts\fontawesome-webfont.woff2" />
+    <Content Include="fonts\FontAwesome.otf" />
+    <None Include="packages.config" />
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Content\font-awesome.css" />
+    <Content Include="Content\font-awesome.min.css" />
+    <Content Include="fonts\fontawesome-webfont.svg" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>
