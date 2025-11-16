@@ -1,0 +1,27 @@
+# Visual Studio cache
+.vs/
+
+# Build outputs
+bin/
+obj/
+
+# User-specific files
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# NuGet
+packages/
+*.nupkg
+
+# Logs
+*.log
+
+# Database files
+*.mdf
+*.ldf
+
+# Others
+[Tt]humbs.db
+*.db

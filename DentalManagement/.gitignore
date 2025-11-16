@@ -1,0 +1,16 @@
+# Ignore Visual Studio folder
+.vs/
+
+# Build folders
+bin/
+obj/
+
+# Other common ignore items
+*.user
+*.suo
+*.cache
+*.log
+*.pdb
+*.db
+*.mdf
+*.ldf
