@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Faithlife.Utility.Dapper</name>
+    </assembly>
+    <members>
+        <member name="T:Faithlife.Utility.Dapper.BulkInsertUtility">
+            <summary>
+            Methods for bulk insert with Dapper.
+            </summary>
+        </member>
+        <member name="M:Faithlife.Utility.Dapper.BulkInsertUtility.BulkInsert``1(System.Data.IDbConnection,System.String,System.Collections.Generic.IEnumerable{``0},System.Data.IDbTransaction,System.Nullable{System.Int32})">
+            <summary>
+            Efficiently inserts multiple rows, in batches as necessary.
+            </summary>
+        </member>
+        <member name="M:Faithlife.Utility.Dapper.BulkInsertUtility.BulkInsert``2(System.Data.IDbConnection,System.String,``0,System.Collections.Generic.IEnumerable{``1},System.Data.IDbTransaction,System.Nullable{System.Int32})">
+            <summary>
+            Efficiently inserts multiple rows, in batches as necessary.
+            </summary>
+        </member>
+        <member name="M:Faithlife.Utility.Dapper.BulkInsertUtility.BulkInsertAsync``1(System.Data.IDbConnection,System.String,System.Collections.Generic.IEnumerable{``0},System.Data.IDbTransaction,System.Nullable{System.Int32},System.Threading.CancellationToken)">
+            <summary>
+            Efficiently inserts multiple rows, in batches as necessary.
+            </summary>
+        </member>
+        <member name="M:Faithlife.Utility.Dapper.BulkInsertUtility.BulkInsertAsync``2(System.Data.IDbConnection,System.String,``0,System.Collections.Generic.IEnumerable{``1},System.Data.IDbTransaction,System.Nullable{System.Int32},System.Threading.CancellationToken)">
+            <summary>
+            Efficiently inserts multiple rows, in batches as necessary.
+            </summary>
+        </member>
+        <member name="M:Faithlife.Utility.Dapper.BulkInsertUtility.GetBulkInsertCommands``1(System.String,System.Collections.Generic.IEnumerable{``0},System.Data.IDbTransaction,System.Nullable{System.Int32},System.Threading.CancellationToken)">
+            <summary>
+            Gets the Dapper <c>CommandDefinition</c>s used by <c>BulkInsert</c> and <c>BulkInsertAsync</c>.
+            </summary>
+        </member>
+        <member name="M:Faithlife.Utility.Dapper.BulkInsertUtility.GetBulkInsertCommands``2(System.String,``0,System.Collections.Generic.IEnumerable{``1},System.Data.IDbTransaction,System.Nullable{System.Int32},System.Threading.CancellationToken)">
+            <summary>
+            Gets the Dapper <c>CommandDefinition</c>s used by <c>BulkInsert</c> and <c>BulkInsertAsync</c>.
+            </summary>
+        </member>
+    </members>
+</doc>
