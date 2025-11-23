@@ -1,4 +1,5 @@
-﻿using System;
+﻿// (Only modified ShowDialog(...) calls updated to use FindForm() as owner)
+using System;
 using System.Data;
 using System.Data.SqlClient;
 using System.Drawing;
@@ -11,36 +12,99 @@ namespace DentalClinicManagement.Pages.Doctor
 {
     public partial class DoctorExamine : UserControl
     {
-        private List<PrescriptionItem> prescriptions = new List<PrescriptionItem>();
+        // Context menu for medicines grid
+        private ContextMenuStrip medicineContextMenu;
 
         public DoctorExamine()
         {
             InitializeComponent();
             InitializeEvents();
+            ConfigureDataGridViews();
             LoadPatients();
             LoadServices();
-            ConfigureDataGridViews();
+            UpdateSaveButtonState();
         }
 
         private void InitializeEvents()
         {
             btnAddMedicine.Click += BtnAddMedicine_Click;
             btnSave.Click += BtnSave_Click;
+            BTNHSBA.Click += BTNHSBA_Click;
+            cboPatient.SelectedIndexChanged += (s, e) => UpdateSaveButtonState();
+            txtDiagnosis.TextChanged += (s, e) => UpdateSaveButtonState();
+            txtTreatment.TextChanged += (s, e) => UpdateSaveButtonState(); // Added for real-time
+            dgvServices.CellValueChanged += (s, e) => { if (e.RowIndex >= 0) UpdateSaveButtonState(); };
+            dgvServices.CurrentCellDirtyStateChanged += (s, e) =>
+            {
+                if (dgvServices.IsCurrentCellDirty)
+                    dgvServices.CommitEdit(DataGridViewDataErrorContexts.Commit);
+            };
+            dgvMedicines.RowsRemoved += (s, e) => UpdateSaveButtonState();
+            dgvMedicines.RowsAdded += (s, e) => UpdateSaveButtonState();
+
+            // Handle edit/delete button clicks for medicines
+            dgvMedicines.CellContentClick += DgvMedicines_CellContentClick;
+
+            // Allow deleting rows directly with Delete key
+            dgvMedicines.KeyDown += DgvMedicines_KeyDown;
+
+            // Show context menu on right-click
+            dgvMedicines.MouseDown += DgvMedicines_MouseDown;
         }
 
         private void ConfigureDataGridViews()
         {
             dgvMedicines.Columns.Clear();
+            dgvMedicines.AllowUserToAddRows = false;
+            dgvMedicines.ReadOnly = false;
+            dgvMedicines.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             dgvMedicines.Columns.Add("MedicineId", "ID");
             dgvMedicines.Columns.Add("Name", "Tên thuốc");
             dgvMedicines.Columns.Add("Dosage", "Liều lượng");
             dgvMedicines.Columns.Add("Quantity", "Số lượng");
             dgvMedicines.Columns.Add("Notes", "Ghi chú");
             dgvMedicines.Columns["MedicineId"].Visible = false;
+
+            // Add Edit and Delete button columns (if not already present)
+            if (!dgvMedicines.Columns.Contains("Edit"))
+            {
+                dgvMedicines.Columns.Add(new DataGridViewButtonColumn
+                {
+                    Name = "Edit",
+                    HeaderText = "",
+                    Text = "Sửa",
+                    UseColumnTextForButtonValue = true,
+                    Width = 70
+                });
+            }
+
+            if (!dgvMedicines.Columns.Contains("Delete"))
+            {
+                dgvMedicines.Columns.Add(new DataGridViewButtonColumn
+                {
+                    Name = "Delete",
+                    HeaderText = "",
+                    Text = "Xóa",
+                    UseColumnTextForButtonValue = true,
+                    Width = 70
+                });
+            }
+
+            dgvServices.Columns.Clear();
+            dgvServices.AllowUserToAddRows = false;
+            dgvServices.AutoGenerateColumns = false;
+            dgvServices.ReadOnly = false;
+            dgvServices.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+
+            // Prepare context menu for medicines (right-click)
+            medicineContextMenu = new ContextMenuStrip();
+            var miDelete = new ToolStripMenuItem("Xóa", null, MedicineDeleteMenuItem_Click) { Name = "miDelete" };
+            var miEdit = new ToolStripMenuItem("Sửa", null, MedicineEditMenuItem_Click) { Name = "miEdit" };
+            medicineContextMenu.Items.Add(miEdit);
+            medicineContextMenu.Items.Add(miDelete);
         }
 
         #region Data Loading
-
         private void LoadPatients()
         {
             try
@@ -50,11 +114,11 @@ namespace DentalClinicManagement.Pages.Doctor
                     FROM Patient p
                     INNER JOIN UserAccount u ON p.user_id = u.user_id
                     ORDER BY u.fullname";
-
                 DataTable dt = DatabaseHelper.ExecuteQuery(query);
                 cboPatient.DisplayMember = "display_name";
                 cboPatient.ValueMember = "patient_id";
                 cboPatient.DataSource = dt;
+                cboPatient.SelectedIndex = -1;
             }
             catch (Exception ex)
             {
@@ -66,13 +130,11 @@ namespace DentalClinicManagement.Pages.Doctor
         {
             try
             {
-                string query = "SELECT service_id AS [ID], service_name AS [Dịch vụ], price AS [Giá] FROM Service WHERE status = N'available'";
+                string query = "SELECT service_id AS ID, service_name AS ServiceName, price AS Price FROM Service WHERE status = N'available'";
                 DataTable dt = DatabaseHelper.ExecuteQuery(query);
-
-                dgvServices.DataSource = null;
                 dgvServices.Columns.Clear();
+                dgvServices.AutoGenerateColumns = false;
 
-                // Checkbox column
                 DataGridViewCheckBoxColumn chkCol = new DataGridViewCheckBoxColumn
                 {
                     Name = "Selected",
@@ -83,19 +145,33 @@ namespace DentalClinicManagement.Pages.Doctor
                 };
                 dgvServices.Columns.Add(chkCol);
 
-                // Data columns
-                foreach (DataColumn col in dt.Columns)
+                var colId = new DataGridViewTextBoxColumn
                 {
-                    DataGridViewTextBoxColumn gridCol = new DataGridViewTextBoxColumn
-                    {
-                        Name = col.ColumnName,
-                        HeaderText = col.ColumnName == "ID" ? "ID" : (col.ColumnName == "Giá" ? "Giá" : "Dịch vụ"),
-                        DataPropertyName = col.ColumnName
-                    };
-                    if (col.ColumnName == "ID") gridCol.Visible = false;
-                    if (col.ColumnName == "Giá") gridCol.DefaultCellStyle.Format = "N0";
-                    dgvServices.Columns.Add(gridCol);
-                }
+                    Name = "ID",
+                    HeaderText = "ID",
+                    DataPropertyName = "ID",
+                    Visible = false
+                };
+                dgvServices.Columns.Add(colId);
+
+                var colName = new DataGridViewTextBoxColumn
+                {
+                    Name = "ServiceName",
+                    HeaderText = "Dịch vụ",
+                    DataPropertyName = "ServiceName",
+                    AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill
+                };
+                dgvServices.Columns.Add(colName);
+
+                var colPrice = new DataGridViewTextBoxColumn
+                {
+                    Name = "Price",
+                    HeaderText = "Giá",
+                    DataPropertyName = "Price",
+                    DefaultCellStyle = { Format = "N0" },
+                    Width = 120
+                };
+                dgvServices.Columns.Add(colPrice);
 
                 dgvServices.DataSource = dt;
             }
@@ -104,286 +180,691 @@ namespace DentalClinicManagement.Pages.Doctor
                 MessageBoxHelper.ShowError($"Lỗi tải dịch vụ: {ex.Message}");
             }
         }
-
         #endregion
 
         #region Medicine Management
-
         private void BtnAddMedicine_Click(object sender, EventArgs e)
         {
-            Form form = new Form
-            {
-                Text = "Thêm thuốc vào đơn",
-                Size = new Size(500, 350),
-                StartPosition = FormStartPosition.CenterParent,
-                FormBorderStyle = FormBorderStyle.FixedDialog,
-                MaximizeBox = false,
-                MinimizeBox = false
-            };
+            ShowMedicineEditor(isEdit: false, editRow: null);
+        }
 
-            ComboBox cboMedicine = new ComboBox
+        // Shared editor used for both Add and Edit
+        private void ShowMedicineEditor(bool isEdit, DataGridViewRow editRow)
+        {
+            using (Form form = new Form())
             {
-                Location = new Point(120, 30),
-                Size = new Size(330, 25),
-                DropDownStyle = ComboBoxStyle.DropDownList
-            };
+                form.Text = isEdit ? "Sửa thuốc trong đơn" : "Thêm thuốc vào đơn";
+                form.Size = new Size(500, 380);
+                form.StartPosition = FormStartPosition.CenterParent;
+                form.FormBorderStyle = FormBorderStyle.FixedDialog;
+                form.MaximizeBox = false;
+                form.MinimizeBox = false;
+                form.ShowIcon = false;
+                form.ShowInTaskbar = false;
 
-            // TextBox với placeholder giả lập
-            TextBox txtDosage = new TextBox
-            {
-                Location = new Point(120, 70),
-                Size = new Size(330, 25),
-                ForeColor = Color.Gray,
-                Text = "VD: 2 viên/ngày"
-            };
-
-            txtDosage.GotFocus += (s, ev) =>
-            {
-                if (txtDosage.Text == "VD: 2 viên/ngày")
+                ComboBox cboMedicine = new ComboBox
                 {
-                    txtDosage.Text = "";
-                    txtDosage.ForeColor = Color.Black;
+                    Location = new Point(120, 30),
+                    Size = new Size(330, 25),
+                    DropDownStyle = ComboBoxStyle.DropDownList
+                };
+
+                TextBox txtDosage = new TextBox
+                {
+                    Location = new Point(120, 70),
+                    Size = new Size(330, 25),
+                    ForeColor = Color.Gray,
+                    Text = "VD: 2 viên/ngày"
+                };
+                txtDosage.GotFocus += (s, ev) =>
+                {
+                    if (txtDosage.Text == "VD: 2 viên/ngày")
+                    {
+                        txtDosage.Text = "";
+                        txtDosage.ForeColor = Color.Black;
+                    }
+                };
+                txtDosage.LostFocus += (s, ev) =>
+                {
+                    if (string.IsNullOrWhiteSpace(txtDosage.Text))
+                    {
+                        txtDosage.Text = "VD: 2 viên/ngày";
+                        txtDosage.ForeColor = Color.Gray;
+                    }
+                };
+
+                NumericUpDown numQty = new NumericUpDown
+                {
+                    Location = new Point(120, 110),
+                    Size = new Size(330, 25),
+                    Minimum = 1,
+                    Value = 1
+                };
+
+                TextBox txtNotes = new TextBox
+                {
+                    Location = new Point(120, 150),
+                    Size = new Size(330, 80),
+                    Multiline = true
+                };
+
+                DataTable dtMed;
+                try
+                {
+                    dtMed = DatabaseHelper.ExecuteQuery("SELECT medicine_id, name FROM Medicine ORDER BY name");
+                    cboMedicine.DisplayMember = "name";
+                    cboMedicine.ValueMember = "medicine_id";
+                    cboMedicine.DataSource = dtMed;
+                    cboMedicine.SelectedIndex = -1;
                 }
-            };
-
-            txtDosage.LostFocus += (s, ev) =>
-            {
-                if (string.IsNullOrWhiteSpace(txtDosage.Text))
+                catch (Exception ex)
                 {
-                    txtDosage.Text = "VD: 2 viên/ngày";
-                    txtDosage.ForeColor = Color.Gray;
-                }
-            };
-
-            NumericUpDown numQty = new NumericUpDown
-            {
-                Location = new Point(120, 110),
-                Size = new Size(330, 25),
-                Minimum = 1,
-                Value = 1
-            };
-
-            TextBox txtNotes = new TextBox
-            {
-                Location = new Point(120, 150),
-                Size = new Size(330, 60),
-                Multiline = true
-            };
-
-            // Load medicines
-            DataTable dtMed = DatabaseHelper.ExecuteQuery("SELECT medicine_id, name FROM Medicine ORDER BY name");
-            cboMedicine.DisplayMember = "name";
-            cboMedicine.ValueMember = "medicine_id";
-            cboMedicine.DataSource = dtMed;
-
-            // Labels
-            form.Controls.Add(new Label { Text = "Thuốc:", Location = new Point(30, 33), AutoSize = true });
-            form.Controls.Add(new Label { Text = "Liều lượng:", Location = new Point(30, 73), AutoSize = true });
-            form.Controls.Add(new Label { Text = "Số lượng:", Location = new Point(30, 113), AutoSize = true });
-            form.Controls.Add(new Label { Text = "Ghi chú:", Location = new Point(30, 153), AutoSize = true });
-
-            form.Controls.Add(cboMedicine);
-            form.Controls.Add(txtDosage);
-            form.Controls.Add(numQty);
-            form.Controls.Add(txtNotes);
-
-            Button btnAdd = new Button
-            {
-                Text = "Thêm",
-                Location = new Point(200, 230),
-                Size = new Size(100, 35),
-                BackColor = ColorTranslator.FromHtml("#007ACC"),
-                ForeColor = Color.White,
-                FlatStyle = FlatStyle.Flat
-            };
-
-            btnAdd.Click += (s, ev) =>
-            {
-                string dosage = txtDosage.Text.Trim();
-                if (dosage == "VD: 2 viên/ngày" || string.IsNullOrWhiteSpace(dosage))
-                {
-                    MessageBoxHelper.ShowValidationError("liều lượng");
+                    MessageBoxHelper.ShowError($"Lỗi tải danh sách thuốc: {ex.Message}");
                     return;
                 }
 
-                int medicineId = Convert.ToInt32(cboMedicine.SelectedValue);
-                string medicineName = cboMedicine.Text;
-
-                dgvMedicines.Rows.Add(medicineId, medicineName, dosage, (int)numQty.Value, txtNotes.Text.Trim());
-
-                prescriptions.Add(new PrescriptionItem
+                // If editing, prefill values
+                if (isEdit && editRow != null)
                 {
-                    MedicineId = medicineId,
-                    Dosage = dosage,
-                    Quantity = (int)numQty.Value,
-                    Notes = txtNotes.Text.Trim()
-                });
+                    // Try to set medicine selection
+                    if (TryGetIntFromObject(editRow.Cells["MedicineId"].Value, out int medId))
+                    {
+                        try
+                        {
+                            cboMedicine.SelectedValue = medId;
+                        }
+                        catch { /* ignore if not found */ }
+                    }
 
-                form.Close();
-            };
+                    txtDosage.Text = editRow.Cells["Dosage"].Value?.ToString() ?? "";
+                    txtDosage.ForeColor = string.IsNullOrWhiteSpace(txtDosage.Text) ? Color.Gray : Color.Black;
+                    if (int.TryParse(editRow.Cells["Quantity"].Value?.ToString(), out int q)) numQty.Value = Math.Max(1, q);
+                    txtNotes.Text = editRow.Cells["Notes"].Value?.ToString() ?? "";
+                }
 
-            form.Controls.Add(btnAdd);
-            form.ShowDialog(this);
+                form.Controls.Add(new Label { Text = "Thuốc:", Location = new Point(30, 33), AutoSize = true });
+                form.Controls.Add(new Label { Text = "Liều lượng:", Location = new Point(30, 73), AutoSize = true });
+                form.Controls.Add(new Label { Text = "Số lượng:", Location = new Point(30, 113), AutoSize = true });
+                form.Controls.Add(new Label { Text = "Ghi chú:", Location = new Point(30, 153), AutoSize = true });
+                form.Controls.Add(cboMedicine);
+                form.Controls.Add(txtDosage);
+                form.Controls.Add(numQty);
+                form.Controls.Add(txtNotes);
+
+                Button btnAdd = new Button
+                {
+                    Text = isEdit ? "Lưu" : "Thêm",
+                    Location = new Point(200, 260),
+                    Size = new Size(100, 35),
+                    BackColor = ColorTranslator.FromHtml("#007ACC"),
+                    ForeColor = Color.White,
+                    FlatStyle = FlatStyle.Flat,
+                    Enabled = false
+                };
+
+                void ValidateAddForm()
+                {
+                    bool medicineSelected = cboMedicine.SelectedValue != null && cboMedicine.SelectedIndex >= 0;
+                    bool dosageValid = !string.IsNullOrWhiteSpace(txtDosage.Text) && txtDosage.Text.Trim() != "VD: 2 viên/ngày";
+                    bool quantityValid = numQty.Value >= 1;
+                    btnAdd.Enabled = medicineSelected && dosageValid && quantityValid;
+                }
+
+                cboMedicine.SelectedIndexChanged += (s, ev) => ValidateAddForm();
+                txtDosage.TextChanged += (s, ev) => ValidateAddForm();
+                numQty.ValueChanged += (s, ev) => ValidateAddForm();
+
+                // initialize validation state
+                ValidateAddForm();
+
+                btnAdd.Click += (s, ev) =>
+                {
+                    if (cboMedicine.SelectedValue == null || cboMedicine.SelectedIndex < 0)
+                    {
+                        MessageBoxHelper.ShowValidationError("thuốc");
+                        return;
+                    }
+                    string dosage = txtDosage.Text.Trim();
+                    if (dosage == "VD: 2 viên/ngày" || string.IsNullOrWhiteSpace(dosage))
+                    {
+                        MessageBoxHelper.ShowValidationError("liều lượng");
+                        return;
+                    }
+                    if (!TryGetIntFromObject(cboMedicine.SelectedValue, out int medicineId))
+                    {
+                        MessageBoxHelper.ShowError("ID thuốc không hợp lệ");
+                        return;
+                    }
+                    string medicineName = cboMedicine.Text;
+                    int qty = (int)numQty.Value;
+                    string notes = txtNotes.Text.Trim();
+
+                    if (isEdit && editRow != null)
+                    {
+                        editRow.Cells["MedicineId"].Value = medicineId;
+                        editRow.Cells["Name"].Value = medicineName;
+                        editRow.Cells["Dosage"].Value = dosage;
+                        editRow.Cells["Quantity"].Value = qty;
+                        editRow.Cells["Notes"].Value = notes;
+                    }
+                    else
+                    {
+                        dgvMedicines.Rows.Add(medicineId, medicineName, dosage, qty, notes);
+                    }
+
+                    UpdateSaveButtonState(); // real-time update
+                    form.DialogResult = DialogResult.OK;
+                    form.Close();
+                };
+
+                form.Controls.Add(btnAdd);
+
+                // show modal owned by top-level form (FindForm()) to avoid owner=UserControl which can cause focus/close issues
+                var owner = this.FindForm();
+                if (owner != null) form.ShowDialog(owner);
+                else form.ShowDialog();
+            }
         }
 
+        private void DgvMedicines_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+            try
+            {
+                if (e.RowIndex < 0 || e.ColumnIndex < 0) return;
+                string colName = dgvMedicines.Columns[e.ColumnIndex].Name;
+                var row = dgvMedicines.Rows[e.RowIndex];
+
+                if (colName == "Edit")
+                {
+                    // Open editor with existing row
+                    ShowMedicineEditor(isEdit: true, editRow: row);
+                }
+                else if (colName == "Delete")
+                {
+                    if (!MessageBoxHelper.ShowConfirm("Xác nhận xóa thuốc khỏi đơn?"))
+                        return;
+
+                    // Remove row safely
+                    if (!row.IsNewRow)
+                    {
+                        dgvMedicines.Rows.RemoveAt(e.RowIndex);
+                        UpdateSaveButtonState();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBoxHelper.ShowError($"Lỗi thao tác thuốc: {ex.Message}");
+            }
+        }
+
+        // Remove selected row(s) with confirmation (used by Delete key and context menu)
+        private void RemoveSelectedMedicineRows()
+        {
+            if (dgvMedicines.SelectedRows.Count == 0)
+            {
+                MessageBoxHelper.ShowWarning("Vui lòng chọn một thuốc để xóa.");
+                return;
+            }
+
+            if (!MessageBoxHelper.ShowConfirm("Xác nhận xóa thuốc đã chọn khỏi đơn?"))
+                return;
+
+            // Collect indices then remove from highest to lowest to avoid index shift
+            List<int> indices = new List<int>();
+            foreach (DataGridViewRow r in dgvMedicines.SelectedRows)
+            {
+                if (!r.IsNewRow)
+                    indices.Add(r.Index);
+            }
+
+            indices.Sort();
+            for (int i = indices.Count - 1; i >= 0; i--)
+            {
+                dgvMedicines.Rows.RemoveAt(indices[i]);
+            }
+
+            UpdateSaveButtonState();
+        }
+
+        private void DgvMedicines_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Delete)
+            {
+                RemoveSelectedMedicineRows();
+                e.Handled = true;
+            }
+        }
+
+        private void DgvMedicines_MouseDown(object sender, MouseEventArgs e)
+        {
+            if (e.Button != MouseButtons.Right) return;
+
+            var hit = dgvMedicines.HitTest(e.X, e.Y);
+            if (hit.RowIndex >= 0)
+            {
+                // Select the row under the mouse if it's not already selected
+                if (!dgvMedicines.Rows[hit.RowIndex].Selected)
+                {
+                    dgvMedicines.ClearSelection();
+                    dgvMedicines.Rows[hit.RowIndex].Selected = true;
+                }
+
+                // Show context menu
+                medicineContextMenu.Show(dgvMedicines, new Point(e.X, e.Y));
+            }
+        }
+
+        private void MedicineDeleteMenuItem_Click(object sender, EventArgs e)
+        {
+            RemoveSelectedMedicineRows();
+        }
+
+        private void MedicineEditMenuItem_Click(object sender, EventArgs e)
+        {
+            if (dgvMedicines.SelectedRows.Count == 0) return;
+            // Edit the first selected row
+            var row = dgvMedicines.SelectedRows[0];
+            ShowMedicineEditor(isEdit: true, editRow: row);
+        }
         #endregion
 
         #region Save Examination
-
         private void BtnSave_Click(object sender, EventArgs e)
         {
-            if (cboPatient.SelectedValue == null)
+            if (cboPatient.SelectedValue == null || !TryGetIntFromObject(cboPatient.SelectedValue, out int patientId))
             {
                 MessageBoxHelper.ShowValidationError("bệnh nhân");
                 return;
             }
-
-            if (!Validator.IsNotEmpty(txtDiagnosis.Text.Trim()))
+            string diagnosis = txtDiagnosis.Text.Trim();
+            if (!Validator.IsNotEmpty(diagnosis))
             {
                 MessageBoxHelper.ShowValidationError("chẩn đoán");
                 return;
             }
-
             if (!Auth.CurrentStaffId.HasValue)
             {
                 MessageBoxHelper.ShowError("Không xác định được bác sĩ!");
                 return;
             }
+            if (!HasAnyServiceOrMedicine())
+            {
+                MessageBoxHelper.ShowValidationError("ít nhất một dịch vụ hoặc thuốc");
+                return;
+            }
 
             try
             {
-                int patientId = Convert.ToInt32(cboPatient.SelectedValue);
                 int staffId = Auth.CurrentStaffId.Value;
 
-                // 1. Insert Medical Record
-                string insertRecord = @"
-                    INSERT INTO MedicalRecord (patient_id, staff_id, diagnosis, treatment)
-                    OUTPUT INSERTED.record_id
-                    VALUES (@patientId, @staffId, @diagnosis, @treatment)";
+                // Prepare treatment value explicitly as object to avoid mixed-type conditional operator in C# 7.3
+                object treatmentValue = string.IsNullOrWhiteSpace(txtTreatment.Text) ? (object)DBNull.Value : (object)txtTreatment.Text.Trim();
 
-                var recordParams = new[]
+                using (SqlTransaction tran = DatabaseHelper.BeginTransaction()) // Assumed DatabaseHelper.BeginTransaction returns SqlTransaction-compatible scope
                 {
-                    new SqlParameter("@patientId", patientId),
-                    new SqlParameter("@staffId", staffId),
-                    new SqlParameter("@diagnosis", txtDiagnosis.Text.Trim()),
-                    new SqlParameter("@treatment", txtTreatment.Text.Trim())
-                };
-
-                int recordId = Convert.ToInt32(DatabaseHelper.ExecuteScalar(insertRecord, recordParams));
-
-                // 2. Insert Prescriptions & Calculate Medicine Total
-                decimal medicineTotal = 0;
-                foreach (DataGridViewRow row in dgvMedicines.Rows)
-                {
-                    if (row.IsNewRow || row.Cells["MedicineId"].Value == null) continue;
-
-                    int medicineId = Convert.ToInt32(row.Cells["MedicineId"].Value);
-                    string dosage = row.Cells["Dosage"].Value?.ToString() ?? "";
-                    int quantity = Convert.ToInt32(row.Cells["Quantity"].Value);
-                    string notes = row.Cells["Notes"].Value?.ToString() ?? "";
-
-                    string insertPres = @"
-                        INSERT INTO Prescription (record_id, medicine_id, dosage, quantity, notes)
-                        VALUES (@recordId, @medId, @dosage, @qty, @notes)";
-
-                    DatabaseHelper.ExecuteNonQuery(insertPres, new[]
+                    string insertRecord = @"
+                        INSERT INTO MedicalRecord (patient_id, staff_id, diagnosis, treatment)
+                        OUTPUT INSERTED.record_id
+                        VALUES (@patientId, @staffId, @diagnosis, @treatment)";
+                    var recordParams = new[]
                     {
-                        new SqlParameter("@recordId", recordId),
-                        new SqlParameter("@medId", medicineId),
-                        new SqlParameter("@dosage", dosage),
-                        new SqlParameter("@qty", quantity),
-                        new SqlParameter("@notes", notes)
-                    });
-
-                    object priceObj = DatabaseHelper.ExecuteScalar(
-                        "SELECT price FROM Medicine WHERE medicine_id = @id",
-                        new SqlParameter[] { new SqlParameter("@id", medicineId) } // ← Dùng mảng
-                    );
-
-                    if (priceObj != null)
-                        medicineTotal += Convert.ToDecimal(priceObj) * quantity;
-                }
-
-                // 3. Calculate Service Total
-                decimal serviceTotal = 0;
-                foreach (DataGridViewRow row in dgvServices.Rows)
-                {
-                    if (row.Cells["Selected"].Value is bool selected && selected)
+                        new SqlParameter("@patientId", SqlDbType.Int) { Value = patientId },
+                        new SqlParameter("@staffId", SqlDbType.Int) { Value = staffId },
+                        new SqlParameter("@diagnosis", SqlDbType.NVarChar) { Value = diagnosis },
+                        new SqlParameter("@treatment", SqlDbType.NVarChar) { Value = treatmentValue }
+                    };
+                    object recObj = DatabaseHelper.ExecuteScalar(insertRecord, recordParams, tran);
+                    if (recObj == null || !int.TryParse(recObj.ToString(), out int recordId))
                     {
-                        serviceTotal += Convert.ToDecimal(row.Cells["Giá"].Value);
+                        tran.Rollback();
+                        MessageBoxHelper.ShowError("Không tạo được hồ sơ (MedicalRecord).");
+                        return;
                     }
-                }
 
-                decimal totalAmount = serviceTotal + medicineTotal;
-
-                // 4. Create Invoice
-                string insertInvoice = @"
-                    INSERT INTO Invoice (patient_id, staff_id, total_amount, status)
-                    OUTPUT INSERTED.invoice_id
-                    VALUES (@patientId, @staffId, @total, N'unpaid')";
-
-                int invoiceId = Convert.ToInt32(DatabaseHelper.ExecuteScalar(insertInvoice, new[]
-                {
-                    new SqlParameter("@patientId", patientId),
-                    new SqlParameter("@staffId", staffId),
-                    new SqlParameter("@total", totalAmount)
-                }));
-
-                // 5. Insert Service Usage
-                foreach (DataGridViewRow row in dgvServices.Rows)
-                {
-                    if (row.Cells["Selected"].Value is bool selected && selected)
+                    decimal medicineTotal = 0M;
+                    foreach (DataGridViewRow row in dgvMedicines.Rows)
                     {
-                        int serviceId = Convert.ToInt32(row.Cells["ID"].Value);
+                        if (row.IsNewRow || row.Cells["MedicineId"].Value == null) continue;
+                        if (!TryGetIntFromObject(row.Cells["MedicineId"].Value, out int medicineId)) continue;
+                        string dosage = row.Cells["Dosage"].Value?.ToString()?.Trim() ?? "";
+                        if (!int.TryParse(row.Cells["Quantity"].Value?.ToString(), out int quantity)) quantity = 1;
+                        string notes = row.Cells["Notes"].Value?.ToString()?.Trim() ?? "";
+
+                        if (string.IsNullOrWhiteSpace(dosage))
+                        {
+                            tran.Rollback();
+                            MessageBoxHelper.ShowValidationError("liều lượng thuốc");
+                            return;
+                        }
+
+                        // Prepare notes value explicitly as object to avoid mixed-type conditional operator
+                        object notesValue = string.IsNullOrWhiteSpace(notes) ? (object)DBNull.Value : (object)notes;
+
+                        string insertPres = @"
+                            INSERT INTO Prescription (record_id, medicine_id, dosage, quantity, notes)
+                            VALUES (@recordId, @medId, @dosage, @qty, @notes)";
+                        DatabaseHelper.ExecuteNonQuery(insertPres, new[]
+                        {
+                            new SqlParameter("@recordId", SqlDbType.Int) { Value = recordId },
+                            new SqlParameter("@medId", SqlDbType.Int) { Value = medicineId },
+                            new SqlParameter("@dosage", SqlDbType.NVarChar) { Value = dosage },
+                            new SqlParameter("@qty", SqlDbType.Int) { Value = quantity },
+                            new SqlParameter("@notes", SqlDbType.NVarChar) { Value = notesValue }
+                        }, tran);
+
+                        object priceObj = DatabaseHelper.ExecuteScalar(
+                            "SELECT price FROM Medicine WHERE medicine_id = @id",
+                            new[] { new SqlParameter("@id", SqlDbType.Int) { Value = medicineId } },
+                            tran
+                        );
+                        if (!TryGetDecimalFromObject(priceObj, out decimal price))
+                        {
+                            tran.Rollback();
+                            MessageBoxHelper.ShowError($"Giá thuốc ID {medicineId} không hợp lệ.");
+                            return;
+                        }
+                        medicineTotal += price * quantity;
+                    }
+
+                    decimal serviceTotal = 0M;
+                    foreach (DataGridViewRow row in dgvServices.Rows)
+                    {
+                        if (row.IsNewRow || !IsCellChecked(row.Cells["Selected"])) continue;
+                        if (!TryGetDecimalFromObject(row.Cells["Price"].Value, out decimal p))
+                        {
+                            tran.Rollback();
+                            MessageBoxHelper.ShowError("Giá dịch vụ không hợp lệ.");
+                            return;
+                        }
+                        serviceTotal += p;
+                    }
+
+                    decimal totalAmount = serviceTotal + medicineTotal;
+
+                    string insertInvoice = @"
+                        INSERT INTO Invoice (patient_id, staff_id, total_amount, status)
+                        OUTPUT INSERTED.invoice_id
+                        VALUES (@patientId, @staffId, @total, N'unpaid')";
+                    object invObj = DatabaseHelper.ExecuteScalar(insertInvoice, new[]
+                    {
+                        new SqlParameter("@patientId", SqlDbType.Int) { Value = patientId },
+                        new SqlParameter("@staffId", SqlDbType.Int) { Value = staffId },
+                        new SqlParameter("@total", SqlDbType.Decimal) { Value = totalAmount }
+                    }, tran);
+                    if (invObj == null || !int.TryParse(invObj.ToString(), out int invoiceId))
+                    {
+                        tran.Rollback();
+                        MessageBoxHelper.ShowError("Không tạo được hóa đơn.");
+                        return;
+                    }
+
+                    foreach (DataGridViewRow row in dgvServices.Rows)
+                    {
+                        if (row.IsNewRow || !IsCellChecked(row.Cells["Selected"])) continue;
+                        if (!TryGetIntFromObject(row.Cells["ID"].Value, out int serviceId)) continue;
                         string insertUsage = "INSERT INTO ServiceUsage (invoice_id, service_id, quantity) VALUES (@invId, @srvId, 1)";
                         DatabaseHelper.ExecuteNonQuery(insertUsage, new[]
                         {
-                            new SqlParameter("@invId", invoiceId),
-                            new SqlParameter("@srvId", serviceId)
-                        });
+                            new SqlParameter("@invId", SqlDbType.Int) { Value = invoiceId },
+                            new SqlParameter("@srvId", SqlDbType.Int) { Value = serviceId }
+                        }, tran);
                     }
+
+                    tran.Commit();
+                    MessageBoxHelper.ShowSuccess(
+                        $"Đã lưu hồ sơ và tạo hóa đơn #{invoiceId}\n" +
+                        $"Tổng tiền: {Formatter.FormatCurrency(totalAmount)}");
+                    Logger.LogExamination(cboPatient.Text);
+                    Logger.LogInvoiceCreation(cboPatient.Text, totalAmount);
+                    ClearForm();
                 }
-
-                MessageBoxHelper.ShowSuccess(
-                    $"Đã lưu hồ sơ và tạo hóa đơn #{invoiceId}\n" +
-                    $"Tổng tiền: {Formatter.FormatCurrency(totalAmount)}");
-
-                Logger.LogExamination(cboPatient.Text);
-                Logger.LogInvoiceCreation(cboPatient.Text, totalAmount);
-
-                ClearForm();
             }
             catch (Exception ex)
             {
                 MessageBoxHelper.ShowError($"Lỗi lưu hồ sơ: {ex.Message}");
             }
         }
+        #endregion
 
+        #region Patient Records (HSBA) Button
+        private void BTNHSBA_Click(object sender, EventArgs e)
+        {
+            if (cboPatient.SelectedValue == null || !TryGetIntFromObject(cboPatient.SelectedValue, out int patientId))
+            {
+                MessageBoxHelper.ShowValidationError("bệnh nhân");
+                return;
+            }
+            string patientDisplay = cboPatient.Text;
+            using (var form = new Form())
+            {
+                form.Text = $"Hồ sơ bệnh án của {patientDisplay}";
+                form.Size = new Size(780, 520);
+                form.StartPosition = FormStartPosition.CenterParent;
+                form.FormBorderStyle = FormBorderStyle.FixedDialog;
+                form.MaximizeBox = false;
+                form.MinimizeBox = false;
+
+                var dgv = new DataGridView
+                {
+                    Dock = DockStyle.Fill,
+                    BackgroundColor = Color.White,
+                    ReadOnly = true,
+                    AllowUserToAddRows = false,
+                    AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
+                    SelectionMode = DataGridViewSelectionMode.FullRowSelect,
+                    BorderStyle = BorderStyle.None
+                };
+                form.Controls.Add(dgv);
+
+                try
+                {
+                    string query = @"
+                        SELECT
+                            m.record_id AS ID,
+                            FORMAT(m.record_date, 'dd/MM/yyyy') AS [Ngày khám],
+                            m.diagnosis AS [Chẩn đoán],
+                            m.treatment AS [Điều trị]
+                        FROM MedicalRecord m
+                        WHERE m.patient_id = @patientId
+                        ORDER BY m.record_date DESC";
+                    DataTable dt = DatabaseHelper.ExecuteQuery(query, new[] { new SqlParameter("@patientId", SqlDbType.Int) { Value = patientId } });
+                    dgv.DataSource = dt;
+                    if (dgv.Columns.Contains("ID"))
+                        dgv.Columns["ID"].Visible = false;
+
+                    if (!dgv.Columns.Contains("View"))
+                    {
+                        var btnCol = new DataGridViewButtonColumn
+                        {
+                            Name = "View",
+                            HeaderText = "Hành động",
+                            Text = "Xem chi tiết",
+                            UseColumnTextForButtonValue = true,
+                            Width = 100
+                        };
+                        dgv.Columns.Add(btnCol);
+                    }
+
+                    dgv.CellClick += (s, ev) =>
+                    {
+                        if (ev.RowIndex < 0 || ev.ColumnIndex < 0) return;
+                        if (dgv.Columns[ev.ColumnIndex].Name != "View") return;
+                        var idCell = dgv.Rows[ev.RowIndex].Cells["ID"];
+                        if (idCell?.Value == null) return;
+                        if (!TryGetIntFromObject(idCell.Value, out int recordId)) return;
+                        ShowRecordDetailInExamine(recordId, form);
+                    };
+
+                    // show modal owned by top-level form to avoid owner=UserControl (fixes needing to click X twice)
+                    var owner = this.FindForm();
+                    if (owner != null) form.ShowDialog(owner);
+                    else form.ShowDialog();
+                }
+                catch (Exception ex)
+                {
+                    MessageBoxHelper.ShowError($"Lỗi tải hồ sơ bệnh án: {ex.Message}");
+                }
+            }
+        }
+
+        private void ShowRecordDetailInExamine(int recordId, Form ownerForm)
+        {
+            using (var form = new Form())
+            {
+                form.Text = $"Chi tiết hồ sơ #{recordId}";
+                form.Size = new Size(700, 600);
+                form.StartPosition = FormStartPosition.CenterParent;
+                form.FormBorderStyle = FormBorderStyle.FixedDialog;
+                form.MaximizeBox = false;
+                form.MinimizeBox = false;
+
+                string query = @"
+                    SELECT m.*, u.fullname AS patient_name
+                    FROM MedicalRecord m
+                    INNER JOIN Patient p ON m.patient_id = p.patient_id
+                    INNER JOIN UserAccount u ON p.user_id = u.user_id
+                    WHERE m.record_id = @id";
+                DataTable dt = DatabaseHelper.ExecuteQuery(query, new[] { new SqlParameter("@id", SqlDbType.Int) { Value = recordId } });
+                if (dt.Rows.Count == 0) return;
+                var dr = dt.Rows[0];
+
+                string patientName = dr["patient_name"]?.ToString() ?? "N/A";
+                string recordDateText = "N/A";
+                if (dr["record_date"] != DBNull.Value && DateTime.TryParse(dr["record_date"].ToString(), out DateTime recDate))
+                    recordDateText = recDate.ToString("dd/MM/yyyy");
+
+                var lblInfo = new Label
+                {
+                    Text = $"Bệnh nhân: {patientName}\n" +
+                           $"Ngày khám: {recordDateText}\n\n" +
+                           $"Chẩn đoán:\n{dr["diagnosis"] ?? ""}\n\n" +
+                           $"Điều trị:\n{dr["treatment"] ?? ""}",
+                    Location = new Point(20, 20),
+                    Size = new Size(650, 160),
+                    Font = new Font("Segoe UI", 11),
+                    AutoSize = false
+                };
+
+                var lblPres = new Label
+                {
+                    Text = "Đơn thuốc:",
+                    Font = new Font("Segoe UI", 12, FontStyle.Bold),
+                    Location = new Point(20, 190),
+                    AutoSize = true
+                };
+
+                var dgvPres = new DataGridView
+                {
+                    Location = new Point(20, 220),
+                    Size = new Size(650, 300),
+                    BackgroundColor = Color.White,
+                    AllowUserToAddRows = false,
+                    ReadOnly = true,
+                    AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
+                    BorderStyle = BorderStyle.None
+                };
+
+                string presQuery = @"
+                    SELECT
+                        m.name AS [Tên thuốc],
+                        p.dosage AS [Liều lượng],
+                        p.quantity AS [Số lượng],
+                        p.notes AS [Ghi chú]
+                    FROM Prescription p
+                    INNER JOIN Medicine m ON p.medicine_id = m.medicine_id
+                    WHERE p.record_id = @id";
+                DataTable dtPres = DatabaseHelper.ExecuteQuery(presQuery, new[] { new SqlParameter("@id", SqlDbType.Int) { Value = recordId } });
+                dgvPres.DataSource = dtPres;
+
+                form.Controls.AddRange(new Control[] { lblInfo, lblPres, dgvPres });
+
+                // show detail modal; ownerForm is a Form created by BTNHSBA_Click
+                if (ownerForm != null) form.ShowDialog(ownerForm);
+                else form.ShowDialog();
+            }
+        }
         #endregion
 
         #region Helper Methods
-
         private void ClearForm()
         {
+            cboPatient.SelectedIndex = -1; // Added reset
             txtDiagnosis.Clear();
             txtTreatment.Clear();
             dgvMedicines.Rows.Clear();
-            prescriptions.Clear();
             LoadServices(); // Reset checkboxes
+            UpdateSaveButtonState();
         }
 
-        #endregion
-
-        #region Nested Class
-
-        private class PrescriptionItem
+        private void UpdateSaveButtonState()
         {
-            public int MedicineId { get; set; }
-            public string Dosage { get; set; }
-            public int Quantity { get; set; }
-            public string Notes { get; set; }
+            bool hasPatient = cboPatient.SelectedValue != null && TryGetIntFromObject(cboPatient.SelectedValue, out _);
+            bool hasDiagnosis = Validator.IsNotEmpty(txtDiagnosis.Text?.Trim());
+            bool hasContent = HasAnyServiceOrMedicine();
+            btnSave.Enabled = hasPatient && hasDiagnosis && hasContent;
+
+            if (btnSave.Enabled)
+            {
+                btnSave.BackColor = ColorTranslator.FromHtml("#28A745");
+                btnSave.ForeColor = Color.White;
+            }
+            else
+            {
+                btnSave.BackColor = Color.Gray;
+                btnSave.ForeColor = Color.LightGray;
+            }
         }
 
+        private bool HasAnyServiceOrMedicine()
+        {
+            bool hasMedicine = dgvMedicines.Rows.Count > 0;
+            bool hasService = false;
+            foreach (DataGridViewRow row in dgvServices.Rows)
+            {
+                if (!row.IsNewRow && IsCellChecked(row.Cells["Selected"]))
+                {
+                    hasService = true;
+                    break;
+                }
+            }
+            return hasMedicine || hasService;
+        }
+
+        private static bool TryGetIntFromObject(object obj, out int value)
+        {
+            value = 0;
+            if (obj == null || obj == DBNull.Value) return false;
+            if (obj is int i) { value = i; return true; }
+            return int.TryParse(obj.ToString(), out value);
+        }
+
+        private static bool TryGetDecimalFromObject(object obj, out decimal value)
+        {
+            value = 0M;
+            if (obj == null || obj == DBNull.Value) return false;
+            if (obj is decimal d) { value = d; return true; }
+            if (obj is double db) { value = Convert.ToDecimal(db); return true; }
+            if (obj is float f) { value = Convert.ToDecimal(f); return true; }
+            return decimal.TryParse(obj.ToString(), out value);
+        }
+
+        private static bool IsCellChecked(DataGridViewCell cell)
+        {
+            if (cell == null) return false;
+            var v = cell.Value;
+            if (v == null || v == DBNull.Value) return false;
+            if (v is bool b) return b;
+            var s = v.ToString();
+            if (bool.TryParse(s, out bool bb)) return bb;
+            if (int.TryParse(s, out int i)) return i != 0;
+            return false;
+        }
         #endregion
+
+        private void btnSave_Click_1(object sender, EventArgs e)
+        {
+
+        }
     }
 }

@@ -48,7 +48,15 @@ namespace DentalClinicManagement.Pages.Doctor
 
             try
             {
-                string search = txtSearch.Text.Trim();
+                // Treat placeholder text as empty search so initial load shows all records
+                string search = txtSearch.Text?.Trim() ?? string.Empty;
+                const string placeholder = "Tìm theo tên bệnh nhân...";
+
+                if (string.IsNullOrWhiteSpace(search) || search == placeholder || txtSearch.ForeColor == Color.Gray)
+                {
+                    search = string.Empty;
+                }
+
                 string query = @"
                     SELECT
                         m.record_id AS [ID],
@@ -128,7 +136,11 @@ namespace DentalClinicManagement.Pages.Doctor
                 WHERE m.record_id = @id";
 
             DataTable dt = DatabaseHelper.ExecuteQuery(query, new[] { new SqlParameter("@id", recordId) });
-            if (dt.Rows.Count == 0) return;
+            if (dt.Rows.Count == 0)
+            {
+                form.Dispose();
+                return;
+            }
 
             var dr = dt.Rows[0];
 
@@ -177,7 +189,22 @@ namespace DentalClinicManagement.Pages.Doctor
             dgvPres.DataSource = dtPres;
 
             form.Controls.AddRange(new Control[] { lblInfo, lblPres, dgvPres });
-            form.ShowDialog(this);
+
+            // Use the top-level Form as owner to avoid focus/activation quirks when the owner is a UserControl.
+            IWin32Window owner = this.FindForm() ?? Form.ActiveForm;
+            try
+            {
+                form.ShowDialog(owner);
+            }
+            finally
+            {
+                form.Dispose();
+            }
+        }
+
+        private void DoctorMedicalRecords_Load(object sender, EventArgs e)
+        {
+
         }
     }
 }

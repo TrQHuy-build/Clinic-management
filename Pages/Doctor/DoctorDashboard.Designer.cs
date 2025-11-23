@@ -50,9 +50,6 @@ namespace DentalClinicManagement.Pages.Doctor
             // 
             // dgvAppointments
             // 
-            this.dgvAppointments.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
             this.dgvAppointments.BackgroundColor = System.Drawing.Color.White;
             this.dgvAppointments.BorderStyle = System.Windows.Forms.BorderStyle.None;
             dataGridViewCellStyle1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(122)))), ((int)(((byte)(204)))));
@@ -62,6 +59,7 @@ namespace DentalClinicManagement.Pages.Doctor
             this.dgvAppointments.ColumnHeadersHeight = 40;
             this.dgvAppointments.EnableHeadersVisualStyles = false;
             this.dgvAppointments.Location = new System.Drawing.Point(20, 60);
+            this.dgvAppointments.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.dgvAppointments.Name = "dgvAppointments";
             this.dgvAppointments.ReadOnly = true;
             this.dgvAppointments.RowHeadersWidth = 51;
@@ -82,13 +80,10 @@ namespace DentalClinicManagement.Pages.Doctor
             // 
             // statsPanel
             // 
-            this.statsPanel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
             this.statsPanel.BackColor = System.Drawing.Color.Transparent;
             this.statsPanel.Controls.Add(this.card1);
-            this.statsPanel.Controls.Add(this.card2);
-            this.statsPanel.Controls.Add(this.card3);
             this.statsPanel.Location = new System.Drawing.Point(20, 80);
+            this.statsPanel.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.statsPanel.Name = "statsPanel";
             this.statsPanel.Size = new System.Drawing.Size(1160, 150);
             this.statsPanel.TabIndex = 1;
@@ -110,7 +105,7 @@ namespace DentalClinicManagement.Pages.Doctor
             this.icon1.AutoSize = true;
             this.icon1.Font = new System.Drawing.Font("Segoe MDL2 Assets", 32F);
             this.icon1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(122)))), ((int)(((byte)(204)))));
-            this.icon1.Location = new System.Drawing.Point(11, 35);
+            this.icon1.Location = new System.Drawing.Point(11, 34);
             this.icon1.Name = "icon1";
             this.icon1.Size = new System.Drawing.Size(77, 54);
             this.icon1.TabIndex = 0;
@@ -121,7 +116,7 @@ namespace DentalClinicManagement.Pages.Doctor
             this.label1.AutoSize = true;
             this.label1.Font = new System.Drawing.Font("Segoe UI", 11F);
             this.label1.ForeColor = System.Drawing.Color.Gray;
-            this.label1.Location = new System.Drawing.Point(90, 35);
+            this.label1.Location = new System.Drawing.Point(91, 34);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(161, 25);
             this.label1.TabIndex = 1;
@@ -132,7 +127,7 @@ namespace DentalClinicManagement.Pages.Doctor
             this.valueToday.AutoSize = true;
             this.valueToday.Font = new System.Drawing.Font("Segoe UI", 20F, System.Drawing.FontStyle.Bold);
             this.valueToday.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(122)))), ((int)(((byte)(204)))));
-            this.valueToday.Location = new System.Drawing.Point(90, 60);
+            this.valueToday.Location = new System.Drawing.Point(91, 60);
             this.valueToday.Name = "valueToday";
             this.valueToday.Size = new System.Drawing.Size(40, 46);
             this.valueToday.TabIndex = 2;
@@ -144,7 +139,7 @@ namespace DentalClinicManagement.Pages.Doctor
             this.card2.Controls.Add(this.icon2);
             this.card2.Controls.Add(this.label2);
             this.card2.Controls.Add(this.valueWeek);
-            this.card2.Location = new System.Drawing.Point(300, 0);
+            this.card2.Location = new System.Drawing.Point(453, 80);
             this.card2.Margin = new System.Windows.Forms.Padding(0, 0, 20, 0);
             this.card2.Name = "card2";
             this.card2.Size = new System.Drawing.Size(280, 130);
@@ -155,7 +150,7 @@ namespace DentalClinicManagement.Pages.Doctor
             this.icon2.AutoSize = true;
             this.icon2.Font = new System.Drawing.Font("Segoe MDL2 Assets", 32F);
             this.icon2.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(40)))), ((int)(((byte)(167)))), ((int)(((byte)(69)))));
-            this.icon2.Location = new System.Drawing.Point(7, 35);
+            this.icon2.Location = new System.Drawing.Point(7, 34);
             this.icon2.Name = "icon2";
             this.icon2.Size = new System.Drawing.Size(77, 54);
             this.icon2.TabIndex = 0;
@@ -166,7 +161,7 @@ namespace DentalClinicManagement.Pages.Doctor
             this.label2.AutoSize = true;
             this.label2.Font = new System.Drawing.Font("Segoe UI", 11F);
             this.label2.ForeColor = System.Drawing.Color.Gray;
-            this.label2.Location = new System.Drawing.Point(90, 35);
+            this.label2.Location = new System.Drawing.Point(91, 34);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(181, 25);
             this.label2.TabIndex = 1;
@@ -177,7 +172,7 @@ namespace DentalClinicManagement.Pages.Doctor
             this.valueWeek.AutoSize = true;
             this.valueWeek.Font = new System.Drawing.Font("Segoe UI", 20F, System.Drawing.FontStyle.Bold);
             this.valueWeek.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(40)))), ((int)(((byte)(167)))), ((int)(((byte)(69)))));
-            this.valueWeek.Location = new System.Drawing.Point(90, 60);
+            this.valueWeek.Location = new System.Drawing.Point(91, 60);
             this.valueWeek.Name = "valueWeek";
             this.valueWeek.Size = new System.Drawing.Size(40, 46);
             this.valueWeek.TabIndex = 2;
@@ -189,7 +184,7 @@ namespace DentalClinicManagement.Pages.Doctor
             this.card3.Controls.Add(this.icon3);
             this.card3.Controls.Add(this.label3);
             this.card3.Controls.Add(this.valueCompleted);
-            this.card3.Location = new System.Drawing.Point(600, 0);
+            this.card3.Location = new System.Drawing.Point(880, 80);
             this.card3.Margin = new System.Windows.Forms.Padding(0, 0, 20, 0);
             this.card3.Name = "card3";
             this.card3.Size = new System.Drawing.Size(280, 130);
@@ -200,7 +195,7 @@ namespace DentalClinicManagement.Pages.Doctor
             this.icon3.AutoSize = true;
             this.icon3.Font = new System.Drawing.Font("Segoe MDL2 Assets", 32F);
             this.icon3.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(193)))), ((int)(((byte)(7)))));
-            this.icon3.Location = new System.Drawing.Point(26, 35);
+            this.icon3.Location = new System.Drawing.Point(27, 34);
             this.icon3.Name = "icon3";
             this.icon3.Size = new System.Drawing.Size(58, 54);
             this.icon3.TabIndex = 0;
@@ -211,7 +206,7 @@ namespace DentalClinicManagement.Pages.Doctor
             this.label3.AutoSize = true;
             this.label3.Font = new System.Drawing.Font("Segoe UI", 11F);
             this.label3.ForeColor = System.Drawing.Color.Gray;
-            this.label3.Location = new System.Drawing.Point(90, 35);
+            this.label3.Location = new System.Drawing.Point(91, 34);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(164, 25);
             this.label3.TabIndex = 1;
@@ -222,7 +217,7 @@ namespace DentalClinicManagement.Pages.Doctor
             this.valueCompleted.AutoSize = true;
             this.valueCompleted.Font = new System.Drawing.Font("Segoe UI", 20F, System.Drawing.FontStyle.Bold);
             this.valueCompleted.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(193)))), ((int)(((byte)(7)))));
-            this.valueCompleted.Location = new System.Drawing.Point(90, 60);
+            this.valueCompleted.Location = new System.Drawing.Point(91, 60);
             this.valueCompleted.Name = "valueCompleted";
             this.valueCompleted.Size = new System.Drawing.Size(40, 46);
             this.valueCompleted.TabIndex = 2;
@@ -230,15 +225,13 @@ namespace DentalClinicManagement.Pages.Doctor
             // 
             // appointmentPanel
             // 
-            this.appointmentPanel.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
             this.appointmentPanel.BackColor = System.Drawing.Color.White;
             this.appointmentPanel.Controls.Add(this.lblAppointments);
             this.appointmentPanel.Controls.Add(this.dgvAppointments);
             this.appointmentPanel.Location = new System.Drawing.Point(20, 250);
+            this.appointmentPanel.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.appointmentPanel.Name = "appointmentPanel";
-            this.appointmentPanel.Padding = new System.Windows.Forms.Padding(20);
+            this.appointmentPanel.Padding = new System.Windows.Forms.Padding(20, 20, 20, 20);
             this.appointmentPanel.Size = new System.Drawing.Size(1160, 430);
             this.appointmentPanel.TabIndex = 2;
             // 
@@ -271,11 +264,14 @@ namespace DentalClinicManagement.Pages.Doctor
             this.AutoScroll = true;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(240)))), ((int)(((byte)(242)))), ((int)(((byte)(245)))));
             this.Controls.Add(this.label4);
+            this.Controls.Add(this.card2);
             this.Controls.Add(this.lblTitle);
+            this.Controls.Add(this.card3);
             this.Controls.Add(this.statsPanel);
             this.Controls.Add(this.appointmentPanel);
+            this.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.Name = "DoctorDashboard";
-            this.Padding = new System.Windows.Forms.Padding(20);
+            this.Padding = new System.Windows.Forms.Padding(20, 20, 20, 20);
             this.Size = new System.Drawing.Size(1200, 700);
             ((System.ComponentModel.ISupportInitialize)(this.dgvAppointments)).EndInit();
             this.statsPanel.ResumeLayout(false);
