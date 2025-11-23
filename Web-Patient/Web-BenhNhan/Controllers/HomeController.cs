@@ -39,6 +39,7 @@ namespace Web_BenhNhan.Controllers
             [FromForm] string patient_name,
             [FromForm] string phone,
             [FromForm] string? email,
+            [FromForm] string password,
             [FromForm] int service_id,
             [FromForm] string appointment_date,
             [FromForm] string? status,
@@ -46,18 +47,16 @@ namespace Web_BenhNhan.Controllers
         {
             try
             {
-                _logger.LogInformation("=== BOOKING REQUEST RECEIVED ===");
-                _logger.LogInformation($"Patient Name: {patient_name}");
+                _logger.LogInformation("=== REGISTRATION REQUEST RECEIVED ===");
+                _logger.LogInformation($"Full Name: {patient_name}");
                 _logger.LogInformation($"Phone: {phone}");
                 _logger.LogInformation($"Email: {email}");
                 _logger.LogInformation($"Service ID: {service_id}");
                 _logger.LogInformation($"Appointment Date: {appointment_date}");
-                _logger.LogInformation($"Status: {status}");
-                _logger.LogInformation($"Notes: {notes}");
 
                 var errors = new List<string>();
 
-                // Validate patient name
+                // Validate patient name (fullname)
                 if (string.IsNullOrWhiteSpace(patient_name))
                 {
                     errors.Add("Vui lòng nhập họ và tên");
@@ -89,17 +88,28 @@ namespace Web_BenhNhan.Controllers
                     }
                 }
 
-                // Validate email (optional but if provided must be valid)
-                if (!string.IsNullOrWhiteSpace(email))
+                // Validate email (required)
+                if (string.IsNullOrWhiteSpace(email))
                 {
-                    if (!System.Text.RegularExpressions.Regex.IsMatch(email, @"^[^\s@]+@[^\s@]+\.[^\s@]+$"))
-                    {
-                        errors.Add("Email không hợp lệ");
-                    }
-                    else if (email.Length > 255)
-                    {
-                        errors.Add("Email không được quá 255 ký tự");
-                    }
+                    errors.Add("Vui lòng nhập email");
+                }
+                else if (!System.Text.RegularExpressions.Regex.IsMatch(email, @"^[^\s@]+@[^\s@]+\.[^\s@]+$"))
+                {
+                    errors.Add("Email không hợp lệ");
+                }
+                else if (email.Length > 255)
+                {
+                    errors.Add("Email không được quá 255 ký tự");
+                }
+
+                // Validate password
+                if (string.IsNullOrWhiteSpace(password))
+                {
+                    errors.Add("Vui lòng nhập mật khẩu");
+                }
+                else if (password.Length < 6)
+                {
+                    errors.Add("Mật khẩu phải có ít nhất 6 ký tự");
                 }
 
                 // Validate service
@@ -115,29 +125,20 @@ namespace Web_BenhNhan.Controllers
                 }
                 else
                 {
-                    // Check if date is in the past
                     if (parsedDate < DateTime.Now)
                     {
                         errors.Add("Không thể đặt lịch cho thời gian đã qua");
                     }
                     
-                    // Check if date is too far in the future (max 3 months)
                     if (parsedDate > DateTime.Now.AddMonths(3))
                     {
                         errors.Add("Chỉ có thể đặt lịch tối đa 3 tháng trước");
                     }
 
-                    // Check business hours (8:00 - 18:00)
                     if (parsedDate.Hour < 8 || parsedDate.Hour >= 18)
                     {
                         errors.Add("Giờ khám phải trong khoảng 08:00 - 18:00");
                     }
-
-                    // Check if date is weekend (optional - uncomment if needed)
-                    // if (parsedDate.DayOfWeek == DayOfWeek.Sunday)
-                    // {
-                    //     errors.Add("Phòng khám không làm việc vào Chủ nhật");
-                    // }
                 }
 
                 // Validate notes length
@@ -153,41 +154,77 @@ namespace Web_BenhNhan.Controllers
                     return Json(new { success = false, errors = errors.ToArray() });
                 }
 
-                // Check for duplicate appointments (same patient, same date/time)
-                var existingAppointment = await _context.Appointments
-                    .FirstOrDefaultAsync(a => 
-                        a.Phone == phone.Replace(" ", "").Replace("-", "") && 
-                        a.AppointmentDate == parsedDate &&
-                        a.Status != "cancelled");
-
-                if (existingAppointment != null)
+                // Check if email already exists first
+                var existingEmail = await _context.UserAccounts.FirstOrDefaultAsync(u => u.Email == email.Trim());
+                if (existingEmail != null)
                 {
-                    errors.Add($"Bạn đã có lịch hẹn vào thời gian này (ID: {existingAppointment.AppointmentId})");
+                    // Verify password matches
+                    if (existingEmail.PasswordHash != password)
+                    {
+                        errors.Add("Mật khẩu không đúng");
+                        return Json(new { success = false, errors = errors.ToArray() });
+                    }
+
+                    _logger.LogInformation($"Email {email} already exists. Returning user info for confirmation.");
+                    return Json(new 
+                    { 
+                        success = false, 
+                        emailExists = true,
+                        existingUser = new 
+                        {
+                            fullName = existingEmail.FullName,
+                            phone = existingEmail.Phone,
+                            email = existingEmail.Email
+                        }
+                    });
+                }
+
+                // Only check phone duplicate if email is new
+                var existingPhone = await _context.UserAccounts.FirstOrDefaultAsync(u => u.Phone == phone.Replace(" ", "").Replace("-", ""));
+                if (existingPhone != null)
+                {
+                    errors.Add("Số điện thoại này đã được đăng ký");
                     return Json(new { success = false, errors = errors.ToArray() });
                 }
 
-                // Create appointment object
+                // 1. Create UserAccount with plain password (no hashing)
+                var userAccount = new UserAccount
+                {
+                    FullName = patient_name.Trim(),
+                    Phone = phone.Replace(" ", "").Replace("-", ""),
+                    Email = email.Trim(),
+                    PasswordHash = password, // Store plain password
+                    Role = "patient",
+                    Status = "active",
+                    CreatedAt = DateTime.Now
+                };
+
+                _logger.LogInformation("Creating UserAccount...");
+                _context.UserAccounts.Add(userAccount);
+                await _context.SaveChangesAsync();
+                _logger.LogInformation($"UserAccount created with ID: {userAccount.UserId}");
+
+                // 2. Create Appointment using UserAccount info with patient_name from fullname
                 var appointment = new Appointment
                 {
-                    PatientName = patient_name.Trim(),
-                    Phone = phone,
-                    Email = string.IsNullOrWhiteSpace(email) ? null : email.Trim(),
+                    PatientName = userAccount.FullName, // Use fullname from UserAccount
+                    Phone = userAccount.Phone,
+                    Email = userAccount.Email,
                     ServiceId = service_id,
                     AppointmentDate = parsedDate,
                     Status = string.IsNullOrWhiteSpace(status) ? "booked" : status,
                     Notes = string.IsNullOrWhiteSpace(notes) ? null : notes.Trim()
                 };
 
-                _logger.LogInformation("Adding to database...");
+                _logger.LogInformation("Creating Appointment...");
                 _context.Appointments.Add(appointment);
-                
-                var savedCount = await _context.SaveChangesAsync();
-                _logger.LogInformation($"SaveChanges completed. Rows affected: {savedCount}");
-                _logger.LogInformation($"Appointment ID: {appointment.AppointmentId}");
+                await _context.SaveChangesAsync();
+                _logger.LogInformation($"Appointment created with ID: {appointment.AppointmentId}");
 
                 return Json(new { 
                     success = true, 
-                    message = "Đặt lịch thành công!", 
+                    message = "Đăng ký thành công!", 
+                    userId = userAccount.UserId,
                     appointmentId = appointment.AppointmentId,
                     appointmentDate = parsedDate.ToString("dd/MM/yyyy HH:mm")
                 });
@@ -200,6 +237,106 @@ namespace Web_BenhNhan.Controllers
                 {
                     _logger.LogError("Inner exception: {InnerMessage}", ex.InnerException.Message);
                 }
+                return Json(new { success = false, message = $"Có lỗi xảy ra: {ex.Message}" });
+            }
+        }
+
+        // API: Đặt lịch với thông tin từ UserAccount đã tồn tại
+        [HttpPost]
+        public async Task<IActionResult> BookWithExistingUser(string email, int service_id, string appointment_date, string status, string notes)
+        {
+            try
+            {
+                _logger.LogInformation("=== BOOKING WITH EXISTING USER ===");
+                _logger.LogInformation($"Email: {email}");
+                _logger.LogInformation($"Service ID: {service_id}");
+                _logger.LogInformation($"Appointment Date: {appointment_date}");
+
+                // Find existing user by email
+                var existingUser = await _context.UserAccounts.FirstOrDefaultAsync(u => u.Email == email.Trim());
+                if (existingUser == null)
+                {
+                    return Json(new { success = false, message = "Không tìm thấy thông tin người dùng với email này" });
+                }
+
+                // Parse appointment date
+                DateTime parsedDate;
+                if (!DateTime.TryParse(appointment_date, null, System.Globalization.DateTimeStyles.RoundtripKind, out parsedDate))
+                {
+                    return Json(new { success = false, message = "Ngày hẹn không hợp lệ" });
+                }
+
+                // Create appointment
+                var appointment = new Appointment
+                {
+                    PatientName = existingUser.FullName,
+                    Phone = existingUser.Phone,
+                    Email = existingUser.Email,
+                    ServiceId = service_id,
+                    AppointmentDate = parsedDate,
+                    Status = string.IsNullOrWhiteSpace(status) ? "booked" : status,
+                    Notes = string.IsNullOrWhiteSpace(notes) ? null : notes.Trim()
+                };
+
+                _logger.LogInformation("Creating Appointment with existing user info...");
+                _context.Appointments.Add(appointment);
+                await _context.SaveChangesAsync();
+                _logger.LogInformation($"Appointment created with ID: {appointment.AppointmentId}");
+
+                return Json(new 
+                { 
+                    success = true, 
+                    message = "Đăng ký thành công!", 
+                    userId = existingUser.UserId,
+                    appointmentId = appointment.AppointmentId,
+                    appointmentDate = parsedDate.ToString("dd/MM/yyyy HH:mm"),
+                    userInfo = new 
+                    {
+                        fullName = existingUser.FullName,
+                        phone = existingUser.Phone,
+                        email = existingUser.Email
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "ERROR booking with existing user: {Message}", ex.Message);
+                return Json(new { success = false, message = $"Có lỗi xảy ra: {ex.Message}" });
+            }
+        }
+
+        // API: Lấy thông tin user theo email
+        [HttpGet]
+        public async Task<IActionResult> GetUserByEmail(string email)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(email))
+                {
+                    return Json(new { success = false, message = "Email không được để trống" });
+                }
+
+                var user = await _context.UserAccounts.FirstOrDefaultAsync(u => u.Email == email.Trim());
+                if (user == null)
+                {
+                    return Json(new { success = false, exists = false });
+                }
+
+                return Json(new 
+                { 
+                    success = true, 
+                    exists = true,
+                    user = new 
+                    {
+                        fullName = user.FullName,
+                        phone = user.Phone,
+                        email = user.Email
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting user by email: {Message}", ex.Message);
                 return Json(new { success = false, message = $"Có lỗi xảy ra: {ex.Message}" });
             }
         }

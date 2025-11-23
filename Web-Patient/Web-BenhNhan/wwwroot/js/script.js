@@ -319,6 +319,80 @@
         e.target.value = e.target.value.replace(/[^a-zA-ZÀ-ỹ\s.]/g, "");
     });
 
+    // Email auto-fill functionality
+    const emailInput = document.getElementById("email");
+    let emailCheckTimeout;
+    emailInput.addEventListener("blur", function(e) {
+        const email = e.target.value.trim();
+        if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            return; // Invalid email, skip
+        }
+
+        // Debounce to avoid too many API calls
+        clearTimeout(emailCheckTimeout);
+        emailCheckTimeout = setTimeout(() => {
+            fetch(`/Home/GetUserByEmail?email=${encodeURIComponent(email)}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.exists && data.user) {
+                        // Automatically hide unnecessary fields and fill data
+                        // Fill the form silently
+                        document.getElementById("patient_name").value = data.user.fullName || "";
+                        document.getElementById("phone").value = data.user.phone || "";
+                        
+                        // Hide these fields - only show email and password
+                        const fieldsToHide = [
+                            document.getElementById("patient_name").closest('.form-group'),
+                            document.getElementById("phone").closest('.form-group')
+                        ];
+                        
+                        fieldsToHide.forEach(group => {
+                            if (group) {
+                                group.style.display = 'none';
+                                // Remove required attribute from hidden fields
+                                const input = group.querySelector('input, select');
+                                if (input) input.removeAttribute('required');
+                            }
+                        });
+
+                        // Show notification
+                        alert(`Email "${email}" đã được đăng ký.\n\nThông tin: ${data.user.fullName} - ${data.user.phone}\n\nVui lòng nhập mật khẩu và chọn ngày/giờ khám.`);
+                    } else {
+                        // Email not found - show all fields
+                        showAllFormFields();
+                    }
+                })
+                .catch(error => {
+                    console.error("Error checking email:", error);
+                });
+        }, 500);
+    });
+
+    // Function to show all form fields
+    function showAllFormFields() {
+        const fieldsToShow = [
+            document.getElementById("patient_name")?.closest('.form-group'),
+            document.getElementById("phone")?.closest('.form-group')
+        ];
+        
+        fieldsToShow.forEach(group => {
+            if (group) {
+                group.style.display = 'block';
+                // Re-add required attribute for shown fields
+                const input = group.querySelector('input, select');
+                if (input) {
+                    input.setAttribute('required', 'required');
+                }
+            }
+        });
+    }
+
+    // Reset readonly fields when email changes
+    emailInput.addEventListener("input", function() {
+        // Show all fields when email is changed
+        showAllFormFields();
+    });
+
     // Form submission
     form.addEventListener("submit", function (e) {
         e.preventDefault();
@@ -327,6 +401,7 @@
         const name = document.getElementById("patient_name") ? document.getElementById("patient_name").value.trim() : "";
         const phone = document.getElementById("phone") ? document.getElementById("phone").value.replace(/\s/g, "") : "";
         const email = document.getElementById("email") ? document.getElementById("email").value.trim() : "";
+        const password = document.getElementById("password") ? document.getElementById("password").value : "";
         const time = document.getElementById("selected-time") ? document.getElementById("selected-time").value : "";
         const serviceId = document.getElementById("service") ? document.getElementById("service").value : "";
         const notes = document.getElementById("notes") ? document.getElementById("notes").value.trim() : "";
@@ -334,20 +409,35 @@
         // Enhanced validation with specific error messages
         const errors = [];
 
-        if (!name) {
-            errors.push("Vui lòng nhập họ và tên");
-        } else if (name.length < 2) {
-            errors.push("Họ tên phải có ít nhất 2 ký tự");
+        // Check if fields are visible (not hidden) before validating
+        const isNameVisible = document.getElementById("patient_name").closest('.form-group').style.display !== 'none';
+        const isPhoneVisible = document.getElementById("phone").closest('.form-group').style.display !== 'none';
+
+        // Only validate visible fields
+        if (isNameVisible) {
+            if (!name) {
+                errors.push("Vui lòng nhập họ và tên");
+            } else if (name.length < 2) {
+                errors.push("Họ tên phải có ít nhất 2 ký tự");
+            }
         }
 
-        if (!phone) {
-            errors.push("Vui lòng nhập số điện thoại");
-        } else if (phone.length < 10) {
-            errors.push("Số điện thoại phải có ít nhất 10 số");
-        } else if (!/^(0[3|5|7|8|9])+([0-9]{8})$/.test(phone)) {
-            errors.push(
-                "Số điện thoại không hợp lệ (phải bắt đầu bằng 03, 05, 07, 08, 09)"
-            );
+        if (!password) {
+            errors.push("Vui lòng nhập mật khẩu");
+        } else if (password.length < 6) {
+            errors.push("Mật khẩu phải có ít nhất 6 ký tự");
+        }
+
+        if (isPhoneVisible) {
+            if (!phone) {
+                errors.push("Vui lòng nhập số điện thoại");
+            } else if (phone.length < 10) {
+                errors.push("Số điện thoại phải có ít nhất 10 số");
+            } else if (!/^(0[3|5|7|8|9])+([0-9]{8})$/.test(phone)) {
+                errors.push(
+                    "Số điện thoại không hợp lệ (phải bắt đầu bằng 03, 05, 07, 08, 09)"
+                );
+            }
         }
 
         if (!selectedDate) {
@@ -382,8 +472,10 @@
             errors.push("Vui lòng chọn dịch vụ");
         }
 
-        // Email validation (optional but if provided must be valid)
-        if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        // Email validation (required)
+        if (!email || email.trim() === "") {
+            errors.push("Vui lòng nhập email");
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
             errors.push("Email không hợp lệ");
         }
 
@@ -446,92 +538,124 @@
         })
         .then(response => response.json())
         .then(data => {
-            if (data.success) {
-                // Save appointment to localStorage for UI purposes
-                if (appointmentKey) {
-                    existingAppointments.push(appointmentKey);
-                    localStorage.setItem(
-                        "appointments",
-                        JSON.stringify(existingAppointments)
-                    );
-                }
-                // Save appointment to localStorage for UI purposes
-                if (appointmentKey) {
-                    existingAppointments.push(appointmentKey);
-                    localStorage.setItem(
-                        "appointments",
-                        JSON.stringify(existingAppointments)
-                    );
-                }
+            // Check if email already exists - directly create appointment
+            if (data.emailExists && data.existingUser) {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+                
+                // Automatically use existing user info to create appointment
+                const existingUserFormData = new FormData();
+                existingUserFormData.append('email', data.existingUser.email);
+                existingUserFormData.append('service_id', serviceId);
+                existingUserFormData.append('appointment_date', document.querySelector('input[name="appointment_date"]').value);
+                existingUserFormData.append('status', 'booked');
+                existingUserFormData.append('notes', notes);
 
-                // Show success modal
-                document.getElementById("confirm-name").textContent = name;
-                document.getElementById("confirm-phone").textContent = phoneInput.value; // Keep formatted version
-
-                // Show email if provided
-                const emailRow = document.getElementById("confirm-email-row");
-                if (email) {
-                    document.getElementById("confirm-email").textContent = email;
-                    emailRow.style.display = "block";
-                } else {
-                    emailRow.style.display = "none";
-                }
-
-                document.getElementById("confirm-date").textContent =
-                    selectedDate.toLocaleDateString("vi-VN", {
-                        weekday: "long",
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric",
-                    });
-                document.getElementById("confirm-time").textContent = time;
-                document.getElementById("confirm-service").textContent =
-                    serviceNames[serviceId] || serviceId;
-                // Show notes if present
-                const notesRowId = "confirm-notes-row";
-                let notesRow = document.getElementById(notesRowId);
-                if (!notesRow) {
-                    notesRow = document.createElement("p");
-                    notesRow.id = notesRowId;
-                    document.querySelector(".appointment-info").appendChild(notesRow);
-                }
-                if (notes) {
-                    notesRow.innerHTML = `<strong>Ghi chú:</strong> ${notes}`;
-                } else {
-                    notesRow.innerHTML = "";
-                }
-
-                modal.style.display = "flex";
-
-                // Reset form
-                form.reset();
-                selectedDate = null;
-                selectedTimeInput.value = "";
-
-                // Reset UI states
-                document.querySelectorAll(".calendar-day.selected").forEach((day) => {
-                    day.classList.remove("selected");
+                // Call API to create appointment with existing user
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>Đang đặt lịch...</span>';
+                submitBtn.disabled = true;
+                
+                fetch('/Home/BookWithExistingUser', {
+                    method: 'POST',
+                    body: existingUserFormData
+                })
+                .then(response => response.json())
+                .then(result => {
+                    submitBtn.innerHTML = originalText;
+                    if (result.success && result.userInfo) {
+                        showSuccessModal(result, result.userInfo.fullName, result.userInfo.phone, result.userInfo.email, time, serviceId, notes);
+                    } else {
+                        alert(result.message || 'Có lỗi xảy ra khi đặt lịch');
+                        submitBtn.disabled = false;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error booking with existing user:', error);
+                    alert('Có lỗi xảy ra khi kết nối server');
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
                 });
-                timeSlots.forEach((slot) => slot.classList.remove("selected"));
+                return; // Stop processing
+            }
 
-                // Update appointment counter
-                updateAppointmentCounter();
+            if (data.success) {
+                showSuccessModal(data, name, phoneInput.value, email, time, serviceId, notes);
+            } else if (data.errors) {
+                alert(data.errors.join('\n'));
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
             } else {
-                // Show error
-                const errorMessages = data.errors || [data.message || "Có lỗi xảy ra"];
-                showErrorModal(errorMessages);
+                alert(data.message || 'Có lỗi xảy ra');
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            showErrorModal(["Không thể kết nối đến server. Vui lòng thử lại!"]);
-        })
-        .finally(() => {
-            // Reset button
-            submitBtn.innerHTML = originalText;
+            alert('Có lỗi xảy ra khi kết nối server');
             submitBtn.disabled = false;
         });
     });
+
+    // Helper function to show success modal
+    function showSuccessModal(data, name, phone, email, timeValue, serviceIdValue, notesValue) {
+        // Show success modal
+        document.getElementById("confirm-name").textContent = name;
+        document.getElementById("confirm-phone").textContent = phone;
+
+        // Show email if provided
+        const emailRow = document.getElementById("confirm-email-row");
+        if (email) {
+            document.getElementById("confirm-email").textContent = email;
+            emailRow.style.display = "block";
+        } else {
+            emailRow.style.display = "none";
+        }
+
+        document.getElementById("confirm-date").textContent =
+            selectedDate.toLocaleDateString("vi-VN", {
+                weekday: "long",
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+            });
+        document.getElementById("confirm-time").textContent = timeValue;
+        document.getElementById("confirm-service").textContent =
+            serviceNames[serviceIdValue] || serviceIdValue;
+        
+        // Show notes if present
+        const notesRowId = "confirm-notes-row";
+        let notesRow = document.getElementById(notesRowId);
+        if (!notesRow) {
+            notesRow = document.createElement("p");
+            notesRow.id = notesRowId;
+            document.querySelector(".appointment-info").appendChild(notesRow);
+        }
+        if (notesValue) {
+            notesRow.innerHTML = `<strong>Ghi chú:</strong> ${notesValue}`;
+        } else {
+            notesRow.innerHTML = "";
+        }
+
+        modal.style.display = "flex";
+
+        // Reset form
+        form.reset();
+        selectedDate = null;
+        selectedTimeInput.value = "";
+
+        // Reset UI states
+        document.querySelectorAll(".calendar-day.selected").forEach((day) => {
+            day.classList.remove("selected");
+        });
+        timeSlots.forEach((slot) => slot.classList.remove("selected"));
+
+        // Update appointment counter
+        updateAppointmentCounter();
+        
+        // Reset submit button
+        submitBtn.disabled = false;
+    }
 
     // Error modal function
     function showErrorModal(errors) {
