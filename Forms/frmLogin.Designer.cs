@@ -200,7 +200,6 @@ namespace DentalClinicManagement.Forms
             this.txtPassword.Font = new System.Drawing.Font("Segoe UI", 12F);
             this.txtPassword.Location = new System.Drawing.Point(156, 265);
             this.txtPassword.Name = "txtPassword";
-            this.txtPassword.PasswordChar = '●';
             this.txtPassword.Size = new System.Drawing.Size(350, 34);
             this.txtPassword.TabIndex = 4;
             this.txtPassword.Text = "hash_doctor1";

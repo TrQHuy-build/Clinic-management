@@ -3,6 +3,7 @@ using DentalClinicManagement.Pages.Admin;
 using DentalClinicManagement.Pages.Common;
 using DentalClinicManagement.Pages.Doctor;
 using DentalClinicManagement.Pages.Patient;
+using DentalClinicManagement.Pages.Staff;
 using DentalClinicManagement.Utils;
 using System;
 using System.Collections.Generic;
@@ -56,6 +57,11 @@ namespace DentalClinicManagement.Forms
                 LoadDoctorMenu();
                 LoadPage(new DoctorDashboard());
             }
+            else if (Auth.IsStaff())
+            {
+                LoadStaffMenu();
+                LoadPage(new StaffDashboard());
+            }
             else if (Auth.IsPatient())
             {
                 LoadPatientMenu();
@@ -76,10 +82,8 @@ namespace DentalClinicManagement.Forms
             AddMenuItem("📈", "Báo cáo", () => LoadPage(new AdminReports()));
             AddMenuItem("📋", "Nhật kí hệ thống", () => LoadPage(new AdminLogs()));
             AddMenuItem("⚙️", "Cài đặt", () => LoadPage(new SettingsPage()));
-            // Add explicit logout item in sidebar
             AddMenuItem("🔓", "Đăng xuất", () => BtnLogout_Click(this, EventArgs.Empty));
 
-            // Select first item
             if (menuItems.Count > 0)
                 menuItems[0].IsSelected = true;
         }
@@ -93,6 +97,20 @@ namespace DentalClinicManagement.Forms
             AddMenuItem("👥", "Bệnh nhân của tôi", () => LoadPage(new DoctorPatients()));
             AddMenuItem("🕐", "Lịch trực", () => LoadPage(new DoctorShifts()));
             AddMenuItem("⚙️", "Cài đặt", () => LoadPage(new SettingsPage()));
+            AddMenuItem("🔓", "Đăng xuất", () => BtnLogout_Click(this, EventArgs.Empty));
+
+            if (menuItems.Count > 0)
+                menuItems[0].IsSelected = true;
+        }
+
+        private void LoadStaffMenu()
+        {
+            AddMenuItem("📊", "Dashboard", () => LoadPage(new StaffDashboard()));
+            AddMenuItem("📅", "Lịch hẹn", () => LoadPage(new StaffAppointments()));
+            AddMenuItem("👤", "Kê khai bệnh nhân", () => LoadPage(new StaffPatientIntake()));
+            AddMenuItem("💰", "Hóa đơn", () => LoadPage(new StaffInvoicing()));
+            AddMenuItem("⚙️", "Cài đặt", () => LoadPage(new SettingsPage()));
+            AddMenuItem("🔓", "Đăng xuất", () => BtnLogout_Click(this, EventArgs.Empty));
 
             if (menuItems.Count > 0)
                 menuItems[0].IsSelected = true;
@@ -107,6 +125,7 @@ namespace DentalClinicManagement.Forms
             AddMenuItem("📁", "Hồ sơ sức khỏe", () => LoadPage(new PatientMedicalRecords()));
             AddMenuItem("👤", "Thông tin cá nhân", () => LoadPage(new PatientProfile()));
             AddMenuItem("⚙️", "Cài đặt", () => LoadPage(new SettingsPage()));
+            AddMenuItem("🔓", "Đăng xuất", () => BtnLogout_Click(this, EventArgs.Empty));
 
             if (menuItems.Count > 0)
                 menuItems[0].IsSelected = true;

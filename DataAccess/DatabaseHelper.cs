@@ -11,7 +11,7 @@ namespace DentalClinicManagement.DataAccess
     public class DatabaseHelper
     {
         // Connection string - CẬP NHẬT THEO MÁY CỦA BẠN
-        private static string connectionString = @"Data Source=DESKTOP-CLDPE3P\MSSQLSEVER;Initial Catalog=DentalClinicDB;Integrated Security=True;TrustServerCertificate=True";
+        private static string connectionString = @"Data Source=vendetta;Initial Catalog=DentalClinicDB;Integrated Security=True;TrustServerCertificate=True";
 
         /// <summary>
         /// Cập nhật connection string từ nơi khác

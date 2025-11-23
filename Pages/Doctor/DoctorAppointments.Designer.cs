@@ -49,25 +49,24 @@ namespace DentalClinicManagement.Pages.Doctor
             this.dgvAppointments.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
             this.dgvAppointments.ColumnHeadersHeight = 40;
             this.dgvAppointments.EnableHeadersVisualStyles = false;
-            this.dgvAppointments.Location = new System.Drawing.Point(15, 130);
-            this.dgvAppointments.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.dgvAppointments.Location = new System.Drawing.Point(20, 160);
+            this.dgvAppointments.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.dgvAppointments.Name = "dgvAppointments";
             this.dgvAppointments.ReadOnly = true;
             this.dgvAppointments.RowHeadersWidth = 51;
             this.dgvAppointments.RowTemplate.Height = 35;
             this.dgvAppointments.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.dgvAppointments.Size = new System.Drawing.Size(870, 422);
+            this.dgvAppointments.Size = new System.Drawing.Size(1160, 519);
             this.dgvAppointments.TabIndex = 2;
-            this.dgvAppointments.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.DgvAppointments_CellClick);
             // 
             // dtpDate
             // 
             this.dtpDate.CalendarFont = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.dtpDate.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.dtpDate.Location = new System.Drawing.Point(104, 14);
-            this.dtpDate.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.dtpDate.Location = new System.Drawing.Point(139, 17);
+            this.dtpDate.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.dtpDate.Name = "dtpDate";
-            this.dtpDate.Size = new System.Drawing.Size(247, 23);
+            this.dtpDate.Size = new System.Drawing.Size(391, 27);
             this.dtpDate.TabIndex = 1;
             this.dtpDate.Value = new System.DateTime(2025, 11, 15, 0, 0, 0, 0);
             this.dtpDate.ValueChanged += new System.EventHandler(this.dtpDate_ValueChanged);
@@ -77,10 +76,9 @@ namespace DentalClinicManagement.Pages.Doctor
             this.lblTitle.AutoSize = true;
             this.lblTitle.Font = new System.Drawing.Font("Segoe UI", 22F, System.Drawing.FontStyle.Bold);
             this.lblTitle.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(122)))), ((int)(((byte)(204)))));
-            this.lblTitle.Location = new System.Drawing.Point(15, 16);
-            this.lblTitle.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            this.lblTitle.Location = new System.Drawing.Point(20, 20);
             this.lblTitle.Name = "lblTitle";
-            this.lblTitle.Size = new System.Drawing.Size(237, 41);
+            this.lblTitle.Size = new System.Drawing.Size(294, 50);
             this.lblTitle.TabIndex = 0;
             this.lblTitle.Text = "Lịch hẹn của tôi";
             // 
@@ -90,20 +88,19 @@ namespace DentalClinicManagement.Pages.Doctor
             this.panel.Controls.Add(this.lblDate);
             this.panel.Controls.Add(this.dtpDate);
             this.panel.Controls.Add(this.btnToday);
-            this.panel.Location = new System.Drawing.Point(15, 65);
-            this.panel.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.panel.Location = new System.Drawing.Point(20, 80);
+            this.panel.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.panel.Name = "panel";
-            this.panel.Size = new System.Drawing.Size(870, 49);
+            this.panel.Size = new System.Drawing.Size(1160, 60);
             this.panel.TabIndex = 1;
             // 
             // lblDate
             // 
             this.lblDate.AutoSize = true;
             this.lblDate.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblDate.Location = new System.Drawing.Point(15, 16);
-            this.lblDate.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            this.lblDate.Location = new System.Drawing.Point(20, 20);
             this.lblDate.Name = "lblDate";
-            this.lblDate.Size = new System.Drawing.Size(80, 17);
+            this.lblDate.Size = new System.Drawing.Size(93, 20);
             this.lblDate.TabIndex = 0;
             this.lblDate.Text = "Chọn ngày:";
             // 
@@ -115,10 +112,10 @@ namespace DentalClinicManagement.Pages.Doctor
             this.btnToday.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnToday.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnToday.ForeColor = System.Drawing.Color.White;
-            this.btnToday.Location = new System.Drawing.Point(424, 8);
-            this.btnToday.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.btnToday.Location = new System.Drawing.Point(643, 10);
+            this.btnToday.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.btnToday.Name = "btnToday";
-            this.btnToday.Size = new System.Drawing.Size(94, 33);
+            this.btnToday.Size = new System.Drawing.Size(125, 41);
             this.btnToday.TabIndex = 2;
             this.btnToday.Text = "Hôm nay";
             this.btnToday.UseVisualStyleBackColor = false;
@@ -126,16 +123,16 @@ namespace DentalClinicManagement.Pages.Doctor
             // 
             // DoctorAppointments
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(240)))), ((int)(((byte)(242)))), ((int)(((byte)(245)))));
             this.Controls.Add(this.lblTitle);
             this.Controls.Add(this.panel);
             this.Controls.Add(this.dgvAppointments);
-            this.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.Name = "DoctorAppointments";
-            this.Padding = new System.Windows.Forms.Padding(15, 16, 15, 16);
-            this.Size = new System.Drawing.Size(900, 569);
+            this.Padding = new System.Windows.Forms.Padding(20, 20, 20, 20);
+            this.Size = new System.Drawing.Size(1200, 700);
             ((System.ComponentModel.ISupportInitialize)(this.dgvAppointments)).EndInit();
             this.panel.ResumeLayout(false);
             this.panel.PerformLayout();
