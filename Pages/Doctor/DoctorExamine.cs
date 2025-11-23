@@ -655,13 +655,13 @@ namespace DentalClinicManagement.Pages.Doctor
                                 cmdInvPres.ExecuteNonQuery();
                             }
 
-                            // 6. Cập nhật status Appointment thành completed (nếu có)
+                            // 6. Cập nhật status Appointment thành completed
                             string updateAppointment = @"
                         UPDATE Appointment 
-                        SET status = 'completed' 
+                        SET status = N'completed' 
                         WHERE patient_id = @patientId 
                         AND assigned_doctor_id = @doctorId
-                        AND status = 'in_progress'";
+                        AND status IN (N'confirmed', N'in_progress')";
 
                             SqlCommand cmdUpdateApp = new SqlCommand(updateAppointment, conn, tran);
                             cmdUpdateApp.Parameters.AddWithValue("@patientId", patientId);

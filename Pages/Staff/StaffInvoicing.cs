@@ -131,26 +131,41 @@ namespace DentalClinicManagement.Pages.Staff
         {
             if (e.RowIndex < 0) return;
 
-            int invoiceId = Convert.ToInt32(dgvInvoices.Rows[e.RowIndex].Cells["ID"].Value);
-            string status = dgvInvoices.Rows[e.RowIndex].Cells["Trạng thái"].Value?.ToString();
-            string columnName = dgvInvoices.Columns[e.ColumnIndex].Name;
-
-            if (columnName == "View")
+            try
             {
-                ViewInvoice(invoiceId);
-            }
-            else if (columnName == "Pay")
-            {
-                if (status != "Chưa thanh toán")
+                // Validate cell value
+                var idCell = dgvInvoices.Rows[e.RowIndex].Cells["ID"];
+                if (idCell == null || idCell.Value == null || idCell.Value == DBNull.Value)
                 {
-                    MessageBoxHelper.ShowWarning("Hóa đơn này đã được thanh toán hoặc đã hủy!");
+                    MessageBoxHelper.ShowError("Không thể xác định hóa đơn!");
                     return;
                 }
-                PayInvoice(invoiceId);
+
+                int invoiceId = Convert.ToInt32(idCell.Value);
+                string status = dgvInvoices.Rows[e.RowIndex].Cells["Trạng thái"].Value?.ToString();
+                string columnName = dgvInvoices.Columns[e.ColumnIndex].Name;
+
+                if (columnName == "View")
+                {
+                    ViewInvoice(invoiceId);
+                }
+                else if (columnName == "Pay")
+                {
+                    if (status != "Chưa thanh toán")
+                    {
+                        MessageBoxHelper.ShowWarning("Hóa đơn này đã được thanh toán hoặc đã hủy!");
+                        return;
+                    }
+                    PayInvoice(invoiceId);
+                }
+                else if (columnName == "Print")
+                {
+                    PrintInvoice(invoiceId);
+                }
             }
-            else if (columnName == "Print")
+            catch (Exception ex)
             {
-                PrintInvoice(invoiceId);
+                MessageBoxHelper.ShowError($"Lỗi xử lý thao tác: {ex.Message}");
             }
         }
 
@@ -179,9 +194,20 @@ namespace DentalClinicManagement.Pages.Staff
                         new SqlParameter("@id", invoiceId)
                     });
 
-                    if (dtInvoice.Rows.Count == 0) return;
+                    if (dtInvoice.Rows.Count == 0)
+                    {
+                        MessageBoxHelper.ShowError("Không tìm thấy hóa đơn!");
+                        return;
+                    }
 
                     DataRow invoice = dtInvoice.Rows[0];
+
+                    // Validate total_amount trước khi convert
+                    decimal totalAmount = 0;
+                    if (invoice["total_amount"] != DBNull.Value)
+                    {
+                        totalAmount = Convert.ToDecimal(invoice["total_amount"]);
+                    }
 
                     Label lblInfo = new Label
                     {
@@ -263,7 +289,7 @@ namespace DentalClinicManagement.Pages.Staff
 
                     Label lblTotal = new Label
                     {
-                        Text = $"TỔNG TIỀN: {Formatter.FormatCurrency(Convert.ToDecimal(invoice["total_amount"]))}",
+                        Text = $"TỔNG TIỀN: {Formatter.FormatCurrency(totalAmount)}",
                         Location = new Point(20, 510),
                         Size = new Size(750, 30),
                         Font = new Font("Segoe UI", 14, FontStyle.Bold),

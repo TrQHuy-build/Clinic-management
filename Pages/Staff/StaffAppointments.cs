@@ -155,27 +155,44 @@ namespace DentalClinicManagement.Pages.Staff
         {
             if (e.RowIndex < 0) return;
 
-            int appointmentId = Convert.ToInt32(dgvAppointments.Rows[e.RowIndex].Cells["ID"].Value);
-            string status = dgvAppointments.Rows[e.RowIndex].Cells["Trạng thái"].Value?.ToString();
-            string columnName = dgvAppointments.Columns[e.ColumnIndex].Name;
+            try
+            {
+                // Validate cell value trước khi convert
+                var idCell = dgvAppointments.Rows[e.RowIndex].Cells["ID"];
+                if (idCell == null || idCell.Value == null || idCell.Value == DBNull.Value)
+                {
+                    MessageBoxHelper.ShowError("Không thể xác định lịch hẹn!");
+                    return;
+                }
 
-            if (columnName == "Process")
-            {
-                if (status != "Đã đặt")
+                int appointmentId = Convert.ToInt32(idCell.Value);
+                string status = dgvAppointments.Rows[e.RowIndex].Cells["Trạng thái"].Value?.ToString();
+                string columnName = dgvAppointments.Columns[e.ColumnIndex].Name;
+
+                if (columnName == "Process")
                 {
-                    MessageBoxHelper.ShowWarning("Chỉ có thể kê khai cho lịch hẹn có trạng thái 'Đã đặt'!");
-                    return;
+                    if (status != "Đã đặt")
+                    {
+                        MessageBoxHelper.ShowWarning("Chỉ có thể kê khai cho lịch hẹn có trạng thái 'Đã đặt'!");
+                        return;
+                    }
+                    ProcessAppointment(appointmentId);
                 }
-                ProcessAppointment(appointmentId);
+                else if (columnName == "Cancel")
+                {
+                    // Chỉ cho phép hủy lịch hẹn ở trạng thái 'Đã đặt' và 'Chờ BS xác nhận'
+                    if (status != "Đã đặt" && status != "Chờ BS xác nhận")
+                    {
+                        MessageBoxHelper.ShowWarning("Chỉ có thể hủy lịch hẹn ở trạng thái 'Đã đặt' hoặc 'Chờ BS xác nhận'!\n\n" +
+                                                   "Lịch đã xác nhận/đang khám/hoàn thành không được hủy.");
+                        return;
+                    }
+                    CancelAppointment(appointmentId);
+                }
             }
-            else if (columnName == "Cancel")
+            catch (Exception ex)
             {
-                if (status == "Hoàn thành" || status == "Đã hủy")
-                {
-                    MessageBoxHelper.ShowWarning("Không thể hủy lịch hẹn này!");
-                    return;
-                }
-                CancelAppointment(appointmentId);
+                MessageBoxHelper.ShowError($"Lỗi xử lý thao tác: {ex.Message}");
             }
         }
 
@@ -198,7 +215,7 @@ namespace DentalClinicManagement.Pages.Staff
 
             try
             {
-                string query = "UPDATE Appointment SET status = 'cancelled' WHERE appointment_id = @id";
+                string query = "UPDATE Appointment SET status = N'cancelled' WHERE appointment_id = @id";
                 int result = DatabaseHelper.ExecuteNonQuery(query, new SqlParameter[] {
                     new SqlParameter("@id", appointmentId)
                 });

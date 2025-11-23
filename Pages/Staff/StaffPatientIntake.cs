@@ -17,6 +17,86 @@ namespace DentalClinicManagement.Pages.Staff
             InitializeComponent();
             LoadPendingAppointments();
             LoadDoctors();
+            InitializeRealtimeValidation();
+        }
+
+        private void InitializeRealtimeValidation()
+        {
+            // Realtime validation cho các field
+            txtPhone.TextChanged += TxtPhone_TextChanged;
+            txtEmail.TextChanged += TxtEmail_TextChanged;
+            txtName.TextChanged += TxtName_TextChanged;
+            txtAddress.TextChanged += TxtAddress_TextChanged;
+        }
+
+        private void TxtPhone_TextChanged(object sender, EventArgs e)
+        {
+            string phone = txtPhone.Text.Trim();
+
+            if (string.IsNullOrWhiteSpace(phone))
+            {
+                txtPhone.BackColor = Color.White;
+                return;
+            }
+
+            // Validate phone format (10-11 số, bắt đầu bằng 0)
+            if (!System.Text.RegularExpressions.Regex.IsMatch(phone, @"^0\d{9,10}$"))
+            {
+                txtPhone.BackColor = ColorTranslator.FromHtml("#FFEBEE");
+            }
+            else
+            {
+                txtPhone.BackColor = Color.White;
+            }
+        }
+
+        private void TxtEmail_TextChanged(object sender, EventArgs e)
+        {
+            string email = txtEmail.Text.Trim();
+
+            if (string.IsNullOrWhiteSpace(email))
+            {
+                txtEmail.BackColor = Color.White;
+                return;
+            }
+
+            // Validate email format
+            if (!System.Text.RegularExpressions.Regex.IsMatch(email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
+            {
+                txtEmail.BackColor = ColorTranslator.FromHtml("#FFEBEE");
+            }
+            else
+            {
+                txtEmail.BackColor = Color.White;
+            }
+        }
+
+        private void TxtName_TextChanged(object sender, EventArgs e)
+        {
+            string name = txtName.Text.Trim();
+
+            if (string.IsNullOrWhiteSpace(name) || name.Length < 2)
+            {
+                txtName.BackColor = ColorTranslator.FromHtml("#FFEBEE");
+            }
+            else
+            {
+                txtName.BackColor = Color.White;
+            }
+        }
+
+        private void TxtAddress_TextChanged(object sender, EventArgs e)
+        {
+            string address = txtAddress.Text.Trim();
+
+            if (string.IsNullOrWhiteSpace(address) || address.Length < 5)
+            {
+                txtAddress.BackColor = ColorTranslator.FromHtml("#FFEBEE");
+            }
+            else
+            {
+                txtAddress.BackColor = Color.White;
+            }
         }
 
         private void LoadPendingAppointments()
@@ -219,7 +299,24 @@ namespace DentalClinicManagement.Pages.Staff
                             }
                             else
                             {
-                                // New patient - create UserAccount + Patient
+                                // New patient - check duplicate phone/email first
+                                string checkDuplicateQuery = @"
+                                    SELECT COUNT(*) FROM UserAccount 
+                                    WHERE phone = @phone OR (@email IS NOT NULL AND email = @email)";
+
+                                SqlCommand cmdCheckDup = new SqlCommand(checkDuplicateQuery, conn, tran);
+                                cmdCheckDup.Parameters.AddWithValue("@phone", txtPhone.Text.Trim());
+                                cmdCheckDup.Parameters.AddWithValue("@email", string.IsNullOrWhiteSpace(txtEmail.Text) ? (object)DBNull.Value : txtEmail.Text.Trim());
+
+                                int duplicateCount = Convert.ToInt32(cmdCheckDup.ExecuteScalar());
+                                if (duplicateCount > 0)
+                                {
+                                    tran.Rollback();
+                                    MessageBoxHelper.ShowError("Số điện thoại hoặc email đã tồn tại trong hệ thống!\nVui lòng kiểm tra lại.");
+                                    return;
+                                }
+
+                                // Create UserAccount + Patient
                                 string insertUser = @"
                                     INSERT INTO UserAccount (fullname, phone, email, password_hash, role, status)
                                     OUTPUT INSERTED.user_id
@@ -283,6 +380,7 @@ namespace DentalClinicManagement.Pages.Staff
 
         private bool ValidateInput()
         {
+            // Validate Name
             if (string.IsNullOrWhiteSpace(txtName.Text))
             {
                 MessageBoxHelper.ShowValidationError("Tên bệnh nhân không được để trống!");
@@ -290,6 +388,21 @@ namespace DentalClinicManagement.Pages.Staff
                 return false;
             }
 
+            if (txtName.Text.Trim().Length < 2)
+            {
+                MessageBoxHelper.ShowValidationError("Tên bệnh nhân phải có ít nhất 2 ký tự!");
+                txtName.Focus();
+                return false;
+            }
+
+            if (txtName.Text.Trim().Length > 100)
+            {
+                MessageBoxHelper.ShowValidationError("Tên bệnh nhân không được vượt quá 100 ký tự!");
+                txtName.Focus();
+                return false;
+            }
+
+            // Validate Phone
             if (string.IsNullOrWhiteSpace(txtPhone.Text))
             {
                 MessageBoxHelper.ShowValidationError("Số điện thoại không được để trống!");
@@ -297,6 +410,27 @@ namespace DentalClinicManagement.Pages.Staff
                 return false;
             }
 
+            string phone = txtPhone.Text.Trim();
+            if (!System.Text.RegularExpressions.Regex.IsMatch(phone, @"^0\d{9,10}$"))
+            {
+                MessageBoxHelper.ShowValidationError("Số điện thoại không hợp lệ!\nVui lòng nhập 10-11 số, bắt đầu bằng 0.");
+                txtPhone.Focus();
+                return false;
+            }
+
+            // Validate Email (optional nhưng nếu có thì phải đúng format)
+            if (!string.IsNullOrWhiteSpace(txtEmail.Text))
+            {
+                string email = txtEmail.Text.Trim();
+                if (!System.Text.RegularExpressions.Regex.IsMatch(email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
+                {
+                    MessageBoxHelper.ShowValidationError("Email không hợp lệ!");
+                    txtEmail.Focus();
+                    return false;
+                }
+            }
+
+            // Validate Gender
             if (cboGender.SelectedIndex < 0)
             {
                 MessageBoxHelper.ShowValidationError("Vui lòng chọn giới tính!");
@@ -304,10 +438,34 @@ namespace DentalClinicManagement.Pages.Staff
                 return false;
             }
 
+            // Validate Address
             if (string.IsNullOrWhiteSpace(txtAddress.Text))
             {
                 MessageBoxHelper.ShowValidationError("Địa chỉ không được để trống!");
                 txtAddress.Focus();
+                return false;
+            }
+
+            if (txtAddress.Text.Trim().Length < 5)
+            {
+                MessageBoxHelper.ShowValidationError("Địa chỉ phải có ít nhất 5 ký tự!");
+                txtAddress.Focus();
+                return false;
+            }
+
+            // Validate Date of Birth
+            if (dtpDateOfBirth.Value > DateTime.Now)
+            {
+                MessageBoxHelper.ShowValidationError("Ngày sinh không thể là ngày trong tương lai!");
+                dtpDateOfBirth.Focus();
+                return false;
+            }
+
+            int age = DateTime.Now.Year - dtpDateOfBirth.Value.Year;
+            if (age < 0 || age > 150)
+            {
+                MessageBoxHelper.ShowValidationError("Ngày sinh không hợp lệ! Tuổi phải từ 0-150.");
+                dtpDateOfBirth.Focus();
                 return false;
             }
 
@@ -323,6 +481,12 @@ namespace DentalClinicManagement.Pages.Staff
             ClearPatientDetails();
             cboDoctor.SelectedIndex = -1;
             currentAppointmentId = null;
+
+            // Reset background colors
+            txtName.BackColor = Color.White;
+            txtPhone.BackColor = Color.White;
+            txtEmail.BackColor = Color.White;
+            txtAddress.BackColor = Color.White;
         }
 
         private void BtnClear_Click(object sender, EventArgs e)

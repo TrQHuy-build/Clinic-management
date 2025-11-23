@@ -397,3 +397,80 @@ BEGIN
     CREATE INDEX IX_PasswordReset_Email ON PasswordReset(email);
 END
 GO
+
+
+DECLARE @ConstraintName NVARCHAR(200);
+
+SELECT @ConstraintName = name 
+FROM sys.check_constraints 
+WHERE parent_object_id = OBJECT_ID('Appointment') 
+AND definition LIKE '%status%';
+
+IF @ConstraintName IS NOT NULL
+BEGIN
+    DECLARE @DropSQL NVARCHAR(MAX);
+    SET @DropSQL = 'ALTER TABLE Appointment DROP CONSTRAINT ' + QUOTENAME(@ConstraintName);
+    EXEC sp_executesql @DropSQL;
+    PRINT '✅ Đã xóa constraint cũ: ' + @ConstraintName;
+END
+GO
+
+-- ========================================
+-- BƯỚC 2: TẠO CONSTRAINT MỚI (STATUS RÚT NGẮN)
+-- ========================================
+
+ALTER TABLE Appointment 
+ADD CONSTRAINT CK_Appointment_Status CHECK (status IN (
+    N'booked',      -- Đã đặt lịch
+    N'pending',     -- Chờ bác sĩ xác nhận (thay waiting_doctor_confirm)
+    N'rejected',    -- Bác sĩ từ chối
+    N'confirmed',   -- Bác sĩ đồng ý
+    N'in_progress', -- Đang khám
+    N'completed',   -- Hoàn thành
+    N'cancelled'    -- Đã hủy
+));
+PRINT '✅ Đã tạo constraint mới với status rút ngắn';
+GO
+
+-- ========================================
+-- BƯỚC 3: SỬA DỮ LIỆU NULL
+-- ========================================
+
+UPDATE Appointment 
+SET status = N'booked' 
+WHERE status IS NULL;
+PRINT '✅ Đã cập nhật ' + CAST(@@ROWCOUNT AS NVARCHAR) + ' record NULL về "booked"';
+GO
+
+-- ========================================
+-- BƯỚC 4: TEST INSERT
+-- ========================================
+
+PRINT '========================================';
+PRINT 'TEST INSERT STATUS MỚI:';
+
+BEGIN TRY
+    INSERT INTO Appointment (patient_name, phone, email, service_id, appointment_date, status, notes)
+    VALUES (N'Test Patient', '0999999999', 'test@test.com', 1, GETDATE(), N'pending', N'Test');
+    
+    PRINT '✅ SUCCESS: Insert status "pending" thành công!';
+    
+    DELETE FROM Appointment WHERE patient_name = N'Test Patient';
+    PRINT '✅ Đã xóa record test';
+END TRY
+BEGIN CATCH
+    PRINT '❌ ERROR: ' + ERROR_MESSAGE();
+END CATCH
+GO
+
+PRINT '========================================';
+PRINT 'HOÀN TẤT! SỬ DỤNG CÁC STATUS SAU:';
+PRINT '  - booked      (Đã đặt lịch)';
+PRINT '  - pending     (Chờ BS xác nhận) ← MỚI';
+PRINT '  - rejected    (BS từ chối)';
+PRINT '  - confirmed   (BS đồng ý)';
+PRINT '  - in_progress (Đang khám)';
+PRINT '  - completed   (Hoàn thành)';
+PRINT '  - cancelled   (Đã hủy)';
+PRINT '========================================';
+GO

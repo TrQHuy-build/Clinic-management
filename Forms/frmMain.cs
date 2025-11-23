@@ -16,6 +16,7 @@ namespace DentalClinicManagement.Forms
     {
         private List<SidebarMenuItem> menuItems;
         private UserControl currentPage;
+        private bool isExiting = false; // Flag để tránh MessageBox hiện 2 lần
 
         public frmMain()
         {
@@ -198,6 +199,10 @@ namespace DentalClinicManagement.Forms
 
         private void FrmMain_FormClosing(object sender, FormClosingEventArgs e)
         {
+            // Nếu đang trong quá trình thoát, không hiện MessageBox nữa
+            if (isExiting)
+                return;
+
             DialogResult result = MessageBox.Show("Bạn có chắc muốn thoát ứng dụng?",
                 "Xác nhận thoát", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
 
@@ -207,6 +212,7 @@ namespace DentalClinicManagement.Forms
             }
             else
             {
+                isExiting = true; // Đánh dấu đang thoát
                 Application.Exit();
             }
         }
