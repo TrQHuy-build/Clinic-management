@@ -533,6 +533,8 @@ namespace DentalClinicManagement.Pages.Doctor
 
                             // 2. Lưu Prescriptions (Đơn thuốc)
                             decimal medicineTotal = 0M;
+                            System.Collections.Generic.List<int> prescriptionIds = new System.Collections.Generic.List<int>();
+
                             foreach (DataGridViewRow row in dgvMedicines.Rows)
                             {
                                 if (row.IsNewRow || row.Cells["MedicineId"].Value == null) continue;
@@ -551,7 +553,9 @@ namespace DentalClinicManagement.Pages.Doctor
 
                                 object notesValue = string.IsNullOrWhiteSpace(notes) ? (object)DBNull.Value : (object)notes;
 
+                                // Lưu Prescription và lấy ID
                                 string insertPres = @"INSERT INTO Prescription (record_id, medicine_id, dosage, quantity, notes)
+                                            OUTPUT INSERTED.prescription_id
                                             VALUES (@recordId, @medId, @dosage, @qty, @notes)";
                                 SqlCommand cmdPres = new SqlCommand(insertPres, conn, tran);
                                 cmdPres.Parameters.AddWithValue("@recordId", recordId);
@@ -559,7 +563,12 @@ namespace DentalClinicManagement.Pages.Doctor
                                 cmdPres.Parameters.AddWithValue("@dosage", dosage);
                                 cmdPres.Parameters.AddWithValue("@qty", quantity);
                                 cmdPres.Parameters.AddWithValue("@notes", notesValue);
-                                cmdPres.ExecuteNonQuery();
+
+                                object prescriptionIdObj = cmdPres.ExecuteScalar();
+                                if (prescriptionIdObj != null && int.TryParse(prescriptionIdObj.ToString(), out int prescriptionId))
+                                {
+                                    prescriptionIds.Add(prescriptionId);
+                                }
 
                                 // Tính giá thuốc
                                 SqlCommand cmdPrice = new SqlCommand("SELECT price FROM Medicine WHERE medicine_id = @id", conn, tran);
@@ -634,6 +643,16 @@ namespace DentalClinicManagement.Pages.Doctor
                                 cmdUsage.Parameters.AddWithValue("@invId", invoiceId);
                                 cmdUsage.Parameters.AddWithValue("@srvId", serviceId);
                                 cmdUsage.ExecuteNonQuery();
+                            }
+
+                            // 5.5. Lưu InvoicePrescription (link Invoice với Prescription) - THÊM MỚI
+                            foreach (int prescriptionId in prescriptionIds)
+                            {
+                                string insertInvPres = "INSERT INTO InvoicePrescription (invoice_id, prescription_id) VALUES (@invId, @presId)";
+                                SqlCommand cmdInvPres = new SqlCommand(insertInvPres, conn, tran);
+                                cmdInvPres.Parameters.AddWithValue("@invId", invoiceId);
+                                cmdInvPres.Parameters.AddWithValue("@presId", prescriptionId);
+                                cmdInvPres.ExecuteNonQuery();
                             }
 
                             // 6. Cập nhật status Appointment thành completed (nếu có)
