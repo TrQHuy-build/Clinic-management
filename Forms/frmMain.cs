@@ -74,8 +74,10 @@ namespace DentalClinicManagement.Forms
             AddMenuItem("💰", "Lương", () => LoadPage(new AdminSalary()));
             AddMenuItem("🧾", "Hóa đơn", () => LoadPage(new AdminInvoices()));
             AddMenuItem("📈", "Báo cáo", () => LoadPage(new AdminReports()));
-            AddMenuItem("📋", "Log hệ thống", () => LoadPage(new AdminLogs()));
+            AddMenuItem("📋", "Nhật kí hệ thống", () => LoadPage(new AdminLogs()));
             AddMenuItem("⚙️", "Cài đặt", () => LoadPage(new SettingsPage()));
+            // Add explicit logout item in sidebar
+            AddMenuItem("🔓", "Đăng xuất", () => BtnLogout_Click(this, EventArgs.Empty));
 
             // Select first item
             if (menuItems.Count > 0)
@@ -159,9 +161,18 @@ namespace DentalClinicManagement.Forms
 
             if (result == DialogResult.Yes)
             {
+                // Clear auth and dispose current page
                 Auth.Logout();
-                frmLogin loginForm = new frmLogin();
-                loginForm.Show();
+                if (currentPage != null)
+                {
+                    panelContent.Controls.Remove(currentPage);
+                    currentPage.Dispose();
+                    currentPage = null;
+                }
+
+                // Show login form and close main
+                var login = new frmLogin();
+                login.Show();
                 this.Close();
             }
         }

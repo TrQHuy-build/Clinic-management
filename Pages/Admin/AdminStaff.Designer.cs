@@ -22,13 +22,14 @@ namespace DentalClinicManagement.Pages.Admin
 
         private void InitializeComponent()
         {
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
             this.dgvStaff = new System.Windows.Forms.DataGridView();
             this.txtSearch = new System.Windows.Forms.TextBox();
             this.cboPosition = new System.Windows.Forms.ComboBox();
             this.lblTitle = new System.Windows.Forms.Label();
             this.searchPanel = new System.Windows.Forms.Panel();
             this.btnAdd = new System.Windows.Forms.Button();
+            this.lblSearch = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.dgvStaff)).BeginInit();
             this.searchPanel.SuspendLayout();
             this.SuspendLayout();
@@ -40,14 +41,14 @@ namespace DentalClinicManagement.Pages.Admin
             | System.Windows.Forms.AnchorStyles.Right)));
             this.dgvStaff.BackgroundColor = System.Drawing.Color.White;
             this.dgvStaff.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(122)))), ((int)(((byte)(204)))));
-            dataGridViewCellStyle1.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
-            dataGridViewCellStyle1.ForeColor = System.Drawing.Color.White;
-            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dgvStaff.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
+            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(122)))), ((int)(((byte)(204)))));
+            dataGridViewCellStyle2.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
+            dataGridViewCellStyle2.ForeColor = System.Drawing.Color.White;
+            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dgvStaff.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle2;
             this.dgvStaff.ColumnHeadersHeight = 40;
             this.dgvStaff.EnableHeadersVisualStyles = false;
             this.dgvStaff.Location = new System.Drawing.Point(20, 160);
@@ -63,7 +64,7 @@ namespace DentalClinicManagement.Pages.Admin
             // txtSearch
             // 
             this.txtSearch.Font = new System.Drawing.Font("Segoe UI", 11F);
-            this.txtSearch.Location = new System.Drawing.Point(20, 17);
+            this.txtSearch.Location = new System.Drawing.Point(133, 15);
             this.txtSearch.Name = "txtSearch";
             this.txtSearch.Size = new System.Drawing.Size(250, 32);
             this.txtSearch.TabIndex = 0;
@@ -73,7 +74,7 @@ namespace DentalClinicManagement.Pages.Admin
             // 
             this.cboPosition.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cboPosition.Font = new System.Drawing.Font("Segoe UI", 11F);
-            this.cboPosition.Location = new System.Drawing.Point(290, 17);
+            this.cboPosition.Location = new System.Drawing.Point(428, 15);
             this.cboPosition.Name = "cboPosition";
             this.cboPosition.Size = new System.Drawing.Size(150, 33);
             this.cboPosition.TabIndex = 1;
@@ -93,6 +94,7 @@ namespace DentalClinicManagement.Pages.Admin
             // searchPanel
             // 
             this.searchPanel.BackColor = System.Drawing.Color.White;
+            this.searchPanel.Controls.Add(this.lblSearch);
             this.searchPanel.Controls.Add(this.txtSearch);
             this.searchPanel.Controls.Add(this.cboPosition);
             this.searchPanel.Controls.Add(this.btnAdd);
@@ -116,6 +118,16 @@ namespace DentalClinicManagement.Pages.Admin
             this.btnAdd.Text = "+ Thêm nhân viên";
             this.btnAdd.UseVisualStyleBackColor = false;
             this.btnAdd.Click += new System.EventHandler(this.BtnAdd_Click);
+            // 
+            // lblSearch
+            // 
+            this.lblSearch.AutoSize = true;
+            this.lblSearch.Font = new System.Drawing.Font("Segoe UI", 10F);
+            this.lblSearch.Location = new System.Drawing.Point(26, 21);
+            this.lblSearch.Name = "lblSearch";
+            this.lblSearch.Size = new System.Drawing.Size(83, 23);
+            this.lblSearch.TabIndex = 3;
+            this.lblSearch.Text = "Tìm kiếm:";
             // 
             // AdminStaff
             // 
@@ -168,5 +180,6 @@ namespace DentalClinicManagement.Pages.Admin
         private Label lblTitle;
         private Panel searchPanel;
         private Button btnAdd;
+        private Label lblSearch;
     }
 }

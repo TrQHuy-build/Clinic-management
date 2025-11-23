@@ -1,5 +1,6 @@
-﻿using System.Drawing;
-using System.Windows.Forms;
+﻿using System.Windows.Forms;
+
+using System.Drawing;
 
 namespace DentalClinicManagement.Forms
 {
@@ -45,9 +46,12 @@ namespace DentalClinicManagement.Forms
         private void InitializeComponent()
         {
             this.leftPanel = new System.Windows.Forms.Panel();
-            this.lblWelcome = new System.Windows.Forms.Label();
+            this.label1 = new System.Windows.Forms.Label();
             this.lblSubtitle = new System.Windows.Forms.Label();
+            this.lblWelcome = new System.Windows.Forms.Label();
+            this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.rightPanel = new System.Windows.Forms.Panel();
+            this.btnTogglePassword = new System.Windows.Forms.Button();
             this.lblTitle = new System.Windows.Forms.Label();
             this.lblEmail = new System.Windows.Forms.Label();
             this.txtEmail = new System.Windows.Forms.TextBox();
@@ -56,45 +60,75 @@ namespace DentalClinicManagement.Forms
             this.btnLogin = new System.Windows.Forms.Button();
             this.btnClose = new System.Windows.Forms.Button();
             this.leftPanel.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.rightPanel.SuspendLayout();
             this.SuspendLayout();
             // 
             // leftPanel
             // 
-            this.leftPanel.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(122)))), ((int)(((byte)(204)))));
-            this.leftPanel.Controls.Add(this.lblWelcome);
+            this.leftPanel.BackColor = System.Drawing.Color.Transparent;
+            this.leftPanel.Controls.Add(this.label1);
             this.leftPanel.Controls.Add(this.lblSubtitle);
+            this.leftPanel.Controls.Add(this.lblWelcome);
+            this.leftPanel.Controls.Add(this.pictureBox1);
             this.leftPanel.Dock = System.Windows.Forms.DockStyle.Left;
             this.leftPanel.Location = new System.Drawing.Point(0, 0);
             this.leftPanel.Name = "leftPanel";
-            this.leftPanel.Size = new System.Drawing.Size(400, 823);
+            this.leftPanel.Size = new System.Drawing.Size(521, 823);
             this.leftPanel.TabIndex = 1;
+            // 
+            // label1
+            // 
+            this.label1.BackColor = System.Drawing.Color.Transparent;
+            this.label1.Font = new System.Drawing.Font("Segoe UI Semibold", 13.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label1.ForeColor = System.Drawing.Color.WhiteSmoke;
+            this.label1.Location = new System.Drawing.Point(341, 10);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(188, 36);
+            this.label1.TabIndex = 2;
+            this.label1.Text = "Nhóm: ĐHSV";
+            this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // lblSubtitle
+            // 
+            this.lblSubtitle.BackColor = System.Drawing.Color.Transparent;
+            this.lblSubtitle.Font = new System.Drawing.Font("Segoe UI Semibold", 16.2F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblSubtitle.ForeColor = System.Drawing.Color.WhiteSmoke;
+            this.lblSubtitle.Location = new System.Drawing.Point(80, 703);
+            this.lblSubtitle.Name = "lblSubtitle";
+            this.lblSubtitle.Size = new System.Drawing.Size(350, 30);
+            this.lblSubtitle.TabIndex = 1;
+            this.lblSubtitle.Text = "Quản lý phòng khám nha khoa";
+            this.lblSubtitle.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.lblSubtitle.Click += new System.EventHandler(this.lblSubtitle_Click);
             // 
             // lblWelcome
             // 
+            this.lblWelcome.BackColor = System.Drawing.Color.Transparent;
             this.lblWelcome.Font = new System.Drawing.Font("Segoe UI", 24F, System.Drawing.FontStyle.Bold);
-            this.lblWelcome.ForeColor = System.Drawing.Color.White;
-            this.lblWelcome.Location = new System.Drawing.Point(25, 150);
+            this.lblWelcome.ForeColor = System.Drawing.Color.WhiteSmoke;
+            this.lblWelcome.Location = new System.Drawing.Point(80, 573);
             this.lblWelcome.Name = "lblWelcome";
             this.lblWelcome.Size = new System.Drawing.Size(350, 150);
             this.lblWelcome.TabIndex = 0;
             this.lblWelcome.Text = "DENTAL CLINIC\nMANAGEMENT";
             this.lblWelcome.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
-            // lblSubtitle
+            // pictureBox1
             // 
-            this.lblSubtitle.Font = new System.Drawing.Font("Segoe UI", 12F);
-            this.lblSubtitle.ForeColor = System.Drawing.Color.White;
-            this.lblSubtitle.Location = new System.Drawing.Point(25, 310);
-            this.lblSubtitle.Name = "lblSubtitle";
-            this.lblSubtitle.Size = new System.Drawing.Size(350, 30);
-            this.lblSubtitle.TabIndex = 1;
-            this.lblSubtitle.Text = "Quản lý phòng khám nha khoa";
-            this.lblSubtitle.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.pictureBox1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.pictureBox1.Image = global::DentalManagement.Properties.Resources.dentist;
+            this.pictureBox1.Location = new System.Drawing.Point(0, 0);
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.Size = new System.Drawing.Size(521, 823);
+            this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+            this.pictureBox1.TabIndex = 0;
+            this.pictureBox1.TabStop = false;
             // 
             // rightPanel
             // 
             this.rightPanel.BackColor = System.Drawing.Color.White;
+            this.rightPanel.Controls.Add(this.btnTogglePassword);
             this.rightPanel.Controls.Add(this.lblTitle);
             this.rightPanel.Controls.Add(this.lblEmail);
             this.rightPanel.Controls.Add(this.txtEmail);
@@ -103,18 +137,28 @@ namespace DentalClinicManagement.Forms
             this.rightPanel.Controls.Add(this.btnLogin);
             this.rightPanel.Controls.Add(this.btnClose);
             this.rightPanel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.rightPanel.Location = new System.Drawing.Point(400, 0);
+            this.rightPanel.Location = new System.Drawing.Point(521, 0);
             this.rightPanel.Name = "rightPanel";
             this.rightPanel.Padding = new System.Windows.Forms.Padding(50);
-            this.rightPanel.Size = new System.Drawing.Size(769, 823);
+            this.rightPanel.Size = new System.Drawing.Size(732, 823);
             this.rightPanel.TabIndex = 0;
+            // 
+            // btnTogglePassword
+            // 
+            this.btnTogglePassword.Location = new System.Drawing.Point(465, 267);
+            this.btnTogglePassword.Name = "btnTogglePassword";
+            this.btnTogglePassword.Size = new System.Drawing.Size(40, 25);
+            this.btnTogglePassword.TabIndex = 9;
+            this.btnTogglePassword.Text = "👁";
+            this.btnTogglePassword.UseVisualStyleBackColor = true;
+            this.btnTogglePassword.Click += new System.EventHandler(this.btnTogglePassword_Click);
             // 
             // lblTitle
             // 
             this.lblTitle.AutoSize = true;
             this.lblTitle.Font = new System.Drawing.Font("Segoe UI", 20F, System.Drawing.FontStyle.Bold);
             this.lblTitle.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(122)))), ((int)(((byte)(204)))));
-            this.lblTitle.Location = new System.Drawing.Point(50, 80);
+            this.lblTitle.Location = new System.Drawing.Point(151, 80);
             this.lblTitle.Name = "lblTitle";
             this.lblTitle.Size = new System.Drawing.Size(200, 46);
             this.lblTitle.TabIndex = 0;
@@ -125,7 +169,7 @@ namespace DentalClinicManagement.Forms
             this.lblEmail.AutoSize = true;
             this.lblEmail.Font = new System.Drawing.Font("Segoe UI", 10F);
             this.lblEmail.ForeColor = System.Drawing.Color.Gray;
-            this.lblEmail.Location = new System.Drawing.Point(50, 160);
+            this.lblEmail.Location = new System.Drawing.Point(156, 160);
             this.lblEmail.Name = "lblEmail";
             this.lblEmail.Size = new System.Drawing.Size(51, 23);
             this.lblEmail.TabIndex = 1;
@@ -134,7 +178,7 @@ namespace DentalClinicManagement.Forms
             // txtEmail
             // 
             this.txtEmail.Font = new System.Drawing.Font("Segoe UI", 12F);
-            this.txtEmail.Location = new System.Drawing.Point(50, 185);
+            this.txtEmail.Location = new System.Drawing.Point(156, 185);
             this.txtEmail.Name = "txtEmail";
             this.txtEmail.Size = new System.Drawing.Size(350, 34);
             this.txtEmail.TabIndex = 2;
@@ -145,7 +189,7 @@ namespace DentalClinicManagement.Forms
             this.lblPassword.AutoSize = true;
             this.lblPassword.Font = new System.Drawing.Font("Segoe UI", 10F);
             this.lblPassword.ForeColor = System.Drawing.Color.Gray;
-            this.lblPassword.Location = new System.Drawing.Point(50, 240);
+            this.lblPassword.Location = new System.Drawing.Point(156, 240);
             this.lblPassword.Name = "lblPassword";
             this.lblPassword.Size = new System.Drawing.Size(82, 23);
             this.lblPassword.TabIndex = 3;
@@ -154,9 +198,8 @@ namespace DentalClinicManagement.Forms
             // txtPassword
             // 
             this.txtPassword.Font = new System.Drawing.Font("Segoe UI", 12F);
-            this.txtPassword.Location = new System.Drawing.Point(50, 265);
+            this.txtPassword.Location = new System.Drawing.Point(156, 265);
             this.txtPassword.Name = "txtPassword";
-            this.txtPassword.PasswordChar = '●';
             this.txtPassword.Size = new System.Drawing.Size(350, 34);
             this.txtPassword.TabIndex = 4;
             this.txtPassword.Text = "hash_admin";
@@ -169,7 +212,7 @@ namespace DentalClinicManagement.Forms
             this.btnLogin.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnLogin.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold);
             this.btnLogin.ForeColor = System.Drawing.Color.White;
-            this.btnLogin.Location = new System.Drawing.Point(50, 340);
+            this.btnLogin.Location = new System.Drawing.Point(156, 335);
             this.btnLogin.Name = "btnLogin";
             this.btnLogin.Size = new System.Drawing.Size(350, 45);
             this.btnLogin.TabIndex = 5;
@@ -185,7 +228,7 @@ namespace DentalClinicManagement.Forms
             this.btnClose.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnClose.Font = new System.Drawing.Font("Segoe UI", 14F, System.Drawing.FontStyle.Bold);
             this.btnClose.ForeColor = System.Drawing.Color.Gray;
-            this.btnClose.Location = new System.Drawing.Point(455, 10);
+            this.btnClose.Location = new System.Drawing.Point(660, 10);
             this.btnClose.Name = "btnClose";
             this.btnClose.Size = new System.Drawing.Size(35, 35);
             this.btnClose.TabIndex = 6;
@@ -197,7 +240,7 @@ namespace DentalClinicManagement.Forms
             // 
             this.AcceptButton = this.btnLogin;
             this.BackColor = System.Drawing.Color.White;
-            this.ClientSize = new System.Drawing.Size(1169, 823);
+            this.ClientSize = new System.Drawing.Size(1253, 823);
             this.Controls.Add(this.rightPanel);
             this.Controls.Add(this.leftPanel);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
@@ -205,6 +248,7 @@ namespace DentalClinicManagement.Forms
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Đăng nhập - Dental Clinic Management";
             this.leftPanel.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.rightPanel.ResumeLayout(false);
             this.rightPanel.PerformLayout();
             this.ResumeLayout(false);
@@ -212,5 +256,9 @@ namespace DentalClinicManagement.Forms
         }
 
         #endregion
+
+        private PictureBox pictureBox1;
+        private Label label1;
+        private Button btnTogglePassword;
     }
 }
