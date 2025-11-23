@@ -1,10 +1,12 @@
-﻿using System;
+﻿using DentalClinicManagement.DataAccess;
+using DentalClinicManagement.Utils;
+using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Drawing;
+using System.Linq;
 using System.Windows.Forms;
-using DentalClinicManagement.DataAccess;
-using DentalClinicManagement.Utils;
 
 namespace DentalClinicManagement.Pages.Admin
 {
@@ -15,7 +17,18 @@ namespace DentalClinicManagement.Pages.Admin
         public AdminInventory()
         {
             InitializeComponent();
+            InitializeComboBox();
             LoadInventory();
+        }
+
+        private void InitializeComboBox()
+        {
+            if (cboType != null)
+            {
+                cboType.Items.Clear();
+                cboType.Items.AddRange(new object[] { "Tất cả", "Material", "Equipment" });
+                cboType.SelectedIndex = 0;
+            }
         }
 
         private void TxtSearch_TextChanged(object sender, EventArgs e)
@@ -32,8 +45,8 @@ namespace DentalClinicManagement.Pages.Admin
         {
             try
             {
-                string search = txtSearch.Text.Trim();
-                string type = cboType.SelectedItem?.ToString();
+                string search = txtSearch?.Text?.Trim() ?? "";
+                string type = cboType?.SelectedItem?.ToString();
 
                 string query = @"
                     SELECT 
@@ -46,24 +59,23 @@ namespace DentalClinicManagement.Pages.Admin
                     FROM Inventory
                     WHERE 1=1";
 
+                List<SqlParameter> parameterList = new List<SqlParameter>();
+
                 if (!string.IsNullOrEmpty(search))
                 {
                     query += " AND (item_name LIKE @search OR supplier LIKE @search)";
+                    parameterList.Add(new SqlParameter("@search", $"%{search}%"));
                 }
 
                 if (type != "Tất cả" && !string.IsNullOrEmpty(type))
                 {
                     query += " AND type = @type";
+                    parameterList.Add(new SqlParameter("@type", type));
                 }
 
                 query += " ORDER BY item_name";
 
-                SqlParameter[] parameters = {
-                    new SqlParameter("@search", $"%{search}%"),
-                    new SqlParameter("@type", type)
-                };
-
-                DataTable dt = DatabaseHelper.ExecuteQuery(query, parameters);
+                DataTable dt = DatabaseHelper.ExecuteQuery(query, parameterList.ToArray());
                 dgvInventory.DataSource = dt;
 
                 // Add action columns if not exist
@@ -103,17 +115,38 @@ namespace DentalClinicManagement.Pages.Admin
                 // Format type column
                 foreach (DataGridViewRow row in dgvInventory.Rows)
                 {
+                    if (row.IsNewRow) continue;
+
                     string typeValue = row.Cells["Loại"].Value?.ToString();
                     if (typeValue?.ToLower() == "material")
                         row.Cells["Loại"].Value = "Vật tư";
                     else if (typeValue?.ToLower() == "equipment")
                         row.Cells["Loại"].Value = "Thiết bị";
 
+                    // Format unit (nếu null)
+                    if (row.Cells["Đơn vị"].Value == DBNull.Value ||
+                        string.IsNullOrWhiteSpace(row.Cells["Đơn vị"].Value?.ToString()))
+                    {
+                        row.Cells["Đơn vị"].Value = "N/A";
+                    }
+
+                    // Format supplier (nếu null)
+                    if (row.Cells["Nhà cung cấp"].Value == DBNull.Value ||
+                        string.IsNullOrWhiteSpace(row.Cells["Nhà cung cấp"].Value?.ToString()))
+                    {
+                        row.Cells["Nhà cung cấp"].Value = "N/A";
+                    }
+
                     // Highlight low stock
                     int quantity = Convert.ToInt32(row.Cells["Số lượng"].Value);
                     if (quantity < 20)
                     {
                         row.DefaultCellStyle.BackColor = ColorTranslator.FromHtml("#FFEBEE");
+                    }
+                    else if (quantity == 0)
+                    {
+                        row.DefaultCellStyle.BackColor = ColorTranslator.FromHtml("#FFCDD2");
+                        row.DefaultCellStyle.ForeColor = Color.Red;
                     }
                 }
             }
@@ -127,20 +160,27 @@ namespace DentalClinicManagement.Pages.Admin
         {
             if (e.RowIndex < 0) return;
 
-            int itemId = Convert.ToInt32(dgvInventory.Rows[e.RowIndex].Cells["ID"].Value);
-            string itemName = dgvInventory.Rows[e.RowIndex].Cells["Tên vật tư/thiết bị"].Value.ToString();
+            try
+            {
+                int itemId = Convert.ToInt32(dgvInventory.Rows[e.RowIndex].Cells["ID"].Value);
+                string itemName = dgvInventory.Rows[e.RowIndex].Cells["Tên vật tư/thiết bị"].Value?.ToString() ?? "";
 
-            if (e.ColumnIndex == dgvInventory.Columns["Edit"].Index)
-            {
-                EditItem(itemId);
+                if (e.ColumnIndex == dgvInventory.Columns["Edit"]?.Index)
+                {
+                    EditItem(itemId);
+                }
+                else if (e.ColumnIndex == dgvInventory.Columns["Delete"]?.Index)
+                {
+                    DeleteItem(itemId, itemName);
+                }
+                else if (e.ColumnIndex == dgvInventory.Columns["Export"]?.Index)
+                {
+                    ExportItem(itemId, itemName);
+                }
             }
-            else if (e.ColumnIndex == dgvInventory.Columns["Delete"].Index)
+            catch (Exception ex)
             {
-                DeleteItem(itemId, itemName);
-            }
-            else if (e.ColumnIndex == dgvInventory.Columns["Export"].Index)
-            {
-                ExportItem(itemId, itemName);
+                MessageBoxHelper.ShowError($"Lỗi: {ex.Message}");
             }
         }
 
@@ -161,11 +201,28 @@ namespace DentalClinicManagement.Pages.Admin
 
         private void DeleteItem(int itemId, string itemName)
         {
+            if (string.IsNullOrWhiteSpace(itemName))
+            {
+                MessageBoxHelper.ShowError("Không thể xác định vật tư/thiết bị cần xóa!");
+                return;
+            }
+
             if (!MessageBoxHelper.ShowDeleteConfirm(itemName))
                 return;
 
             try
             {
+                // Kiểm tra có giao dịch liên quan không
+                object transCount = DatabaseHelper.ExecuteScalar(
+                    "SELECT COUNT(*) FROM InventoryTransaction WHERE item_id = @id",
+                    new SqlParameter[] { new SqlParameter("@id", itemId) });
+
+                if (Convert.ToInt32(transCount) > 0)
+                {
+                    MessageBoxHelper.ShowError("Không thể xóa vật tư/thiết bị này vì đã có giao dịch nhập/xuất liên quan!");
+                    return;
+                }
+
                 string query = "DELETE FROM Inventory WHERE item_id = @itemId";
                 SqlParameter[] parameters = { new SqlParameter("@itemId", itemId) };
 
@@ -176,6 +233,21 @@ namespace DentalClinicManagement.Pages.Admin
                     MessageBoxHelper.ShowDeleteSuccess(itemName);
                     Logger.LogDelete("Inventory", itemName);
                     LoadInventory();
+                }
+                else
+                {
+                    MessageBoxHelper.ShowError("Không thể xóa vật tư/thiết bị!");
+                }
+            }
+            catch (SqlException sqlEx)
+            {
+                if (sqlEx.Number == 547) // Foreign key constraint
+                {
+                    MessageBoxHelper.ShowError("Không thể xóa vì có dữ liệu liên quan!");
+                }
+                else
+                {
+                    MessageBoxHelper.ShowError($"Lỗi SQL: {sqlEx.Message}");
                 }
             }
             catch (Exception ex)
@@ -194,75 +266,100 @@ namespace DentalClinicManagement.Pages.Admin
             Form form = new Form
             {
                 Text = itemId.HasValue ? "Sửa vật tư/thiết bị" : "Thêm vật tư/thiết bị",
-                Size = new Size(500, 450),
+                Size = new Size(550, 550),
                 StartPosition = FormStartPosition.CenterParent,
                 FormBorderStyle = FormBorderStyle.FixedDialog,
                 MaximizeBox = false,
                 MinimizeBox = false
             };
 
-            TextBox txtName = new TextBox { Location = new Point(150, 30), Size = new Size(300, 25) };
-            ComboBox cboTypeForm = new ComboBox { Location = new Point(150, 70), Size = new Size(300, 25), DropDownStyle = ComboBoxStyle.DropDownList };
+            TextBox txtName = new TextBox { Location = new Point(150, 30), Size = new Size(350, 25) };
+            Label lblNameError = CreateErrorLabel(150, 57);
+
+            ComboBox cboTypeForm = new ComboBox { Location = new Point(150, 85), Size = new Size(350, 25), DropDownStyle = ComboBoxStyle.DropDownList };
             cboTypeForm.Items.AddRange(new object[] { "Material", "Equipment" });
             cboTypeForm.SelectedIndex = 0;
 
-            TextBox txtQuantity = new TextBox { Location = new Point(150, 110), Size = new Size(300, 25), Text = "0" };
-            TextBox txtUnit = new TextBox { Location = new Point(150, 150), Size = new Size(300, 25) };
-            TextBox txtSupplier = new TextBox { Location = new Point(150, 190), Size = new Size(300, 25) };
+            TextBox txtQuantity = new TextBox { Location = new Point(150, 125), Size = new Size(350, 25), Text = "0" };
+            Label lblQuantityError = CreateErrorLabel(150, 152);
 
-            form.Controls.Add(new Label { Text = "Tên:", Location = new Point(30, 33), AutoSize = true });
+            TextBox txtUnit = new TextBox { Location = new Point(150, 180), Size = new Size(350, 25) };
+            Label lblUnitError = CreateErrorLabel(150, 207);
+
+            TextBox txtSupplier = new TextBox { Location = new Point(150, 235), Size = new Size(350, 25) };
+            Label lblSupplierError = CreateErrorLabel(150, 262);
+
+            // Real-time validation
+            txtName.TextChanged += (s, e) => ValidateItemNameRealtime(txtName, lblNameError);
+            txtQuantity.TextChanged += (s, e) => ValidateQuantityRealtime(txtQuantity, lblQuantityError);
+            txtUnit.TextChanged += (s, e) => ValidateUnitRealtime(txtUnit, lblUnitError);
+            txtSupplier.TextChanged += (s, e) => ValidateSupplierRealtime(txtSupplier, lblSupplierError);
+
+            form.Controls.Add(new Label { Text = "Tên:", Location = new Point(30, 33), AutoSize = true, Font = new Font("Segoe UI", 9) });
             form.Controls.Add(txtName);
-            form.Controls.Add(new Label { Text = "Loại:", Location = new Point(30, 73), AutoSize = true });
+            form.Controls.Add(lblNameError);
+            form.Controls.Add(new Label { Text = "Loại:", Location = new Point(30, 88), AutoSize = true, Font = new Font("Segoe UI", 9) });
             form.Controls.Add(cboTypeForm);
-            form.Controls.Add(new Label { Text = "Số lượng:", Location = new Point(30, 113), AutoSize = true });
+            form.Controls.Add(new Label { Text = "Số lượng:", Location = new Point(30, 128), AutoSize = true, Font = new Font("Segoe UI", 9) });
             form.Controls.Add(txtQuantity);
-            form.Controls.Add(new Label { Text = "Đơn vị:", Location = new Point(30, 153), AutoSize = true });
+            form.Controls.Add(lblQuantityError);
+            form.Controls.Add(new Label { Text = "Đơn vị:", Location = new Point(30, 183), AutoSize = true, Font = new Font("Segoe UI", 9) });
             form.Controls.Add(txtUnit);
-            form.Controls.Add(new Label { Text = "Nhà cung cấp:", Location = new Point(30, 193), AutoSize = true });
+            form.Controls.Add(lblUnitError);
+            form.Controls.Add(new Label { Text = "Nhà cung cấp:", Location = new Point(30, 238), AutoSize = true, Font = new Font("Segoe UI", 9) });
             form.Controls.Add(txtSupplier);
+            form.Controls.Add(lblSupplierError);
 
             // Load data if editing
             if (itemId.HasValue)
             {
-                string query = "SELECT * FROM Inventory WHERE item_id = @itemId";
-                SqlParameter[] parameters = { new SqlParameter("@itemId", itemId.Value) };
-                DataTable dt = DatabaseHelper.ExecuteQuery(query, parameters);
-
-                if (dt.Rows.Count > 0)
+                try
                 {
-                    txtName.Text = dt.Rows[0]["item_name"].ToString();
-                    cboTypeForm.SelectedItem = dt.Rows[0]["type"].ToString();
-                    txtQuantity.Text = dt.Rows[0]["quantity"].ToString();
-                    txtUnit.Text = dt.Rows[0]["unit"].ToString();
-                    txtSupplier.Text = dt.Rows[0]["supplier"].ToString();
+                    string query = "SELECT * FROM Inventory WHERE item_id = @itemId";
+                    SqlParameter[] parameters = { new SqlParameter("@itemId", itemId.Value) };
+                    DataTable dt = DatabaseHelper.ExecuteQuery(query, parameters);
+
+                    if (dt.Rows.Count > 0)
+                    {
+                        DataRow row = dt.Rows[0];
+                        txtName.Text = row["item_name"]?.ToString() ?? "";
+
+                        string itemType = row["type"]?.ToString();
+                        if (!string.IsNullOrEmpty(itemType))
+                            cboTypeForm.SelectedItem = itemType;
+
+                        txtQuantity.Text = row["quantity"]?.ToString() ?? "0";
+                        txtUnit.Text = row["unit"]?.ToString() ?? "";
+                        txtSupplier.Text = row["supplier"]?.ToString() ?? "";
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBoxHelper.ShowError($"Lỗi tải dữ liệu: {ex.Message}");
+                    form.Close();
+                    return;
                 }
             }
 
             Button btnSave = new Button
             {
                 Text = "Lưu",
-                Location = new Point(200, 250),
+                Location = new Point(225, 310),
                 Size = new Size(100, 35),
                 BackColor = ColorTranslator.FromHtml("#007ACC"),
                 ForeColor = Color.White,
-                FlatStyle = FlatStyle.Flat
+                FlatStyle = FlatStyle.Flat,
+                Font = new Font("Segoe UI", 9, FontStyle.Bold)
             };
+
             btnSave.Click += (s, ev) =>
             {
-                if (!Validator.IsNotEmpty(txtName.Text))
-                {
-                    MessageBoxHelper.ShowValidationError("tên");
+                if (!ValidateInventoryInput(txtName, txtQuantity, txtUnit, txtSupplier))
                     return;
-                }
-
-                if (!int.TryParse(txtQuantity.Text, out int qty) || qty < 0)
-                {
-                    MessageBoxHelper.ShowValidationError("Số lượng phải là số không âm!");
-                    return;
-                }
 
                 try
                 {
+                    int qty = int.Parse(txtQuantity.Text);
                     string query;
                     SqlParameter[] parameters;
 
@@ -274,21 +371,33 @@ namespace DentalClinicManagement.Pages.Admin
                             new SqlParameter("@name", txtName.Text.Trim()),
                             new SqlParameter("@type", cboTypeForm.SelectedItem.ToString()),
                             new SqlParameter("@qty", qty),
-                            new SqlParameter("@unit", txtUnit.Text.Trim()),
-                            new SqlParameter("@supplier", txtSupplier.Text.Trim()),
+                            new SqlParameter("@unit", txtUnit.Text.Trim()), // Required field, no DBNull
+                            new SqlParameter("@supplier", txtSupplier.Text.Trim()), // Required field, no DBNull
                             new SqlParameter("@id", itemId.Value)
                         };
                     }
                     else
                     {
+                        // Kiểm tra tên trùng
+                        object existingItem = DatabaseHelper.ExecuteScalar(
+                            "SELECT COUNT(*) FROM Inventory WHERE item_name = @name",
+                            new SqlParameter[] { new SqlParameter("@name", txtName.Text.Trim()) });
+
+                        if (Convert.ToInt32(existingItem) > 0)
+                        {
+                            MessageBoxHelper.ShowValidationError("Tên vật tư/thiết bị đã tồn tại!");
+                            txtName.Focus();
+                            return;
+                        }
+
                         query = @"INSERT INTO Inventory (item_name, type, quantity, unit, supplier) 
                                 VALUES (@name, @type, @qty, @unit, @supplier)";
                         parameters = new SqlParameter[] {
                             new SqlParameter("@name", txtName.Text.Trim()),
                             new SqlParameter("@type", cboTypeForm.SelectedItem.ToString()),
                             new SqlParameter("@qty", qty),
-                            new SqlParameter("@unit", txtUnit.Text.Trim()),
-                            new SqlParameter("@supplier", txtSupplier.Text.Trim())
+                            new SqlParameter("@unit", txtUnit.Text.Trim()), // Required field, no DBNull
+                            new SqlParameter("@supplier", txtSupplier.Text.Trim()) // Required field, no DBNull
                         };
                     }
 
@@ -299,6 +408,21 @@ namespace DentalClinicManagement.Pages.Admin
                         Logger.LogAction(itemId.HasValue ? "UPDATE_INVENTORY" : "CREATE_INVENTORY", txtName.Text);
                         form.Close();
                         LoadInventory();
+                    }
+                    else
+                    {
+                        MessageBoxHelper.ShowError("Không thể lưu dữ liệu!");
+                    }
+                }
+                catch (SqlException sqlEx)
+                {
+                    if (sqlEx.Number == 2627 || sqlEx.Number == 2601) // Duplicate key
+                    {
+                        MessageBoxHelper.ShowError("Tên vật tư/thiết bị đã tồn tại!");
+                    }
+                    else
+                    {
+                        MessageBoxHelper.ShowError($"Lỗi SQL: {sqlEx.Message}");
                     }
                 }
                 catch (Exception ex)
@@ -316,95 +440,507 @@ namespace DentalClinicManagement.Pages.Admin
             Form form = new Form
             {
                 Text = isImport ? "Nhập kho" : "Xuất kho",
-                Size = new Size(450, 300),
+                Size = new Size(500, 350),
                 StartPosition = FormStartPosition.CenterParent,
-                FormBorderStyle = FormBorderStyle.FixedDialog
+                FormBorderStyle = FormBorderStyle.FixedDialog,
+                MaximizeBox = false,
+                MinimizeBox = false
             };
 
-            ComboBox cboItem = new ComboBox { Location = new Point(120, 30), Size = new Size(280, 25), DropDownStyle = ComboBoxStyle.DropDownList };
-            TextBox txtQty = new TextBox { Location = new Point(120, 70), Size = new Size(280, 25) };
+            ComboBox cboItem = new ComboBox { Location = new Point(120, 30), Size = new Size(330, 25), DropDownStyle = ComboBoxStyle.DropDownList };
+
+            TextBox txtQty = new TextBox { Location = new Point(120, 70), Size = new Size(330, 25), Text = "1" };
+            Label lblQtyError = CreateErrorLabel(120, 97);
+
+            Label lblCurrentStock = new Label
+            {
+                Location = new Point(120, 110),
+                AutoSize = true,
+                ForeColor = Color.Blue,
+                Font = new Font("Segoe UI", 9)
+            };
+
+            // Real-time validation
+            txtQty.TextChanged += (s, e) => ValidateImportExportQtyRealtime(txtQty, lblQtyError, isImport);
 
             // Load items
-            DataTable dtItems = DatabaseHelper.ExecuteQuery("SELECT item_id, item_name FROM Inventory ORDER BY item_name");
-            cboItem.DisplayMember = "item_name";
-            cboItem.ValueMember = "item_id";
-            cboItem.DataSource = dtItems;
-
-            if (itemId.HasValue)
+            try
             {
-                cboItem.SelectedValue = itemId.Value;
-                cboItem.Enabled = false;
+                DataTable dtItems = DatabaseHelper.ExecuteQuery("SELECT item_id, item_name, quantity FROM Inventory ORDER BY item_name");
+                cboItem.DisplayMember = "item_name";
+                cboItem.ValueMember = "item_id";
+                cboItem.DataSource = dtItems;
+
+                if (itemId.HasValue)
+                {
+                    cboItem.SelectedValue = itemId.Value;
+                    cboItem.Enabled = false;
+                }
+
+                // Show current stock when item selected
+                cboItem.SelectedIndexChanged += (s, e) =>
+                {
+                    if (cboItem.SelectedIndex >= 0)
+                    {
+                        DataRowView row = (DataRowView)cboItem.SelectedItem;
+                        int currentQty = Convert.ToInt32(row["quantity"]);
+                        lblCurrentStock.Text = $"Tồn kho hiện tại: {currentQty}";
+
+                        if (!isImport && currentQty == 0)
+                        {
+                            lblCurrentStock.Text += " (Hết hàng!)";
+                            lblCurrentStock.ForeColor = Color.Red;
+                        }
+                        else
+                        {
+                            lblCurrentStock.ForeColor = Color.Blue;
+                        }
+                    }
+                };
+
+                // Trigger initial stock display
+                if (cboItem.Items.Count > 0)
+                    cboItem.SelectedIndex = 0;
+            }
+            catch (Exception ex)
+            {
+                MessageBoxHelper.ShowError($"Lỗi tải danh sách: {ex.Message}");
+                form.Close();
+                return;
             }
 
-            form.Controls.Add(new Label { Text = "Vật tư:", Location = new Point(30, 33), AutoSize = true });
+            form.Controls.Add(new Label { Text = "Vật tư:", Location = new Point(30, 33), AutoSize = true, Font = new Font("Segoe UI", 9) });
             form.Controls.Add(cboItem);
-            form.Controls.Add(new Label { Text = "Số lượng:", Location = new Point(30, 73), AutoSize = true });
+            form.Controls.Add(new Label { Text = "Số lượng:", Location = new Point(30, 73), AutoSize = true, Font = new Font("Segoe UI", 9) });
             form.Controls.Add(txtQty);
+            form.Controls.Add(lblQtyError);
+            form.Controls.Add(lblCurrentStock);
 
             Button btnSubmit = new Button
             {
                 Text = isImport ? "Nhập kho" : "Xuất kho",
-                Location = new Point(150, 130),
+                Location = new Point(190, 160),
                 Size = new Size(120, 35),
                 BackColor = ColorTranslator.FromHtml(isImport ? "#28A745" : "#DC3545"),
                 ForeColor = Color.White,
-                FlatStyle = FlatStyle.Flat
+                FlatStyle = FlatStyle.Flat,
+                Font = new Font("Segoe UI", 9, FontStyle.Bold)
             };
 
             btnSubmit.Click += (s, ev) =>
             {
                 if (!int.TryParse(txtQty.Text, out int qty) || qty <= 0)
                 {
-                    MessageBoxHelper.ShowValidationError("Số lượng phải lớn hơn 0!");
+                    MessageBoxHelper.ShowValidationError("Số lượng phải là số nguyên lớn hơn 0!");
+                    txtQty.Focus();
                     return;
                 }
 
+                if (qty > 100000)
+                {
+                    MessageBoxHelper.ShowValidationError("Số lượng không được vượt quá 100,000!");
+                    txtQty.Focus();
+                    return;
+                }
+
+                int selectedItemId = Convert.ToInt32(cboItem.SelectedValue);
+                string selectedItemName = cboItem.Text;
+
                 try
                 {
-                    int selectedItemId = Convert.ToInt32(cboItem.SelectedValue);
-                    string selectedItemName = cboItem.Text;
+                    // === DÙNG TRANSACTION ĐỂ ĐẢM BẢO AN TOÀN (rất quan trọng!) ===
+                    using (var connection = DatabaseHelper.GetConnection())
+                    {
+                        connection.Open();
+                        using (var transaction = connection.BeginTransaction())
+                        {
+                            try
+                            {
+                                // 1. LẤY LẠI tồn kho HIỆN TẠI (mới nhất)
+                                string stockQuery = "SELECT quantity FROM Inventory WHERE item_id = @id FOR UPDATE";
+                                var cmdStock = new SqlCommand(stockQuery, connection, transaction);
+                                cmdStock.Parameters.AddWithValue("@id", selectedItemId);
+                                object result = cmdStock.ExecuteScalar();
 
-                    // Update inventory
-                    string updateQuery = isImport
-                        ? "UPDATE Inventory SET quantity = quantity + @qty WHERE item_id = @id"
-                        : "UPDATE Inventory SET quantity = quantity - @qty WHERE item_id = @id";
+                                if (result == null || result == DBNull.Value)
+                                {
+                                    MessageBoxHelper.ShowError("Không tìm thấy vật tư/thiết bị trong kho!");
+                                    return;
+                                }
 
-                    SqlParameter[] updateParams = {
-                        new SqlParameter("@qty", qty),
-                        new SqlParameter("@id", selectedItemId)
-                    };
+                                int currentStock = Convert.ToInt32(result);
 
-                    // Insert transaction log
-                    string logQuery = @"INSERT INTO InventoryTransaction (item_id, quantity, type, staff_id) 
-                                      VALUES (@id, @qty, @type, @staffId)";
-                    SqlParameter[] logParams = {
-                        new SqlParameter("@id", selectedItemId),
-                        new SqlParameter("@qty", qty),
-                        new SqlParameter("@type", isImport ? "import" : "export"),
-                        new SqlParameter("@staffId", Auth.CurrentStaffId ?? (object)DBNull.Value)
-                    };
+                                if (!isImport && currentStock < qty)
+                                {
+                                    MessageBoxHelper.ShowError($"Không đủ hàng để xuất!\n" +
+                                                            $"Tồn kho hiện tại: {currentStock}\n" +
+                                                            $"Yêu cầu xuất: {qty}");
+                                    return;
+                                }
 
-                    DatabaseHelper.ExecuteNonQuery(updateQuery, updateParams);
-                    DatabaseHelper.ExecuteNonQuery(logQuery, logParams);
+                                // 2. Cập nhật số lượng (an toàn trong transaction)
+                                string updateQuery = isImport
+                                    ? "UPDATE Inventory SET quantity = quantity + @qty WHERE item_id = @id"
+                                    : "UPDATE Inventory SET quantity = quantity - @qty WHERE item_id = @id";
 
-                    MessageBoxHelper.ShowSuccess(isImport ? "Nhập kho thành công!" : "Xuất kho thành công!");
+                                var cmdUpdate = new SqlCommand(updateQuery, connection, transaction);
+                                cmdUpdate.Parameters.AddWithValue("@qty", qty);
+                                cmdUpdate.Parameters.AddWithValue("@id", selectedItemId);
+                                int rowsAffected = cmdUpdate.ExecuteNonQuery();
 
-                    if (isImport)
-                        Logger.LogImportInventory(selectedItemName, qty);
-                    else
-                        Logger.LogExportInventory(selectedItemName, qty);
+                                if (rowsAffected == 0)
+                                {
+                                    transaction.Rollback();
+                                    MessageBoxHelper.ShowError("Cập nhật kho thất bại! Vui lòng thử lại.");
+                                    return;
+                                }
 
-                    form.Close();
-                    LoadInventory();
+                                // 3. Ghi log giao dịch
+                                string logQuery = @"INSERT INTO InventoryTransaction 
+                                      (item_id, quantity, type, staff_id, trans_date) 
+                                      VALUES (@id, @qty, @type, @staffId, GETDATE())";
+
+                                var cmdLog = new SqlCommand(logQuery, connection, transaction);
+                                cmdLog.Parameters.AddWithValue("@id", selectedItemId);
+                                cmdLog.Parameters.AddWithValue("@qty", qty);
+                                cmdLog.Parameters.AddWithValue("@type", isImport ? "import" : "export");
+                                cmdLog.Parameters.AddWithValue("@staffId", Auth.CurrentStaffId ?? (object)DBNull.Value);
+                                cmdLog.ExecuteNonQuery();
+
+                                // 4. Commit nếu mọi thứ OK
+                                transaction.Commit();
+
+                                MessageBoxHelper.ShowSuccess(isImport ? "Nhập kho thành công!" : "Xuất kho thành công!");
+                                if (isImport)
+                                    Logger.LogImportInventory(selectedItemName, qty);
+                                else
+                                    Logger.LogExportInventory(selectedItemName, qty);
+
+                                form.Close();
+                                LoadInventory(); // Cập nhật lại danh sách
+                            }
+                            catch (Exception ex)
+                            {
+                                transaction.Rollback();
+                                MessageBoxHelper.ShowError($"Lỗi trong quá trình xử lý: {ex.Message}");
+                            }
+                        }
+                    }
                 }
                 catch (Exception ex)
                 {
-                    MessageBoxHelper.ShowError($"Lỗi: {ex.Message}");
+                    MessageBoxHelper.ShowError($"Lỗi kết nối: {ex.Message}");
                 }
             };
 
             form.Controls.Add(btnSubmit);
             form.ShowDialog();
+        }
+
+        // Validation methods
+        private bool ValidateInventoryInput(TextBox txtName, TextBox txtQuantity, TextBox txtUnit, TextBox txtSupplier)
+        {
+            if (string.IsNullOrWhiteSpace(txtName.Text))
+            {
+                MessageBoxHelper.ShowValidationError("Vui lòng nhập tên vật tư/thiết bị!");
+                txtName.Focus();
+                return false;
+            }
+
+            if (txtName.Text.Trim().Length < 3)
+            {
+                MessageBoxHelper.ShowValidationError("Tên phải có ít nhất 3 ký tự!");
+                txtName.Focus();
+                return false;
+            }
+
+            if (txtName.Text.Trim().Length > 100)
+            {
+                MessageBoxHelper.ShowValidationError("Tên không được vượt quá 100 ký tự!");
+                txtName.Focus();
+                return false;
+            }
+
+            // Parse quantity early so 'qty' exists for subsequent checks
+            if (!int.TryParse(txtQuantity.Text, out int qty))
+            {
+                MessageBoxHelper.ShowValidationError("Số lượng phải là số nguyên!");
+                txtQuantity.Focus();
+                return false;
+            }
+
+            if (qty < 0)
+            {
+                MessageBoxHelper.ShowValidationError("Số lượng không được âm!");
+                txtQuantity.Focus();
+                return false;
+            }
+
+            // Cảnh báo khi số lượng = 0
+            if (qty == 0)
+            {
+                var result = MessageBox.Show(
+                    "Số lượng đang là 0. Vật tư/thiết bị này sẽ ở trạng thái hết hàng. Bạn có chắc chắn muốn tiếp tục?",
+                    "Xác nhận",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Warning);
+
+                if (result != DialogResult.Yes)
+                {
+                    txtQuantity.Focus();
+                    return false;
+                }
+            }
+
+            if (qty > 1000000)
+            {
+                MessageBoxHelper.ShowValidationError("Số lượng không được vượt quá 1,000,000!");
+                txtQuantity.Focus();
+                return false;
+            }
+
+            if (!string.IsNullOrWhiteSpace(txtUnit.Text) && txtUnit.Text.Trim().Length > 50)
+            {
+                MessageBoxHelper.ShowValidationError("Đơn vị không được vượt quá 50 ký tự!");
+                txtUnit.Focus();
+                return false;
+            }
+
+            // Yêu cầu nhập đơn vị + không được là "0"
+            if (string.IsNullOrWhiteSpace(txtUnit.Text))
+            {
+                MessageBoxHelper.ShowValidationError("Vui lòng nhập đơn vị (VD: Cái, Hộp, Chiếc, Lọ, ...)!");
+                txtUnit.Focus();
+                return false;
+            }
+
+            string unit = txtUnit.Text.Trim();
+
+            if (unit.Length < 1)
+            {
+                MessageBoxHelper.ShowValidationError("Đơn vị phải có ít nhất 1 ký tự!");
+                txtUnit.Focus();
+                return false;
+            }
+
+            if (unit.Length > 50)
+            {
+                MessageBoxHelper.ShowValidationError("Đơn vị không được vượt quá 50 ký tự!");
+                txtUnit.Focus();
+                return false;
+            }
+
+            // Chặn trường hợp nhập "0", "00", "000", hoặc chỉ toàn số 0
+            if (unit.All(c => c == '0' || char.IsWhiteSpace(c)))
+            {
+                MessageBoxHelper.ShowValidationError("Đơn vị không hợp lệ! Không được nhập chỉ toàn số 0.");
+                txtUnit.Focus();
+                return false;
+            }
+
+            // (Tùy chọn mạnh hơn) Chặn luôn nếu chỉ chứa số (ví dụ: "123", "500")
+            if (int.TryParse(unit, out _))
+            {
+                MessageBoxHelper.ShowValidationError("Đơn vị không được là một con số! Vui lòng nhập chữ (VD: Cái, Hộp, Lọ, Viên, ...)");
+                txtUnit.Focus();
+                return false;
+            }
+
+            return true; // Hợp lệ
+
+            // Yêu cầu nhập nhà cung cấp
+            if (string.IsNullOrWhiteSpace(txtSupplier.Text))
+            {
+                MessageBoxHelper.ShowValidationError("Vui lòng nhập tên nhà cung cấp!");
+                txtSupplier.Focus();
+                return false;
+            }
+
+            if (txtSupplier.Text.Trim().Length < 2)
+            {
+                MessageBoxHelper.ShowValidationError("Tên nhà cung cấp phải có ít nhất 2 ký tự!");
+                txtSupplier.Focus();
+                return false;
+            }
+
+            if (txtSupplier.Text.Trim().Length > 100)
+            {
+                MessageBoxHelper.ShowValidationError("Tên nhà cung cấp không được vượt quá 100 ký tự!");
+                txtSupplier.Focus();
+                return false;
+            }
+
+            return true;
+        }
+
+        // Real-time validation methods
+        private void ValidateItemNameRealtime(TextBox txt, Label lblError)
+        {
+            if (string.IsNullOrWhiteSpace(txt.Text))
+            {
+                ShowFieldError(txt, lblError, "Tên không được để trống");
+            }
+            else if (txt.Text.Trim().Length < 3)
+            {
+                ShowFieldError(txt, lblError, "Tên phải có ít nhất 3 ký tự");
+            }
+            else if (txt.Text.Trim().Length > 100)
+            {
+                ShowFieldError(txt, lblError, "Tên không được vượt quá 100 ký tự");
+            }
+            else
+            {
+                ClearFieldError(txt, lblError);
+            }
+        }
+
+        private void ValidateQuantityRealtime(TextBox txt, Label lblError)
+        {
+            if (string.IsNullOrWhiteSpace(txt.Text))
+            {
+                ShowFieldError(txt, lblError, "Số lượng không được để trống");
+            }
+            else if (!int.TryParse(txt.Text, out int qty))
+            {
+                ShowFieldError(txt, lblError, "Số lượng phải là số nguyên");
+            }
+            else if (qty < 0)
+            {
+                ShowFieldError(txt, lblError, "Số lượng không được âm");
+            }
+            else if (qty == 0)
+            {
+                ShowFieldError(txt, lblError, "⚠ Số lượng = 0 (hết hàng)");
+                txt.BackColor = Color.FromArgb(255, 243, 205); // Warning color
+            }
+            else if (qty > 1000000)
+            {
+                ShowFieldError(txt, lblError, "Số lượng không được vượt quá 1,000,000");
+            }
+            else
+            {
+                ClearFieldError(txt, lblError);
+            }
+        }
+
+        private void ValidateUnitRealtime(TextBox txt, Label lblError)
+        {
+            string unit = txt.Text.Trim();
+
+            if (string.IsNullOrWhiteSpace(txt.Text))
+            {
+                ShowFieldError(txt, lblError, "Đơn vị không được để trống");
+                return;
+            }
+
+            if (unit.Length < 1)
+            {
+                ShowFieldError(txt, lblError, "Đơn vị phải có ít nhất 1 ký tự");
+                return;
+            }
+
+            if (unit.Length > 50)
+            {
+                ShowFieldError(txt, lblError, "Đơn vị không được vượt quá 50 ký tự");
+                return;
+            }
+
+            // Chặn nhập chỉ toàn số 0
+            if (unit.All(c => c == '0' || char.IsWhiteSpace(c)))
+            {
+                ShowFieldError(txt, lblError, "Không được nhập chỉ toàn số 0");
+                return;
+            }
+
+            // (Tùy chọn) Chặn luôn nếu chỉ chứa số
+            if (int.TryParse(unit, out _))
+            {
+                ShowFieldError(txt, lblError, "Đơn vị không được là số! (VD: dùng 'Cái' thay vì '1')");
+                return;
+            }
+
+            // Nếu qua hết các kiểm tra → hợp lệ
+            ClearFieldError(txt, lblError);
+        }
+
+        private void ValidateSupplierRealtime(TextBox txt, Label lblError)
+        {
+            if (string.IsNullOrWhiteSpace(txt.Text))
+            {
+                ShowFieldError(txt, lblError, "Nhà cung cấp không được để trống");
+            }
+            else if (txt.Text.Trim().Length < 2)
+            {
+                ShowFieldError(txt, lblError, "Nhà cung cấp phải có ít nhất 2 ký tự");
+            }
+            else if (txt.Text.Trim().Length > 100)
+            {
+                ShowFieldError(txt, lblError, "Nhà cung cấp không được vượt quá 100 ký tự");
+            }
+            else
+            {
+                ClearFieldError(txt, lblError);
+            }
+        }
+
+        private void ValidateImportExportQtyRealtime(TextBox txt, Label lblError, bool isImport)
+        {
+            if (string.IsNullOrWhiteSpace(txt.Text))
+            {
+                ShowFieldError(txt, lblError, "Số lượng không được để trống");
+            }
+            else if (!int.TryParse(txt.Text, out int qty))
+            {
+                ShowFieldError(txt, lblError, "Số lượng phải là số nguyên");
+            }
+            else if (qty <= 0)
+            {
+                ShowFieldError(txt, lblError, "Số lượng phải lớn hơn 0");
+            }
+            else if (qty > 100000)
+            {
+                ShowFieldError(txt, lblError, "Số lượng không được vượt quá 100,000");
+            }
+            else
+            {
+                ClearFieldError(txt, lblError);
+            }
+        }
+
+        private void ShowFieldError(TextBox txt, Label lblError, string message)
+        {
+            if (txt != null)
+            {
+                if (message.StartsWith("⚠"))
+                    txt.BackColor = Color.FromArgb(255, 243, 205); // Warning - light orange
+                else
+                    txt.BackColor = Color.FromArgb(255, 235, 238); // Error - light red
+            }
+
+            lblError.Text = message;
+            lblError.ForeColor = message.StartsWith("⚠") ? Color.Orange : Color.Red;
+            lblError.Visible = true;
+        }
+
+        private void ClearFieldError(TextBox txt, Label lblError)
+        {
+            if (txt != null)
+                txt.BackColor = Color.White;
+            lblError.Text = "";
+            lblError.Visible = false;
+        }
+
+        private Label CreateErrorLabel(int x, int y)
+        {
+            return new Label
+            {
+                Location = new Point(x, y),
+                AutoSize = true,
+                ForeColor = Color.Red,
+                Font = new Font("Segoe UI", 8),
+                Visible = false,
+                MaximumSize = new Size(350, 0)
+            };
         }
     }
 }

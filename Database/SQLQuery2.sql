@@ -379,3 +379,21 @@ GO
 -- HOÀN TẤT
 -- ========================================
 PRINT 'Database DentalClinicDB đã được tạo và chèn dữ liệu thành công!';
+
+-- Tạo bảng PasswordReset để lưu OTP tạm thời
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[PasswordReset]') AND type in (N'U'))
+BEGIN
+    CREATE TABLE PasswordReset (
+        reset_id INT IDENTITY(1,1) PRIMARY KEY,
+        user_id INT NULL,
+        email NVARCHAR(255) NOT NULL,
+        otp NVARCHAR(10) NOT NULL,
+        created_at DATETIME DEFAULT GETDATE(),
+        expires_at DATETIME NOT NULL,
+        used BIT DEFAULT 0,
+        ip_address NVARCHAR(50) NULL
+    );
+
+    CREATE INDEX IX_PasswordReset_Email ON PasswordReset(email);
+END
+GO

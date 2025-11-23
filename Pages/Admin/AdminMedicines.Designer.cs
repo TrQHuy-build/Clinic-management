@@ -28,6 +28,7 @@ namespace DentalClinicManagement.Pages.Admin
             this.lblTitle = new System.Windows.Forms.Label();
             this.searchPanel = new System.Windows.Forms.Panel();
             this.btnAdd = new System.Windows.Forms.Button();
+            this.lblSearch = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.dgvMedicines)).BeginInit();
             this.searchPanel.SuspendLayout();
             this.SuspendLayout();
@@ -62,11 +63,10 @@ namespace DentalClinicManagement.Pages.Admin
             // txtSearch
             // 
             this.txtSearch.Font = new System.Drawing.Font("Segoe UI", 11F);
-            this.txtSearch.Location = new System.Drawing.Point(20, 17);
+            this.txtSearch.Location = new System.Drawing.Point(146, 15);
             this.txtSearch.Name = "txtSearch";
             this.txtSearch.Size = new System.Drawing.Size(345, 32);
             this.txtSearch.TabIndex = 0;
-            this.txtSearch.TextChanged += new System.EventHandler(this.txtSearch_TextChanged);
             // 
             // lblTitle
             // 
@@ -82,6 +82,7 @@ namespace DentalClinicManagement.Pages.Admin
             // searchPanel
             // 
             this.searchPanel.BackColor = System.Drawing.Color.White;
+            this.searchPanel.Controls.Add(this.lblSearch);
             this.searchPanel.Controls.Add(this.txtSearch);
             this.searchPanel.Controls.Add(this.btnAdd);
             this.searchPanel.Location = new System.Drawing.Point(20, 80);
@@ -104,6 +105,16 @@ namespace DentalClinicManagement.Pages.Admin
             this.btnAdd.Text = "+ Thêm thuốc mới";
             this.btnAdd.UseVisualStyleBackColor = false;
             this.btnAdd.Click += new System.EventHandler(this.BtnAdd_Click);
+            // 
+            // lblSearch
+            // 
+            this.lblSearch.AutoSize = true;
+            this.lblSearch.Font = new System.Drawing.Font("Segoe UI", 10F);
+            this.lblSearch.Location = new System.Drawing.Point(31, 21);
+            this.lblSearch.Name = "lblSearch";
+            this.lblSearch.Size = new System.Drawing.Size(83, 23);
+            this.lblSearch.TabIndex = 3;
+            this.lblSearch.Text = "Tìm kiếm:";
             // 
             // AdminMedicines
             // 
@@ -155,5 +166,6 @@ namespace DentalClinicManagement.Pages.Admin
         private Label lblTitle;
         private Panel searchPanel;
         private Button btnAdd;
+        private Label lblSearch;
     }
 }

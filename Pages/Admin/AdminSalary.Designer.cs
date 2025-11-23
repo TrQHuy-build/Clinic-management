@@ -21,12 +21,13 @@ namespace DentalClinicManagement.Pages.Admin
 
         private void InitializeComponent()
         {
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
             this.dgvSalary = new System.Windows.Forms.DataGridView();
             this.cboMonth = new System.Windows.Forms.ComboBox();
             this.cboYear = new System.Windows.Forms.ComboBox();
             this.lblTitle = new System.Windows.Forms.Label();
             this.panel = new System.Windows.Forms.Panel();
+            this.BtnRefresh = new System.Windows.Forms.Button();
             this.lblMonth = new System.Windows.Forms.Label();
             this.lblYear = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.dgvSalary)).BeginInit();
@@ -40,14 +41,14 @@ namespace DentalClinicManagement.Pages.Admin
             | System.Windows.Forms.AnchorStyles.Right)));
             this.dgvSalary.BackgroundColor = System.Drawing.Color.White;
             this.dgvSalary.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(122)))), ((int)(((byte)(204)))));
-            dataGridViewCellStyle2.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
-            dataGridViewCellStyle2.ForeColor = System.Drawing.Color.White;
-            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dgvSalary.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle2;
+            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(122)))), ((int)(((byte)(204)))));
+            dataGridViewCellStyle1.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
+            dataGridViewCellStyle1.ForeColor = System.Drawing.Color.White;
+            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dgvSalary.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
             this.dgvSalary.ColumnHeadersHeight = 40;
             this.dgvSalary.EnableHeadersVisualStyles = false;
             this.dgvSalary.Location = new System.Drawing.Point(20, 160);
@@ -80,7 +81,7 @@ namespace DentalClinicManagement.Pages.Admin
             this.lblTitle.AutoSize = true;
             this.lblTitle.Font = new System.Drawing.Font("Segoe UI", 22F, System.Drawing.FontStyle.Bold);
             this.lblTitle.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(122)))), ((int)(((byte)(204)))));
-            this.lblTitle.Location = new System.Drawing.Point(20, 20);
+            this.lblTitle.Location = new System.Drawing.Point(20, 15);
             this.lblTitle.Name = "lblTitle";
             this.lblTitle.Size = new System.Drawing.Size(277, 50);
             this.lblTitle.TabIndex = 0;
@@ -89,6 +90,7 @@ namespace DentalClinicManagement.Pages.Admin
             // panel
             // 
             this.panel.BackColor = System.Drawing.Color.White;
+            this.panel.Controls.Add(this.BtnRefresh);
             this.panel.Controls.Add(this.lblMonth);
             this.panel.Controls.Add(this.cboMonth);
             this.panel.Controls.Add(this.lblYear);
@@ -97,6 +99,22 @@ namespace DentalClinicManagement.Pages.Admin
             this.panel.Name = "panel";
             this.panel.Size = new System.Drawing.Size(1160, 60);
             this.panel.TabIndex = 1;
+            // 
+            // BtnRefresh
+            // 
+            this.BtnRefresh.BackColor = System.Drawing.Color.Teal;
+            this.BtnRefresh.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.BtnRefresh.FlatAppearance.BorderSize = 0;
+            this.BtnRefresh.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.BtnRefresh.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
+            this.BtnRefresh.ForeColor = System.Drawing.Color.White;
+            this.BtnRefresh.Location = new System.Drawing.Point(407, 11);
+            this.BtnRefresh.Name = "BtnRefresh";
+            this.BtnRefresh.Size = new System.Drawing.Size(120, 35);
+            this.BtnRefresh.TabIndex = 5;
+            this.BtnRefresh.Text = "Làm mới";
+            this.BtnRefresh.UseVisualStyleBackColor = false;
+            this.BtnRefresh.Click += new System.EventHandler(this.BtnRefresh_Click);
             // 
             // lblMonth
             // 
@@ -144,5 +162,6 @@ namespace DentalClinicManagement.Pages.Admin
         private Panel panel;
         private Label lblMonth;
         private Label lblYear;
+        private Button BtnRefresh;
     }
 }

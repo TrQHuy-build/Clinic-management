@@ -21,7 +21,7 @@ namespace DentalClinicManagement.Pages.Admin
 
         private void InitializeComponent()
         {
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
             this.dgvInvoices = new System.Windows.Forms.DataGridView();
             this.dtpFrom = new System.Windows.Forms.DateTimePicker();
             this.dtpTo = new System.Windows.Forms.DateTimePicker();
@@ -42,14 +42,14 @@ namespace DentalClinicManagement.Pages.Admin
             | System.Windows.Forms.AnchorStyles.Right)));
             this.dgvInvoices.BackgroundColor = System.Drawing.Color.White;
             this.dgvInvoices.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(122)))), ((int)(((byte)(204)))));
-            dataGridViewCellStyle1.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
-            dataGridViewCellStyle1.ForeColor = System.Drawing.Color.White;
-            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dgvInvoices.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
+            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(122)))), ((int)(((byte)(204)))));
+            dataGridViewCellStyle2.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
+            dataGridViewCellStyle2.ForeColor = System.Drawing.Color.White;
+            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dgvInvoices.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle2;
             this.dgvInvoices.ColumnHeadersHeight = 40;
             this.dgvInvoices.EnableHeadersVisualStyles = false;
             this.dgvInvoices.Location = new System.Drawing.Point(23, 171);
@@ -64,18 +64,18 @@ namespace DentalClinicManagement.Pages.Admin
             // 
             // dtpFrom
             // 
-            this.dtpFrom.Location = new System.Drawing.Point(88, 18);
+            this.dtpFrom.Location = new System.Drawing.Point(109, 18);
             this.dtpFrom.Name = "dtpFrom";
-            this.dtpFrom.Size = new System.Drawing.Size(171, 22);
+            this.dtpFrom.Size = new System.Drawing.Size(239, 22);
             this.dtpFrom.TabIndex = 1;
             this.dtpFrom.Value = new System.DateTime(2025, 10, 15, 8, 51, 21, 98);
             this.dtpFrom.ValueChanged += new System.EventHandler(this.dtpFrom_ValueChanged);
             // 
             // dtpTo
             // 
-            this.dtpTo.Location = new System.Drawing.Point(356, 18);
+            this.dtpTo.Location = new System.Drawing.Point(514, 18);
             this.dtpTo.Name = "dtpTo";
-            this.dtpTo.Size = new System.Drawing.Size(171, 22);
+            this.dtpTo.Size = new System.Drawing.Size(236, 22);
             this.dtpTo.TabIndex = 3;
             this.dtpTo.Value = new System.DateTime(2025, 11, 15, 8, 51, 21, 106);
             this.dtpTo.ValueChanged += new System.EventHandler(this.dtpTo_ValueChanged);
@@ -87,7 +87,7 @@ namespace DentalClinicManagement.Pages.Admin
             "Tất cả",
             "paid",
             "unpaid"});
-            this.cboStatus.Location = new System.Drawing.Point(640, 18);
+            this.cboStatus.Location = new System.Drawing.Point(937, 18);
             this.cboStatus.Name = "cboStatus";
             this.cboStatus.Size = new System.Drawing.Size(137, 24);
             this.cboStatus.TabIndex = 5;
@@ -130,7 +130,7 @@ namespace DentalClinicManagement.Pages.Admin
             // lblTo
             // 
             this.lblTo.AutoSize = true;
-            this.lblTo.Location = new System.Drawing.Point(317, 21);
+            this.lblTo.Location = new System.Drawing.Point(459, 21);
             this.lblTo.Name = "lblTo";
             this.lblTo.Size = new System.Drawing.Size(34, 16);
             this.lblTo.TabIndex = 2;
@@ -139,7 +139,7 @@ namespace DentalClinicManagement.Pages.Admin
             // lblStatus
             // 
             this.lblStatus.AutoSize = true;
-            this.lblStatus.Location = new System.Drawing.Point(567, 21);
+            this.lblStatus.Location = new System.Drawing.Point(848, 21);
             this.lblStatus.Name = "lblStatus";
             this.lblStatus.Size = new System.Drawing.Size(70, 16);
             this.lblStatus.TabIndex = 4;

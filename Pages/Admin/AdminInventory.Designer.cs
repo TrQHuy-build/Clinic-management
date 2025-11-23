@@ -62,7 +62,7 @@ namespace DentalClinicManagement.Pages.Admin
             this.lblTitle.AutoSize = true;
             this.lblTitle.Font = new System.Drawing.Font("Segoe UI", 22F, System.Drawing.FontStyle.Bold);
             this.lblTitle.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(122)))), ((int)(((byte)(204)))));
-            this.lblTitle.Location = new System.Drawing.Point(0, 0);
+            this.lblTitle.Location = new System.Drawing.Point(0, -1);
             this.lblTitle.Name = "lblTitle";
             this.lblTitle.Size = new System.Drawing.Size(516, 50);
             this.lblTitle.TabIndex = 0;
@@ -79,7 +79,7 @@ namespace DentalClinicManagement.Pages.Admin
             this.searchPanel.Controls.Add(this.btnImport);
             this.searchPanel.Location = new System.Drawing.Point(21, 60);
             this.searchPanel.Name = "searchPanel";
-            this.searchPanel.Size = new System.Drawing.Size(1200, 60);
+            this.searchPanel.Size = new System.Drawing.Size(1227, 60);
             this.searchPanel.TabIndex = 1;
             // 
             // lblSearch
@@ -95,7 +95,7 @@ namespace DentalClinicManagement.Pages.Admin
             // txtSearch
             // 
             this.txtSearch.Font = new System.Drawing.Font("Segoe UI", 11F);
-            this.txtSearch.Location = new System.Drawing.Point(110, 17);
+            this.txtSearch.Location = new System.Drawing.Point(116, 17);
             this.txtSearch.Name = "txtSearch";
             this.txtSearch.Size = new System.Drawing.Size(250, 32);
             this.txtSearch.TabIndex = 1;
@@ -133,7 +133,7 @@ namespace DentalClinicManagement.Pages.Admin
             this.btnAdd.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnAdd.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
             this.btnAdd.ForeColor = System.Drawing.Color.White;
-            this.btnAdd.Location = new System.Drawing.Point(930, 15);
+            this.btnAdd.Location = new System.Drawing.Point(955, 13);
             this.btnAdd.Name = "btnAdd";
             this.btnAdd.Size = new System.Drawing.Size(120, 35);
             this.btnAdd.TabIndex = 4;
@@ -149,7 +149,7 @@ namespace DentalClinicManagement.Pages.Admin
             this.btnImport.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnImport.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
             this.btnImport.ForeColor = System.Drawing.Color.White;
-            this.btnImport.Location = new System.Drawing.Point(1060, 15);
+            this.btnImport.Location = new System.Drawing.Point(1086, 13);
             this.btnImport.Name = "btnImport";
             this.btnImport.Size = new System.Drawing.Size(120, 35);
             this.btnImport.TabIndex = 5;
@@ -179,13 +179,13 @@ namespace DentalClinicManagement.Pages.Admin
             this.dgvInventory.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle2;
             this.dgvInventory.ColumnHeadersHeight = 40;
             this.dgvInventory.EnableHeadersVisualStyles = false;
-            this.dgvInventory.Location = new System.Drawing.Point(23, 126);
+            this.dgvInventory.Location = new System.Drawing.Point(23, 131);
             this.dgvInventory.Name = "dgvInventory";
             this.dgvInventory.ReadOnly = true;
             this.dgvInventory.RowHeadersWidth = 51;
             this.dgvInventory.RowTemplate.Height = 35;
             this.dgvInventory.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.dgvInventory.Size = new System.Drawing.Size(1519, 685);
+            this.dgvInventory.Size = new System.Drawing.Size(1407, 623);
             this.dgvInventory.TabIndex = 2;
             this.dgvInventory.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.DgvInventory_CellClick);
             // 
@@ -197,7 +197,7 @@ namespace DentalClinicManagement.Pages.Admin
             this.Controls.Add(this.dgvInventory);
             this.Name = "AdminInventory";
             this.Padding = new System.Windows.Forms.Padding(20);
-            this.Size = new System.Drawing.Size(1565, 834);
+            this.Size = new System.Drawing.Size(1453, 772);
             this.searchPanel.ResumeLayout(false);
             this.searchPanel.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvInventory)).EndInit();

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Data;
 using System.Data.SqlClient;
+using System.Drawing;
 using System.Windows.Forms;
 using DentalClinicManagement.DataAccess;
 using DentalClinicManagement.Utils;
@@ -12,7 +13,36 @@ namespace DentalClinicManagement.Forms
         public frmLogin()
         {
             InitializeComponent();
+            btnTogglePassword.FlatStyle = FlatStyle.Flat; 
+            btnTogglePassword.FlatAppearance.BorderSize = 0; 
+            btnTogglePassword.Cursor = Cursors.Hand;
+            txtPassword.UseSystemPasswordChar = true;
+            btnTogglePassword.Text = "👁";
+
+            lblWelcome.Parent = pictureBox1;
+            lblSubtitle.Parent = pictureBox1;
+            label1.Parent = pictureBox1;
+
+            lblWelcome.BackColor = Color.Transparent;
+            lblSubtitle.BackColor = Color.Transparent;
+            label1.BackColor = Color.Transparent;
+
+            // Đảm bảo luôn nổi trên ảnh
+            lblWelcome.BringToFront();
+            lblSubtitle.BringToFront();
+            label1.BringToFront();
+
         }
+        private void btnTogglePassword_Click(object sender, EventArgs e)
+        {
+            txtPassword.UseSystemPasswordChar = !txtPassword.UseSystemPasswordChar;
+
+            if (txtPassword.UseSystemPasswordChar)
+                btnTogglePassword.Text = "🙈";   // Đang ẩn
+            else
+                btnTogglePassword.Text = "👁";  // Đang hiện
+        }
+
 
         private void BtnLogin_Click(object sender, EventArgs e)
         {
@@ -113,6 +143,11 @@ namespace DentalClinicManagement.Forms
         private void BtnClose_Click(object sender, EventArgs e)
         {
             Application.Exit();
+        }
+
+        private void lblSubtitle_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }

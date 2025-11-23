@@ -75,7 +75,7 @@ namespace DentalClinicManagement.Pages.Admin
             this.Controls.Add(this.btnService);
             this.Name = "AdminReports";
             this.Padding = new System.Windows.Forms.Padding(20);
-            this.Size = new System.Drawing.Size(1200, 700);
+            this.Size = new System.Drawing.Size(1266, 809);
             this.ResumeLayout(false);
             this.PerformLayout();
 
