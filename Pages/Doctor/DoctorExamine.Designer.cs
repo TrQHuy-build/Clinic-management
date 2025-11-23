@@ -23,6 +23,7 @@ namespace DentalClinicManagement.Pages.Doctor
         {
             this.lblTitle = new System.Windows.Forms.Label();
             this.panelPatient = new System.Windows.Forms.Panel();
+            this.BTNHSBA = new System.Windows.Forms.Button();
             this.lblPatientTitle = new System.Windows.Forms.Label();
             this.cboPatient = new System.Windows.Forms.ComboBox();
             this.panelDiagnosis = new System.Windows.Forms.Panel();
@@ -61,12 +62,24 @@ namespace DentalClinicManagement.Pages.Doctor
             // panelPatient
             // 
             this.panelPatient.BackColor = System.Drawing.Color.White;
+            this.panelPatient.Controls.Add(this.BTNHSBA);
             this.panelPatient.Controls.Add(this.lblPatientTitle);
             this.panelPatient.Controls.Add(this.cboPatient);
             this.panelPatient.Location = new System.Drawing.Point(20, 90);
             this.panelPatient.Name = "panelPatient";
-            this.panelPatient.Size = new System.Drawing.Size(700, 100);
+            this.panelPatient.Size = new System.Drawing.Size(823, 100);
             this.panelPatient.TabIndex = 1;
+            // 
+            // BTNHSBA
+            // 
+            this.BTNHSBA.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.BTNHSBA.Location = new System.Drawing.Point(587, 50);
+            this.BTNHSBA.Name = "BTNHSBA";
+            this.BTNHSBA.Size = new System.Drawing.Size(187, 36);
+            this.BTNHSBA.TabIndex = 2;
+            this.BTNHSBA.Text = "Hồ sơ bệnh án";
+            this.BTNHSBA.UseVisualStyleBackColor = true;
+            this.BTNHSBA.Click += new System.EventHandler(this.BTNHSBA_Click);
             // 
             // lblPatientTitle
             // 
@@ -82,10 +95,11 @@ namespace DentalClinicManagement.Pages.Doctor
             // cboPatient
             // 
             this.cboPatient.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cboPatient.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.cboPatient.FormattingEnabled = true;
             this.cboPatient.Location = new System.Drawing.Point(22, 50);
             this.cboPatient.Name = "cboPatient";
-            this.cboPatient.Size = new System.Drawing.Size(400, 24);
+            this.cboPatient.Size = new System.Drawing.Size(400, 33);
             this.cboPatient.TabIndex = 0;
             // 
             // panelDiagnosis
@@ -98,7 +112,7 @@ namespace DentalClinicManagement.Pages.Doctor
             this.panelDiagnosis.Controls.Add(this.txtDiagnosis);
             this.panelDiagnosis.Location = new System.Drawing.Point(20, 210);
             this.panelDiagnosis.Name = "panelDiagnosis";
-            this.panelDiagnosis.Size = new System.Drawing.Size(700, 200);
+            this.panelDiagnosis.Size = new System.Drawing.Size(823, 200);
             this.panelDiagnosis.TabIndex = 2;
             // 
             // lblDiagnosisTitle
@@ -124,10 +138,11 @@ namespace DentalClinicManagement.Pages.Doctor
             // 
             // txtTreatment
             // 
-            this.txtTreatment.Location = new System.Drawing.Point(140, 117);
+            this.txtTreatment.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtTreatment.Location = new System.Drawing.Point(140, 131);
             this.txtTreatment.Multiline = true;
             this.txtTreatment.Name = "txtTreatment";
-            this.txtTreatment.Size = new System.Drawing.Size(530, 60);
+            this.txtTreatment.Size = new System.Drawing.Size(634, 46);
             this.txtTreatment.TabIndex = 3;
             // 
             // lblDiag
@@ -142,10 +157,11 @@ namespace DentalClinicManagement.Pages.Doctor
             // 
             // txtDiagnosis
             // 
-            this.txtDiagnosis.Location = new System.Drawing.Point(140, 47);
+            this.txtDiagnosis.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtDiagnosis.Location = new System.Drawing.Point(140, 65);
             this.txtDiagnosis.Multiline = true;
             this.txtDiagnosis.Name = "txtDiagnosis";
-            this.txtDiagnosis.Size = new System.Drawing.Size(530, 60);
+            this.txtDiagnosis.Size = new System.Drawing.Size(634, 46);
             this.txtDiagnosis.TabIndex = 1;
             // 
             // panelServices
@@ -155,7 +171,7 @@ namespace DentalClinicManagement.Pages.Doctor
             this.panelServices.Controls.Add(this.dgvServices);
             this.panelServices.Location = new System.Drawing.Point(20, 430);
             this.panelServices.Name = "panelServices";
-            this.panelServices.Size = new System.Drawing.Size(700, 250);
+            this.panelServices.Size = new System.Drawing.Size(823, 250);
             this.panelServices.TabIndex = 3;
             // 
             // lblServicesTitle
@@ -180,7 +196,7 @@ namespace DentalClinicManagement.Pages.Doctor
             this.dgvServices.Name = "dgvServices";
             this.dgvServices.RowHeadersWidth = 51;
             this.dgvServices.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.dgvServices.Size = new System.Drawing.Size(650, 180);
+            this.dgvServices.Size = new System.Drawing.Size(775, 180);
             this.dgvServices.TabIndex = 0;
             // 
             // panelMedicines
@@ -191,7 +207,7 @@ namespace DentalClinicManagement.Pages.Doctor
             this.panelMedicines.Controls.Add(this.dgvMedicines);
             this.panelMedicines.Location = new System.Drawing.Point(20, 700);
             this.panelMedicines.Name = "panelMedicines";
-            this.panelMedicines.Size = new System.Drawing.Size(700, 300);
+            this.panelMedicines.Size = new System.Drawing.Size(823, 300);
             this.panelMedicines.TabIndex = 4;
             // 
             // lblMedicinesTitle
@@ -210,16 +226,18 @@ namespace DentalClinicManagement.Pages.Doctor
             this.btnAddMedicine.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(40)))), ((int)(((byte)(167)))), ((int)(((byte)(69)))));
             this.btnAddMedicine.FlatAppearance.BorderSize = 0;
             this.btnAddMedicine.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnAddMedicine.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnAddMedicine.ForeColor = System.Drawing.Color.White;
             this.btnAddMedicine.Location = new System.Drawing.Point(23, 246);
             this.btnAddMedicine.Name = "btnAddMedicine";
-            this.btnAddMedicine.Size = new System.Drawing.Size(120, 35);
+            this.btnAddMedicine.Size = new System.Drawing.Size(198, 35);
             this.btnAddMedicine.TabIndex = 1;
             this.btnAddMedicine.Text = "+ Thêm thuốc";
             this.btnAddMedicine.UseVisualStyleBackColor = false;
             // 
             // dgvMedicines
             // 
+            this.dgvMedicines.AllowDrop = true;
             this.dgvMedicines.AllowUserToAddRows = false;
             this.dgvMedicines.BackgroundColor = System.Drawing.Color.White;
             this.dgvMedicines.BorderStyle = System.Windows.Forms.BorderStyle.None;
@@ -228,7 +246,7 @@ namespace DentalClinicManagement.Pages.Doctor
             this.dgvMedicines.Name = "dgvMedicines";
             this.dgvMedicines.RowHeadersWidth = 51;
             this.dgvMedicines.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.dgvMedicines.Size = new System.Drawing.Size(650, 171);
+            this.dgvMedicines.Size = new System.Drawing.Size(766, 171);
             this.dgvMedicines.TabIndex = 0;
             // 
             // btnSave
@@ -243,8 +261,9 @@ namespace DentalClinicManagement.Pages.Doctor
             this.btnSave.Name = "btnSave";
             this.btnSave.Size = new System.Drawing.Size(300, 50);
             this.btnSave.TabIndex = 5;
-            this.btnSave.Text = "Lưu hồ sơ & Tạo hóa đơn";
+            this.btnSave.Text = "&Lưu hồ sơ";
             this.btnSave.UseVisualStyleBackColor = false;
+            this.btnSave.Click += new System.EventHandler(this.btnSave_Click_1);
             // 
             // DoctorExamine
             // 
@@ -260,7 +279,7 @@ namespace DentalClinicManagement.Pages.Doctor
             this.Controls.Add(this.lblTitle);
             this.Name = "DoctorExamine";
             this.Padding = new System.Windows.Forms.Padding(20);
-            this.Size = new System.Drawing.Size(765, 1090);
+            this.Size = new System.Drawing.Size(904, 1090);
             this.panelPatient.ResumeLayout(false);
             this.panelPatient.PerformLayout();
             this.panelDiagnosis.ResumeLayout(false);
@@ -296,5 +315,6 @@ namespace DentalClinicManagement.Pages.Doctor
         private System.Windows.Forms.Button btnAddMedicine;
         private System.Windows.Forms.Label lblMedicinesTitle;
         private System.Windows.Forms.Button btnSave;
+        private Button BTNHSBA;
     }
 }

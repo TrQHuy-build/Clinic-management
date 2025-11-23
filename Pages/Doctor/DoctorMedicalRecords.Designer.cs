@@ -109,6 +109,7 @@ namespace DentalClinicManagement.Pages.Doctor
             this.Name = "DoctorMedicalRecords";
             this.Padding = new System.Windows.Forms.Padding(20);
             this.Size = new System.Drawing.Size(952, 670);
+            this.Load += new System.EventHandler(this.DoctorMedicalRecords_Load);
             this.panelSearch.ResumeLayout(false);
             this.panelSearch.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvRecords)).EndInit();

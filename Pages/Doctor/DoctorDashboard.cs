@@ -15,7 +15,7 @@ namespace DentalClinicManagement.Pages.Doctor
             InitializeComponent();
 
             // GÁN SAU InitializeComponent
-            lblTitle.Text = $"Chào mừng, BS. {Auth.CurrentUserName}";
+            //lblTitle.Text = $"Chào mừng, BS. {Auth.CurrentUserName}";
 
             LoadDashboardData();
         }

@@ -1,4 +1,12 @@
-﻿using System;
+﻿using DentalClinicManagement.DataAccess;
+using DentalClinicManagement.Utils;
+using System;
+using System.Data;
+using System.Data.SqlClient;
+using System.Drawing;
+using System.Windows.Forms;
+
+using System;
 using System.Data;
 using System.Data.SqlClient;
 using System.Drawing;
@@ -40,8 +48,21 @@ namespace DentalClinicManagement.Pages.Doctor
 
                 dgvAppointments.DataSource = dt;
 
-                if (dgvAppointments.Columns["ID"] != null)
-                    dgvAppointments.Columns["ID"].Visible = false;
+                bool hasData = false;
+
+                // Kiểm tra từng dòng xem cột ID có dữ liệu không
+                foreach (DataGridViewRow row in dgvAppointments.Rows)
+                {
+                    if (!row.IsNewRow && row.Cells["ID"].Value != null && row.Cells["ID"].Value.ToString() != "")
+                    {
+                        hasData = true;
+                        break;
+                    }
+                }
+
+                // Nếu không có dữ liệu thì ẩn cả DataGridView
+                dgvAppointments.Visible = hasData;
+
 
                 AddActionColumn();
 
