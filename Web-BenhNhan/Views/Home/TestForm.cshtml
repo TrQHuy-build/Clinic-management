@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Appointment Submission</title>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        form { max-width: 600px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, select, textarea { width: 100%; padding: 8px; box-sizing: border-box; }
+        button { background: #007bff; color: white; padding: 10px 20px; border: none; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        #result { margin-top: 20px; padding: 15px; background: #f0f0f0; border-left: 4px solid #007bff; display: none; }
+        .success { border-left-color: #28a745; background: #d4edda; }
+        .error { border-left-color: #dc3545; background: #f8d7da; }
+    </style>
+</head>
+<body>
+    <h1>Test Appointment Submission</h1>
+    
+    <form id="appointmentForm">
+        <div class="form-group">
+            <label>Patient Name *</label>
+            <input type="text" name="patient_name" value="Test User" required>
+        </div>
+        
+        <div class="form-group">
+            <label>Phone *</label>
+            <input type="tel" name="phone" value="0901234567" required>
+        </div>
+        
+        <div class="form-group">
+            <label>Email</label>
+            <input type="email" name="email" value="test@example.com">
+        </div>
+        
+        <div class="form-group">
+            <label>Service *</label>
+            <select name="service_id" required>
+                <option value="1">Khám tổng quát - 200,000đ</option>
+                <option value="2">Nhổ răng - 300,000đ</option>
+                <option value="3">Trám răng - 250,000đ</option>
+                <option value="4">Tẩy trắng răng - 1,500,000đ</option>
+                <option value="5">Niềng răng - 15,000,000đ</option>
+                <option value="6">Cấy ghép Implant - 20,000,000đ</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label>Appointment Date *</label>
+            <input type="datetime-local" name="appointment_date" required>
+        </div>
+        
+        <div class="form-group">
+            <label>Notes</label>
+            <textarea name="notes" rows="3">Test appointment</textarea>
+        </div>
+        
+        <input type="hidden" name="status" value="booked">
+        
+        <button type="submit">Submit Appointment</button>
+    </form>
+    
+    <div id="result"></div>
+    
+    <script>
+        // Set default datetime to tomorrow
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        tomorrow.setHours(15, 0, 0, 0);
+        document.querySelector('[name="appointment_date"]').value = tomorrow.toISOString().slice(0, 16);
+        
+        document.getElementById('appointmentForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const resultDiv = document.getElementById('result');
+            resultDiv.style.display = 'block';
+            resultDiv.className = '';
+            resultDiv.innerHTML = '<strong>Sending...</strong>';
+            
+            const formData = new FormData(e.target);
+            
+            console.log('=== Sending Appointment ===');
+            for (let [key, value] of formData.entries()) {
+                console.log(`${key}: ${value}`);
+            }
+            
+            try {
+                const response = await fetch('/Home/Book', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                console.log('Response Status:', response.status);
+                const data = await response.json();
+                console.log('Response Data:', data);
+                
+                if (response.ok && data.success) {
+                    resultDiv.className = 'success';
+                    resultDiv.innerHTML = `
+                        <strong>✓ Success!</strong><br>
+                        Appointment ID: ${data.appointmentId}<br>
+                        Message: ${data.message}<br>
+                        <br>
+                        <strong>Saved Data:</strong><br>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                    
+                    // Fetch to verify
+                    const verifyResponse = await fetch(`/Home/GetAppointment/${data.appointmentId}`);
+                    const verifyData = await verifyResponse.json();
+                    resultDiv.innerHTML += `
+                        <br><strong>Verification from DB:</strong><br>
+                        <pre>${JSON.stringify(verifyData, null, 2)}</pre>
+                    `;
+                } else {
+                    resultDiv.className = 'error';
+                    resultDiv.innerHTML = `
+                        <strong>✗ Error</strong><br>
+                        ${data.message || 'Unknown error'}<br>
+                        ${data.errors ? '<br>Validation errors:<br>' + JSON.stringify(data.errors, null, 2) : ''}
+                    `;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                resultDiv.className = 'error';
+                resultDiv.innerHTML = `
+                    <strong>✗ Network Error</strong><br>
+                    ${error.message}<br>
+                    <em>Check browser console for details</em>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>
