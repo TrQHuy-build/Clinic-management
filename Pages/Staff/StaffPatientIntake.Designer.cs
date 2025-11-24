@@ -104,7 +104,7 @@
             this.grpAppointment.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
             this.grpAppointment.Location = new System.Drawing.Point(34, 85);
             this.grpAppointment.Name = "grpAppointment";
-            this.grpAppointment.Size = new System.Drawing.Size(1189, 85);
+            this.grpAppointment.Size = new System.Drawing.Size(1189, 89);
             this.grpAppointment.TabIndex = 1;
             this.grpAppointment.TabStop = false;
             this.grpAppointment.Text = "Chọn lịch hẹn";
@@ -140,9 +140,9 @@
             this.grpBasicInfo.Controls.Add(this.txtEmail);
             this.grpBasicInfo.Controls.Add(this.lblExistingPatient);
             this.grpBasicInfo.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
-            this.grpBasicInfo.Location = new System.Drawing.Point(34, 192);
+            this.grpBasicInfo.Location = new System.Drawing.Point(34, 195);
             this.grpBasicInfo.Name = "grpBasicInfo";
-            this.grpBasicInfo.Size = new System.Drawing.Size(1189, 149);
+            this.grpBasicInfo.Size = new System.Drawing.Size(1189, 165);
             this.grpBasicInfo.TabIndex = 2;
             this.grpBasicInfo.TabStop = false;
             this.grpBasicInfo.Text = "Thông tin cơ bản";
@@ -189,7 +189,7 @@
             // 
             this.lblEmail.AutoSize = true;
             this.lblEmail.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.lblEmail.Location = new System.Drawing.Point(23, 80);
+            this.lblEmail.Location = new System.Drawing.Point(23, 106);
             this.lblEmail.Name = "lblEmail";
             this.lblEmail.Size = new System.Drawing.Size(55, 23);
             this.lblEmail.TabIndex = 4;
@@ -198,7 +198,7 @@
             // txtEmail
             // 
             this.txtEmail.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.txtEmail.Location = new System.Drawing.Point(137, 77);
+            this.txtEmail.Location = new System.Drawing.Point(137, 103);
             this.txtEmail.Name = "txtEmail";
             this.txtEmail.ReadOnly = true;
             this.txtEmail.Size = new System.Drawing.Size(342, 30);
@@ -226,7 +226,7 @@
             this.grpPatientDetails.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
             this.grpPatientDetails.Location = new System.Drawing.Point(34, 363);
             this.grpPatientDetails.Name = "grpPatientDetails";
-            this.grpPatientDetails.Size = new System.Drawing.Size(1189, 149);
+            this.grpPatientDetails.Size = new System.Drawing.Size(1189, 237);
             this.grpPatientDetails.TabIndex = 3;
             this.grpPatientDetails.TabStop = false;
             this.grpPatientDetails.Text = "Thông tin chi tiết";
@@ -278,7 +278,7 @@
             // 
             this.lblAddress.AutoSize = true;
             this.lblAddress.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.lblAddress.Location = new System.Drawing.Point(23, 80);
+            this.lblAddress.Location = new System.Drawing.Point(23, 132);
             this.lblAddress.Name = "lblAddress";
             this.lblAddress.Size = new System.Drawing.Size(66, 23);
             this.lblAddress.TabIndex = 4;
@@ -287,7 +287,7 @@
             // txtAddress
             // 
             this.txtAddress.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.txtAddress.Location = new System.Drawing.Point(137, 77);
+            this.txtAddress.Location = new System.Drawing.Point(137, 129);
             this.txtAddress.Multiline = true;
             this.txtAddress.Name = "txtAddress";
             this.txtAddress.Size = new System.Drawing.Size(537, 53);
@@ -297,7 +297,7 @@
             // 
             this.lblInsurance.AutoSize = true;
             this.lblInsurance.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.lblInsurance.Location = new System.Drawing.Point(709, 80);
+            this.lblInsurance.Location = new System.Drawing.Point(709, 132);
             this.lblInsurance.Name = "lblInsurance";
             this.lblInsurance.Size = new System.Drawing.Size(54, 23);
             this.lblInsurance.TabIndex = 6;
@@ -306,7 +306,7 @@
             // txtInsurance
             // 
             this.txtInsurance.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.txtInsurance.Location = new System.Drawing.Point(777, 77);
+            this.txtInsurance.Location = new System.Drawing.Point(777, 129);
             this.txtInsurance.Name = "txtInsurance";
             this.txtInsurance.Size = new System.Drawing.Size(377, 30);
             this.txtInsurance.TabIndex = 7;
@@ -316,9 +316,9 @@
             this.grpDoctor.Controls.Add(this.lblDoctor);
             this.grpDoctor.Controls.Add(this.cboDoctor);
             this.grpDoctor.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
-            this.grpDoctor.Location = new System.Drawing.Point(34, 533);
+            this.grpDoctor.Location = new System.Drawing.Point(34, 606);
             this.grpDoctor.Name = "grpDoctor";
-            this.grpDoctor.Size = new System.Drawing.Size(1189, 85);
+            this.grpDoctor.Size = new System.Drawing.Size(1189, 114);
             this.grpDoctor.TabIndex = 4;
             this.grpDoctor.TabStop = false;
             this.grpDoctor.Text = "Chọn bác sĩ khám";
@@ -349,7 +349,7 @@
             this.btnSave.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnSave.Font = new System.Drawing.Font("Segoe UI", 11F, System.Drawing.FontStyle.Bold);
             this.btnSave.ForeColor = System.Drawing.Color.White;
-            this.btnSave.Location = new System.Drawing.Point(856, 640);
+            this.btnSave.Location = new System.Drawing.Point(856, 737);
             this.btnSave.Name = "btnSave";
             this.btnSave.Size = new System.Drawing.Size(137, 43);
             this.btnSave.TabIndex = 5;
@@ -363,7 +363,7 @@
             this.btnClear.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnClear.Font = new System.Drawing.Font("Segoe UI", 11F, System.Drawing.FontStyle.Bold);
             this.btnClear.ForeColor = System.Drawing.Color.White;
-            this.btnClear.Location = new System.Drawing.Point(1026, 640);
+            this.btnClear.Location = new System.Drawing.Point(1026, 737);
             this.btnClear.Name = "btnClear";
             this.btnClear.Size = new System.Drawing.Size(197, 43);
             this.btnClear.TabIndex = 6;
@@ -384,7 +384,7 @@
             this.Controls.Add(this.grpAppointment);
             this.Controls.Add(this.panelHeader);
             this.Name = "StaffPatientIntake";
-            this.Size = new System.Drawing.Size(1254, 710);
+            this.Size = new System.Drawing.Size(1254, 796);
             this.panelHeader.ResumeLayout(false);
             this.panelHeader.PerformLayout();
             this.grpAppointment.ResumeLayout(false);
