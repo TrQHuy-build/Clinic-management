@@ -145,11 +145,14 @@ namespace DentalClinicManagement.Forms
             Application.Exit();
         }
 
-<<<<<<< HEAD
+
         private void lblSubtitle_Click(object sender, EventArgs e)
-=======
+        {
+
+        }
+
         private void txtPassword_TextChanged(object sender, EventArgs e)
->>>>>>> origin/bacsy
+
         {
 
         }
