@@ -239,6 +239,30 @@
     <Compile Include="Pages\Patient\PatientProfile.Designer.cs">
       <DependentUpon>PatientProfile.cs</DependentUpon>
     </Compile>
+    <Compile Include="Pages\Staff\StaffAppointments.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Pages\Staff\StaffAppointments.Designer.cs">
+      <DependentUpon>StaffAppointments.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\Staff\StaffDashboard.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Pages\Staff\StaffDashboard.Designer.cs">
+      <DependentUpon>StaffDashboard.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\Staff\StaffInvoicing.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Pages\Staff\StaffInvoicing.Designer.cs">
+      <DependentUpon>StaffInvoicing.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\Staff\StaffPatientIntake.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Pages\Staff\StaffPatientIntake.Designer.cs">
+      <DependentUpon>StaffPatientIntake.cs</DependentUpon>
+    </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Utils\Auth.cs" />
@@ -318,6 +342,18 @@
     <EmbeddedResource Include="Pages\Patient\PatientProfile.resx">
       <DependentUpon>PatientProfile.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Pages\Staff\StaffAppointments.resx">
+      <DependentUpon>StaffAppointments.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Pages\Staff\StaffDashboard.resx">
+      <DependentUpon>StaffDashboard.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Pages\Staff\StaffInvoicing.resx">
+      <DependentUpon>StaffInvoicing.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Pages\Staff\StaffPatientIntake.resx">
+      <DependentUpon>StaffPatientIntake.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
@@ -352,8 +388,6 @@
     <Content Include="Content\font-awesome.min.css" />
     <Content Include="fonts\fontawesome-webfont.svg" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Pages\Staff\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

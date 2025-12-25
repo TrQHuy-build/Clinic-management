@@ -470,6 +470,11 @@ namespace DentalClinicManagement.Pages.Doctor
         #endregion
 
         #region Save Examination
+        // File này chỉ cần THÊM VÀO phần SaveExamination để lưu TreatmentService
+        // Phần còn lại giữ nguyên như code bạn gửi
+
+        // THAY THẾ METHOD BtnSave_Click bằng code này:
+
         private void BtnSave_Click(object sender, EventArgs e)
         {
             if (cboPatient.SelectedValue == null || !TryGetIntFromObject(cboPatient.SelectedValue, out int patientId))
@@ -497,127 +502,187 @@ namespace DentalClinicManagement.Pages.Doctor
             try
             {
                 int staffId = Auth.CurrentStaffId.Value;
-
-                // Prepare treatment value explicitly as object to avoid mixed-type conditional operator in C# 7.3
                 object treatmentValue = string.IsNullOrWhiteSpace(txtTreatment.Text) ? (object)DBNull.Value : (object)txtTreatment.Text.Trim();
 
-                using (SqlTransaction tran = DatabaseHelper.BeginTransaction()) // Assumed DatabaseHelper.BeginTransaction returns SqlTransaction-compatible scope
+                using (SqlConnection conn = DatabaseHelper.GetConnection())
                 {
-                    string insertRecord = @"
+                    conn.Open();
+                    using (SqlTransaction tran = conn.BeginTransaction())
+                    {
+                        try
+                        {
+                            // 1. Tạo MedicalRecord
+                            string insertRecord = @"
                         INSERT INTO MedicalRecord (patient_id, staff_id, diagnosis, treatment)
                         OUTPUT INSERTED.record_id
                         VALUES (@patientId, @staffId, @diagnosis, @treatment)";
-                    var recordParams = new[]
-                    {
-                        new SqlParameter("@patientId", SqlDbType.Int) { Value = patientId },
-                        new SqlParameter("@staffId", SqlDbType.Int) { Value = staffId },
-                        new SqlParameter("@diagnosis", SqlDbType.NVarChar) { Value = diagnosis },
-                        new SqlParameter("@treatment", SqlDbType.NVarChar) { Value = treatmentValue }
-                    };
-                    object recObj = DatabaseHelper.ExecuteScalar(insertRecord, recordParams, tran);
-                    if (recObj == null || !int.TryParse(recObj.ToString(), out int recordId))
-                    {
-                        tran.Rollback();
-                        MessageBoxHelper.ShowError("Không tạo được hồ sơ (MedicalRecord).");
-                        return;
-                    }
 
-                    decimal medicineTotal = 0M;
-                    foreach (DataGridViewRow row in dgvMedicines.Rows)
-                    {
-                        if (row.IsNewRow || row.Cells["MedicineId"].Value == null) continue;
-                        if (!TryGetIntFromObject(row.Cells["MedicineId"].Value, out int medicineId)) continue;
-                        string dosage = row.Cells["Dosage"].Value?.ToString()?.Trim() ?? "";
-                        if (!int.TryParse(row.Cells["Quantity"].Value?.ToString(), out int quantity)) quantity = 1;
-                        string notes = row.Cells["Notes"].Value?.ToString()?.Trim() ?? "";
+                            SqlCommand cmdRecord = new SqlCommand(insertRecord, conn, tran);
+                            cmdRecord.Parameters.AddWithValue("@patientId", patientId);
+                            cmdRecord.Parameters.AddWithValue("@staffId", staffId);
+                            cmdRecord.Parameters.AddWithValue("@diagnosis", diagnosis);
+                            cmdRecord.Parameters.AddWithValue("@treatment", treatmentValue);
 
-                        if (string.IsNullOrWhiteSpace(dosage))
-                        {
-                            tran.Rollback();
-                            MessageBoxHelper.ShowValidationError("liều lượng thuốc");
-                            return;
-                        }
+                            object recObj = cmdRecord.ExecuteScalar();
+                            if (recObj == null || !int.TryParse(recObj.ToString(), out int recordId))
+                            {
+                                tran.Rollback();
+                                MessageBoxHelper.ShowError("Không tạo được hồ sơ (MedicalRecord).");
+                                return;
+                            }
 
-                        // Prepare notes value explicitly as object to avoid mixed-type conditional operator
-                        object notesValue = string.IsNullOrWhiteSpace(notes) ? (object)DBNull.Value : (object)notes;
+                            // 2. Lưu Prescriptions (Đơn thuốc)
+                            decimal medicineTotal = 0M;
+                            System.Collections.Generic.List<int> prescriptionIds = new System.Collections.Generic.List<int>();
 
-                        string insertPres = @"
-                            INSERT INTO Prescription (record_id, medicine_id, dosage, quantity, notes)
-                            VALUES (@recordId, @medId, @dosage, @qty, @notes)";
-                        DatabaseHelper.ExecuteNonQuery(insertPres, new[]
-                        {
-                            new SqlParameter("@recordId", SqlDbType.Int) { Value = recordId },
-                            new SqlParameter("@medId", SqlDbType.Int) { Value = medicineId },
-                            new SqlParameter("@dosage", SqlDbType.NVarChar) { Value = dosage },
-                            new SqlParameter("@qty", SqlDbType.Int) { Value = quantity },
-                            new SqlParameter("@notes", SqlDbType.NVarChar) { Value = notesValue }
-                        }, tran);
+                            foreach (DataGridViewRow row in dgvMedicines.Rows)
+                            {
+                                if (row.IsNewRow || row.Cells["MedicineId"].Value == null) continue;
+                                if (!TryGetIntFromObject(row.Cells["MedicineId"].Value, out int medicineId)) continue;
 
-                        object priceObj = DatabaseHelper.ExecuteScalar(
-                            "SELECT price FROM Medicine WHERE medicine_id = @id",
-                            new[] { new SqlParameter("@id", SqlDbType.Int) { Value = medicineId } },
-                            tran
-                        );
-                        if (!TryGetDecimalFromObject(priceObj, out decimal price))
-                        {
-                            tran.Rollback();
-                            MessageBoxHelper.ShowError($"Giá thuốc ID {medicineId} không hợp lệ.");
-                            return;
-                        }
-                        medicineTotal += price * quantity;
-                    }
+                                string dosage = row.Cells["Dosage"].Value?.ToString()?.Trim() ?? "";
+                                if (!int.TryParse(row.Cells["Quantity"].Value?.ToString(), out int quantity)) quantity = 1;
+                                string notes = row.Cells["Notes"].Value?.ToString()?.Trim() ?? "";
 
-                    decimal serviceTotal = 0M;
-                    foreach (DataGridViewRow row in dgvServices.Rows)
-                    {
-                        if (row.IsNewRow || !IsCellChecked(row.Cells["Selected"])) continue;
-                        if (!TryGetDecimalFromObject(row.Cells["Price"].Value, out decimal p))
-                        {
-                            tran.Rollback();
-                            MessageBoxHelper.ShowError("Giá dịch vụ không hợp lệ.");
-                            return;
-                        }
-                        serviceTotal += p;
-                    }
+                                if (string.IsNullOrWhiteSpace(dosage))
+                                {
+                                    tran.Rollback();
+                                    MessageBoxHelper.ShowValidationError("liều lượng thuốc");
+                                    return;
+                                }
 
-                    decimal totalAmount = serviceTotal + medicineTotal;
+                                object notesValue = string.IsNullOrWhiteSpace(notes) ? (object)DBNull.Value : (object)notes;
 
-                    string insertInvoice = @"
+                                // Lưu Prescription và lấy ID
+                                string insertPres = @"INSERT INTO Prescription (record_id, medicine_id, dosage, quantity, notes)
+                                            OUTPUT INSERTED.prescription_id
+                                            VALUES (@recordId, @medId, @dosage, @qty, @notes)";
+                                SqlCommand cmdPres = new SqlCommand(insertPres, conn, tran);
+                                cmdPres.Parameters.AddWithValue("@recordId", recordId);
+                                cmdPres.Parameters.AddWithValue("@medId", medicineId);
+                                cmdPres.Parameters.AddWithValue("@dosage", dosage);
+                                cmdPres.Parameters.AddWithValue("@qty", quantity);
+                                cmdPres.Parameters.AddWithValue("@notes", notesValue);
+
+                                object prescriptionIdObj = cmdPres.ExecuteScalar();
+                                if (prescriptionIdObj != null && int.TryParse(prescriptionIdObj.ToString(), out int prescriptionId))
+                                {
+                                    prescriptionIds.Add(prescriptionId);
+                                }
+
+                                // Tính giá thuốc
+                                SqlCommand cmdPrice = new SqlCommand("SELECT price FROM Medicine WHERE medicine_id = @id", conn, tran);
+                                cmdPrice.Parameters.AddWithValue("@id", medicineId);
+                                object priceObj = cmdPrice.ExecuteScalar();
+
+                                if (!TryGetDecimalFromObject(priceObj, out decimal price))
+                                {
+                                    tran.Rollback();
+                                    MessageBoxHelper.ShowError($"Giá thuốc ID {medicineId} không hợp lệ.");
+                                    return;
+                                }
+                                medicineTotal += price * quantity;
+                            }
+
+                            // 3. Lưu TreatmentService (Dịch vụ đã sử dụng) - MỚI
+                            decimal serviceTotal = 0M;
+                            foreach (DataGridViewRow row in dgvServices.Rows)
+                            {
+                                if (row.IsNewRow || !IsCellChecked(row.Cells["Selected"])) continue;
+                                if (!TryGetIntFromObject(row.Cells["ID"].Value, out int serviceId)) continue;
+
+                                // Lưu vào TreatmentService
+                                string insertTreatmentService = @"
+                            INSERT INTO TreatmentService (record_id, service_id, quantity, notes)
+                            VALUES (@recordId, @serviceId, 1, NULL)";
+
+                                SqlCommand cmdTreatment = new SqlCommand(insertTreatmentService, conn, tran);
+                                cmdTreatment.Parameters.AddWithValue("@recordId", recordId);
+                                cmdTreatment.Parameters.AddWithValue("@serviceId", serviceId);
+                                cmdTreatment.ExecuteNonQuery();
+
+                                // Tính giá dịch vụ
+                                if (!TryGetDecimalFromObject(row.Cells["Price"].Value, out decimal servicePrice))
+                                {
+                                    tran.Rollback();
+                                    MessageBoxHelper.ShowError("Giá dịch vụ không hợp lệ.");
+                                    return;
+                                }
+                                serviceTotal += servicePrice;
+                            }
+
+                            decimal totalAmount = serviceTotal + medicineTotal;
+
+                            // 4. Tạo Invoice
+                            string insertInvoice = @"
                         INSERT INTO Invoice (patient_id, staff_id, total_amount, status)
                         OUTPUT INSERTED.invoice_id
                         VALUES (@patientId, @staffId, @total, N'unpaid')";
-                    object invObj = DatabaseHelper.ExecuteScalar(insertInvoice, new[]
-                    {
-                        new SqlParameter("@patientId", SqlDbType.Int) { Value = patientId },
-                        new SqlParameter("@staffId", SqlDbType.Int) { Value = staffId },
-                        new SqlParameter("@total", SqlDbType.Decimal) { Value = totalAmount }
-                    }, tran);
-                    if (invObj == null || !int.TryParse(invObj.ToString(), out int invoiceId))
-                    {
-                        tran.Rollback();
-                        MessageBoxHelper.ShowError("Không tạo được hóa đơn.");
-                        return;
-                    }
 
-                    foreach (DataGridViewRow row in dgvServices.Rows)
-                    {
-                        if (row.IsNewRow || !IsCellChecked(row.Cells["Selected"])) continue;
-                        if (!TryGetIntFromObject(row.Cells["ID"].Value, out int serviceId)) continue;
-                        string insertUsage = "INSERT INTO ServiceUsage (invoice_id, service_id, quantity) VALUES (@invId, @srvId, 1)";
-                        DatabaseHelper.ExecuteNonQuery(insertUsage, new[]
+                            SqlCommand cmdInvoice = new SqlCommand(insertInvoice, conn, tran);
+                            cmdInvoice.Parameters.AddWithValue("@patientId", patientId);
+                            cmdInvoice.Parameters.AddWithValue("@staffId", staffId);
+                            cmdInvoice.Parameters.AddWithValue("@total", totalAmount);
+
+                            object invObj = cmdInvoice.ExecuteScalar();
+                            if (invObj == null || !int.TryParse(invObj.ToString(), out int invoiceId))
+                            {
+                                tran.Rollback();
+                                MessageBoxHelper.ShowError("Không tạo được hóa đơn.");
+                                return;
+                            }
+
+                            // 5. Lưu ServiceUsage (link Invoice với Service)
+                            foreach (DataGridViewRow row in dgvServices.Rows)
+                            {
+                                if (row.IsNewRow || !IsCellChecked(row.Cells["Selected"])) continue;
+                                if (!TryGetIntFromObject(row.Cells["ID"].Value, out int serviceId)) continue;
+
+                                string insertUsage = "INSERT INTO ServiceUsage (invoice_id, service_id, quantity) VALUES (@invId, @srvId, 1)";
+                                SqlCommand cmdUsage = new SqlCommand(insertUsage, conn, tran);
+                                cmdUsage.Parameters.AddWithValue("@invId", invoiceId);
+                                cmdUsage.Parameters.AddWithValue("@srvId", serviceId);
+                                cmdUsage.ExecuteNonQuery();
+                            }
+
+                            // 5.5. Lưu InvoicePrescription (link Invoice với Prescription) - THÊM MỚI
+                            foreach (int prescriptionId in prescriptionIds)
+                            {
+                                string insertInvPres = "INSERT INTO InvoicePrescription (invoice_id, prescription_id) VALUES (@invId, @presId)";
+                                SqlCommand cmdInvPres = new SqlCommand(insertInvPres, conn, tran);
+                                cmdInvPres.Parameters.AddWithValue("@invId", invoiceId);
+                                cmdInvPres.Parameters.AddWithValue("@presId", prescriptionId);
+                                cmdInvPres.ExecuteNonQuery();
+                            }
+
+                            // 6. Cập nhật status Appointment thành completed
+                            string updateAppointment = @"
+                        UPDATE Appointment 
+                        SET status = N'completed' 
+                        WHERE patient_id = @patientId 
+                        AND assigned_doctor_id = @doctorId
+                        AND status IN (N'confirmed', N'in_progress')";
+
+                            SqlCommand cmdUpdateApp = new SqlCommand(updateAppointment, conn, tran);
+                            cmdUpdateApp.Parameters.AddWithValue("@patientId", patientId);
+                            cmdUpdateApp.Parameters.AddWithValue("@doctorId", staffId);
+                            cmdUpdateApp.ExecuteNonQuery();
+
+                            tran.Commit();
+
+                            MessageBoxHelper.ShowSuccess(
+                                $"Đã lưu hồ sơ và tạo hóa đơn #{invoiceId}\n" +
+                                $"Tổng tiền: {Formatter.FormatCurrency(totalAmount)}");
+                            Logger.LogExamination(cboPatient.Text);
+                            Logger.LogInvoiceCreation(cboPatient.Text, totalAmount);
+                            ClearForm();
+                        }
+                        catch (Exception ex)
                         {
-                            new SqlParameter("@invId", SqlDbType.Int) { Value = invoiceId },
-                            new SqlParameter("@srvId", SqlDbType.Int) { Value = serviceId }
-                        }, tran);
+                            tran.Rollback();
+                            throw;
+                        }
                     }
-
-                    tran.Commit();
-                    MessageBoxHelper.ShowSuccess(
-                        $"Đã lưu hồ sơ và tạo hóa đơn #{invoiceId}\n" +
-                        $"Tổng tiền: {Formatter.FormatCurrency(totalAmount)}");
-                    Logger.LogExamination(cboPatient.Text);
-                    Logger.LogInvoiceCreation(cboPatient.Text, totalAmount);
-                    ClearForm();
                 }
             }
             catch (Exception ex)

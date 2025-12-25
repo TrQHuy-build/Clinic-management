@@ -447,9 +447,37 @@ namespace DentalClinicManagement.Pages.Admin
                 MinimizeBox = false
             };
 
-            ComboBox cboItem = new ComboBox { Location = new Point(120, 30), Size = new Size(330, 25), DropDownStyle = ComboBoxStyle.DropDownList };
+            // ✅ TẠO CONTROLS
+            Label lblItem = new Label
+            {
+                Text = "Vật tư:",
+                Location = new Point(30, 33),
+                AutoSize = true,
+                Font = new Font("Segoe UI", 9)
+            };
 
-            TextBox txtQty = new TextBox { Location = new Point(120, 70), Size = new Size(330, 25), Text = "1" };
+            ComboBox cboItem = new ComboBox
+            {
+                Location = new Point(120, 30),
+                Size = new Size(330, 25),
+                DropDownStyle = ComboBoxStyle.DropDownList
+            };
+
+            Label lblQty = new Label
+            {
+                Text = "Số lượng:",
+                Location = new Point(30, 73),
+                AutoSize = true,
+                Font = new Font("Segoe UI", 9)
+            };
+
+            TextBox txtQty = new TextBox
+            {
+                Location = new Point(120, 70),
+                Size = new Size(330, 25),
+                Text = "1"
+            };
+
             Label lblQtyError = CreateErrorLabel(120, 97);
 
             Label lblCurrentStock = new Label
@@ -460,47 +488,61 @@ namespace DentalClinicManagement.Pages.Admin
                 Font = new Font("Segoe UI", 9)
             };
 
-            // Real-time validation
+            // ✅ VALIDATION REAL-TIME
             txtQty.TextChanged += (s, e) => ValidateImportExportQtyRealtime(txtQty, lblQtyError, isImport);
 
-            // Load items
+            // ✅ LOAD DỮ LIỆU VÀO COMBOBOX
             try
             {
-                DataTable dtItems = DatabaseHelper.ExecuteQuery("SELECT item_id, item_name, quantity FROM Inventory ORDER BY item_name");
-                cboItem.DisplayMember = "item_name";
-                cboItem.ValueMember = "item_id";
-                cboItem.DataSource = dtItems;
+                string queryItems = "SELECT item_id, item_name, quantity FROM Inventory ORDER BY item_name";
+                DataTable dtItems = DatabaseHelper.ExecuteQuery(queryItems);
 
-                if (itemId.HasValue)
+                if (dtItems == null || dtItems.Rows.Count == 0)
                 {
-                    cboItem.SelectedValue = itemId.Value;
-                    cboItem.Enabled = false;
+                    MessageBoxHelper.ShowError("Không có vật tư/thiết bị nào trong kho!");
+                    form.Close();
+                    return;
                 }
 
-                // Show current stock when item selected
+                cboItem.DataSource = dtItems;
+                cboItem.DisplayMember = "item_name";
+                cboItem.ValueMember = "item_id";
+
+                // Event hiển thị tồn kho
                 cboItem.SelectedIndexChanged += (s, e) =>
                 {
-                    if (cboItem.SelectedIndex >= 0)
+                    if (cboItem.SelectedIndex >= 0 && cboItem.SelectedValue != null)
                     {
-                        DataRowView row = (DataRowView)cboItem.SelectedItem;
-                        int currentQty = Convert.ToInt32(row["quantity"]);
-                        lblCurrentStock.Text = $"Tồn kho hiện tại: {currentQty}";
+                        try
+                        {
+                            DataRowView row = (DataRowView)cboItem.SelectedItem;
+                            int currentQty = Convert.ToInt32(row["quantity"]);
+                            lblCurrentStock.Text = $"Tồn kho hiện tại: {currentQty}";
 
-                        if (!isImport && currentQty == 0)
-                        {
-                            lblCurrentStock.Text += " (Hết hàng!)";
-                            lblCurrentStock.ForeColor = Color.Red;
+                            if (!isImport && currentQty == 0)
+                            {
+                                lblCurrentStock.Text += " (Hết hàng!)";
+                                lblCurrentStock.ForeColor = Color.Red;
+                            }
+                            else
+                            {
+                                lblCurrentStock.ForeColor = Color.Blue;
+                            }
                         }
-                        else
-                        {
-                            lblCurrentStock.ForeColor = Color.Blue;
-                        }
+                        catch { }
                     }
                 };
 
-                // Trigger initial stock display
-                if (cboItem.Items.Count > 0)
+                // Chọn item
+                if (itemId.HasValue)
+                {
+                    cboItem.SelectedValue = itemId.Value;
+                    //cboItem.Enabled = false;
+                }
+                else if (cboItem.Items.Count > 0)
+                {
                     cboItem.SelectedIndex = 0;
+                }
             }
             catch (Exception ex)
             {
@@ -509,13 +551,15 @@ namespace DentalClinicManagement.Pages.Admin
                 return;
             }
 
-            form.Controls.Add(new Label { Text = "Vật tư:", Location = new Point(30, 33), AutoSize = true, Font = new Font("Segoe UI", 9) });
+            // ✅ THÊM CONTROLS VÀO FORM
+            form.Controls.Add(lblItem);
             form.Controls.Add(cboItem);
-            form.Controls.Add(new Label { Text = "Số lượng:", Location = new Point(30, 73), AutoSize = true, Font = new Font("Segoe UI", 9) });
+            form.Controls.Add(lblQty);
             form.Controls.Add(txtQty);
             form.Controls.Add(lblQtyError);
             form.Controls.Add(lblCurrentStock);
 
+            // ✅ NÚT SUBMIT (giữ nguyên code cũ của bạn)
             Button btnSubmit = new Button
             {
                 Text = isImport ? "Nhập kho" : "Xuất kho",
@@ -548,7 +592,7 @@ namespace DentalClinicManagement.Pages.Admin
 
                 try
                 {
-                    // === DÙNG TRANSACTION ĐỂ ĐẢM BẢO AN TOÀN (rất quan trọng!) ===
+                    // === DÙNG TRANSACTION ĐỂ ĐẢM BẢO AN TOÀN ===
                     using (var connection = DatabaseHelper.GetConnection())
                     {
                         connection.Open();
@@ -556,8 +600,8 @@ namespace DentalClinicManagement.Pages.Admin
                         {
                             try
                             {
-                                // 1. LẤY LẠI tồn kho HIỆN TẠI (mới nhất)
-                                string stockQuery = "SELECT quantity FROM Inventory WHERE item_id = @id FOR UPDATE";
+                                // 1. LẤY LẠI tồn kho HIỆN TẠI với khóa (SQL Server syntax)
+                                string stockQuery = "SELECT quantity FROM Inventory WITH (UPDLOCK, ROWLOCK) WHERE item_id = @id";
                                 var cmdStock = new SqlCommand(stockQuery, connection, transaction);
                                 cmdStock.Parameters.AddWithValue("@id", selectedItemId);
                                 object result = cmdStock.ExecuteScalar();
@@ -565,6 +609,7 @@ namespace DentalClinicManagement.Pages.Admin
                                 if (result == null || result == DBNull.Value)
                                 {
                                     MessageBoxHelper.ShowError("Không tìm thấy vật tư/thiết bị trong kho!");
+                                    transaction.Rollback();
                                     return;
                                 }
 
@@ -575,10 +620,11 @@ namespace DentalClinicManagement.Pages.Admin
                                     MessageBoxHelper.ShowError($"Không đủ hàng để xuất!\n" +
                                                             $"Tồn kho hiện tại: {currentStock}\n" +
                                                             $"Yêu cầu xuất: {qty}");
+                                    transaction.Rollback();
                                     return;
                                 }
 
-                                // 2. Cập nhật số lượng (an toàn trong transaction)
+                                // 2. Cập nhật số lượng
                                 string updateQuery = isImport
                                     ? "UPDATE Inventory SET quantity = quantity + @qty WHERE item_id = @id"
                                     : "UPDATE Inventory SET quantity = quantity - @qty WHERE item_id = @id";
@@ -597,8 +643,8 @@ namespace DentalClinicManagement.Pages.Admin
 
                                 // 3. Ghi log giao dịch
                                 string logQuery = @"INSERT INTO InventoryTransaction 
-                                      (item_id, quantity, type, staff_id, trans_date) 
-                                      VALUES (@id, @qty, @type, @staffId, GETDATE())";
+                          (item_id, quantity, type, staff_id, trans_date) 
+                          VALUES (@id, @qty, @type, @staffId, GETDATE())";
 
                                 var cmdLog = new SqlCommand(logQuery, connection, transaction);
                                 cmdLog.Parameters.AddWithValue("@id", selectedItemId);
@@ -617,7 +663,7 @@ namespace DentalClinicManagement.Pages.Admin
                                     Logger.LogExportInventory(selectedItemName, qty);
 
                                 form.Close();
-                                LoadInventory(); // Cập nhật lại danh sách
+                                LoadInventory();
                             }
                             catch (Exception ex)
                             {

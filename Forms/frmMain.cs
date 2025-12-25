@@ -3,6 +3,7 @@ using DentalClinicManagement.Pages.Admin;
 using DentalClinicManagement.Pages.Common;
 using DentalClinicManagement.Pages.Doctor;
 using DentalClinicManagement.Pages.Patient;
+using DentalClinicManagement.Pages.Staff;
 using DentalClinicManagement.Utils;
 using System;
 using System.Collections.Generic;
@@ -15,6 +16,7 @@ namespace DentalClinicManagement.Forms
     {
         private List<SidebarMenuItem> menuItems;
         private UserControl currentPage;
+        private bool isExiting = false; // Flag để tránh MessageBox hiện 2 lần
 
         public frmMain()
         {
@@ -56,6 +58,11 @@ namespace DentalClinicManagement.Forms
                 LoadDoctorMenu();
                 LoadPage(new DoctorDashboard());
             }
+            else if (Auth.IsStaff())
+            {
+                LoadStaffMenu();
+                LoadPage(new StaffDashboard());
+            }
             else if (Auth.IsPatient())
             {
                 LoadPatientMenu();
@@ -76,10 +83,8 @@ namespace DentalClinicManagement.Forms
             AddMenuItem("📈", "Báo cáo", () => LoadPage(new AdminReports()));
             AddMenuItem("📋", "Nhật kí hệ thống", () => LoadPage(new AdminLogs()));
             AddMenuItem("⚙️", "Cài đặt", () => LoadPage(new SettingsPage()));
-            // Add explicit logout item in sidebar
             AddMenuItem("🔓", "Đăng xuất", () => BtnLogout_Click(this, EventArgs.Empty));
 
-            // Select first item
             if (menuItems.Count > 0)
                 menuItems[0].IsSelected = true;
         }
@@ -93,6 +98,20 @@ namespace DentalClinicManagement.Forms
             AddMenuItem("👥", "Bệnh nhân của tôi", () => LoadPage(new DoctorPatients()));
             AddMenuItem("🕐", "Lịch trực", () => LoadPage(new DoctorShifts()));
             AddMenuItem("⚙️", "Cài đặt", () => LoadPage(new SettingsPage()));
+            AddMenuItem("🔓", "Đăng xuất", () => BtnLogout_Click(this, EventArgs.Empty));
+
+            if (menuItems.Count > 0)
+                menuItems[0].IsSelected = true;
+        }
+
+        private void LoadStaffMenu()
+        {
+            AddMenuItem("📊", "Dashboard", () => LoadPage(new StaffDashboard()));
+            AddMenuItem("📅", "Lịch hẹn", () => LoadPage(new StaffAppointments()));
+            AddMenuItem("👤", "Kê khai bệnh nhân", () => LoadPage(new StaffPatientIntake()));
+            AddMenuItem("💰", "Hóa đơn", () => LoadPage(new StaffInvoicing()));
+            AddMenuItem("⚙️", "Cài đặt", () => LoadPage(new SettingsPage()));
+            AddMenuItem("🔓", "Đăng xuất", () => BtnLogout_Click(this, EventArgs.Empty));
 
             if (menuItems.Count > 0)
                 menuItems[0].IsSelected = true;
@@ -107,6 +126,7 @@ namespace DentalClinicManagement.Forms
             AddMenuItem("📁", "Hồ sơ sức khỏe", () => LoadPage(new PatientMedicalRecords()));
             AddMenuItem("👤", "Thông tin cá nhân", () => LoadPage(new PatientProfile()));
             AddMenuItem("⚙️", "Cài đặt", () => LoadPage(new SettingsPage()));
+            AddMenuItem("🔓", "Đăng xuất", () => BtnLogout_Click(this, EventArgs.Empty));
 
             if (menuItems.Count > 0)
                 menuItems[0].IsSelected = true;
@@ -171,14 +191,26 @@ namespace DentalClinicManagement.Forms
                 }
 
                 // Show login form and close main
-                var login = new frmLogin();
-                login.Show();
+
+                
+                this.Hide();
+                using (var login = new frmLogin())
+                {
+                    login.ShowDialog();
+                }
                 this.Close();
+                //var login = new frmLogin();
+                //login.Show();
+                //this.Close();
             }
         }
 
         private void FrmMain_FormClosing(object sender, FormClosingEventArgs e)
         {
+            // Nếu đang trong quá trình thoát, không hiện MessageBox nữa
+            if (isExiting)
+                return;
+
             DialogResult result = MessageBox.Show("Bạn có chắc muốn thoát ứng dụng?",
                 "Xác nhận thoát", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
 
@@ -188,6 +220,7 @@ namespace DentalClinicManagement.Forms
             }
             else
             {
+                isExiting = true; // Đánh dấu đang thoát
                 Application.Exit();
             }
         }
