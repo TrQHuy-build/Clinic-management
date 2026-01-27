@@ -19,18 +19,7 @@ namespace DentalClinicManagement.Forms
             txtPassword.UseSystemPasswordChar = true;
             btnTogglePassword.Text = "👁";
 
-            lblWelcome.Parent = pictureBox1;
-            lblSubtitle.Parent = pictureBox1;
-            label1.Parent = pictureBox1;
-
-            lblWelcome.BackColor = Color.Transparent;
-            lblSubtitle.BackColor = Color.Transparent;
-            label1.BackColor = Color.Transparent;
-
-            // Đảm bảo luôn nổi trên ảnh
-            lblWelcome.BringToFront();
-            lblSubtitle.BringToFront();
-            label1.BringToFront();
+              
 
         }
         private void btnTogglePassword_Click(object sender, EventArgs e)
@@ -142,6 +131,7 @@ namespace DentalClinicManagement.Forms
 
         private void BtnClose_Click(object sender, EventArgs e)
         {
+            
             Application.Exit();
         }
 
@@ -155,6 +145,26 @@ namespace DentalClinicManagement.Forms
 
         private void txtPassword_TextChanged(object sender, EventArgs e)
 
+        {
+
+        }
+
+        private void rightPanel_Paint(object sender, PaintEventArgs e)
+        {
+           
+        }
+
+        private void lblWelcome_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void pictureBox1_Click(object sender, EventArgs e)
         {
 
         }

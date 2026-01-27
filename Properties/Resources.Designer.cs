@@ -63,9 +63,69 @@ namespace DentalManagement.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap _133864911312596807 {
+            get {
+                object obj = ResourceManager.GetObject("133864911312596807", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap background_xanh_duong_18 {
+            get {
+                object obj = ResourceManager.GetObject("background-xanh-duong-18", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap dentist {
             get {
                 object obj = ResourceManager.GetObject("dentist", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap Gemini_Generated_Image_hu8vqyhu8vqyhu8v {
+            get {
+                object obj = ResourceManager.GetObject("Gemini_Generated_Image_hu8vqyhu8vqyhu8v", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap Gemini_Generated_Image_xxupk4xxupk4xxup {
+            get {
+                object obj = ResourceManager.GetObject("Gemini_Generated_Image_xxupk4xxupk4xxup", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap Gemini_Generated_Image_y6pjdry6pjdry6pj {
+            get {
+                object obj = ResourceManager.GetObject("Gemini_Generated_Image_y6pjdry6pjdry6pj", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap Gemini_Generated_Image_y6pjdry6pjdry6pj1 {
+            get {
+                object obj = ResourceManager.GetObject("Gemini_Generated_Image_y6pjdry6pjdry6pj1", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

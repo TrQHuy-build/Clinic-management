@@ -271,6 +271,12 @@
     <Compile Include="Utils\Logger.cs" />
     <Compile Include="Utils\MessageBoxHelper.cs" />
     <Compile Include="Utils\Validator.cs" />
+    <None Include="Resources\Gemini_Generated_Image_xxupk4xxupk4xxup.png" />
+    <None Include="Resources\Gemini_Generated_Image_y6pjdry6pjdry6pj1.png" />
+    <None Include="Resources\Gemini_Generated_Image_y6pjdry6pjdry6pj.png" />
+    <None Include="Resources\Gemini_Generated_Image_hu8vqyhu8vqyhu8v.png" />
+    <None Include="Resources\background-xanh-duong-18.jpg" />
+    <None Include="Resources\133864911312596807.jpg" />
     <None Include="Resources\Screenshot 2025-11-23 054832.png" />
     <None Include="Resources\dentist.jpg" />
     <EmbeddedResource Include="Forms\frmLogin.resx">
