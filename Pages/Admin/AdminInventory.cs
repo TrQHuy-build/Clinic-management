@@ -26,7 +26,7 @@ namespace DentalClinicManagement.Pages.Admin
             if (cboType != null)
             {
                 cboType.Items.Clear();
-                cboType.Items.AddRange(new object[] { "Tất cả", "Material", "Equipment" });
+                cboType.Items.AddRange(new object[] { "Tất cả", "Vật tư", "Thiết bị" });
                 cboType.SelectedIndex = 0;
             }
         }
@@ -375,43 +375,59 @@ namespace DentalClinicManagement.Pages.Admin
                             new SqlParameter("@supplier", txtSupplier.Text.Trim()), // Required field, no DBNull
                             new SqlParameter("@id", itemId.Value)
                         };
+
+                        int rows = DatabaseHelper.ExecuteNonQuery(query, parameters);
+                        if (rows > 0)
+                        {
+                            MessageBoxHelper.ShowSuccess("Cập nhật vật tư/thiết bị thành công!");
+                            Logger.LogUpdate("Inventory", txtName.Text.Trim());
+                            form.Close();
+                            LoadInventory();
+                        }
+                        else
+                        {
+                            MessageBoxHelper.ShowError("Cập nhật thất bại. Vui lòng thử lại.");
+                        }
                     }
                     else
                     {
-                        // Kiểm tra tên trùng
+                        // Kiểm tra trùng TÊN + NHÀ CUNG CẤP (cho phép trùng tên nếu khác nhà cung cấp)
                         object existingItem = DatabaseHelper.ExecuteScalar(
-                            "SELECT COUNT(*) FROM Inventory WHERE item_name = @name",
-                            new SqlParameter[] { new SqlParameter("@name", txtName.Text.Trim()) });
+                            "SELECT COUNT(*) FROM Inventory WHERE item_name = @name AND supplier = @supplier",
+                            new SqlParameter[] {
+                                new SqlParameter("@name", txtName.Text.Trim()),
+                                new SqlParameter("@supplier", txtSupplier.Text.Trim())
+                            });
 
                         if (Convert.ToInt32(existingItem) > 0)
                         {
-                            MessageBoxHelper.ShowValidationError("Tên vật tư/thiết bị đã tồn tại!");
+                            MessageBoxHelper.ShowValidationError("Vật tư/thiết bị này từ nhà cung cấp này đã tồn tại trong kho!");
                             txtName.Focus();
                             return;
                         }
 
-                        query = @"INSERT INTO Inventory (item_name, type, quantity, unit, supplier) 
-                                VALUES (@name, @type, @qty, @unit, @supplier)";
+                        query = @"INSERT INTO Inventory (item_name, type, quantity, unit, supplier)
+                                  VALUES (@name, @type, @qty, @unit, @supplier)";
                         parameters = new SqlParameter[] {
                             new SqlParameter("@name", txtName.Text.Trim()),
                             new SqlParameter("@type", cboTypeForm.SelectedItem.ToString()),
                             new SqlParameter("@qty", qty),
-                            new SqlParameter("@unit", txtUnit.Text.Trim()), // Required field, no DBNull
-                            new SqlParameter("@supplier", txtSupplier.Text.Trim()) // Required field, no DBNull
+                            new SqlParameter("@unit", txtUnit.Text.Trim()),
+                            new SqlParameter("@supplier", txtSupplier.Text.Trim())
                         };
-                    }
 
-                    int result = DatabaseHelper.ExecuteNonQuery(query, parameters);
-                    if (result > 0)
-                    {
-                        MessageBoxHelper.ShowSaveSuccess();
-                        Logger.LogAction(itemId.HasValue ? "UPDATE_INVENTORY" : "CREATE_INVENTORY", txtName.Text);
-                        form.Close();
-                        LoadInventory();
-                    }
-                    else
-                    {
-                        MessageBoxHelper.ShowError("Không thể lưu dữ liệu!");
+                        int rows = DatabaseHelper.ExecuteNonQuery(query, parameters);
+                        if (rows > 0)
+                        {
+                            MessageBoxHelper.ShowSuccess("Thêm vật tư/thiết bị thành công!");
+                            Logger.LogCreate("Inventory", txtName.Text.Trim());
+                            form.Close();
+                            LoadInventory();
+                        }
+                        else
+                        {
+                            MessageBoxHelper.ShowError("Thêm mới thất bại. Vui lòng thử lại.");
+                        }
                     }
                 }
                 catch (SqlException sqlEx)
