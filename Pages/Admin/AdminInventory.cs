@@ -283,7 +283,19 @@ namespace DentalClinicManagement.Pages.Admin
             TextBox txtQuantity = new TextBox { Location = new Point(150, 125), Size = new Size(350, 25), Text = "0" };
             Label lblQuantityError = CreateErrorLabel(150, 152);
 
-            TextBox txtUnit = new TextBox { Location = new Point(150, 180), Size = new Size(350, 25) };
+            // ✅ ĐỔI TEXTBOX THÀNH COMBOBOX CHO ĐơN VỊ
+            ComboBox cboUnit = new ComboBox
+            {
+                Location = new Point(150, 180),
+                Size = new Size(350, 25),
+                DropDownStyle = ComboBoxStyle.DropDown // Cho phép nhập tùy chỉnh
+            };
+            cboUnit.Items.AddRange(new object[]
+            {
+                "Cái", "Hộp", "Chiếc", "Lọ", "Chai",
+                "Bộ", "Viên", "Gói", "Tuýp", "Kg",
+                "Lít", "Mét", "Ống", "Thùng", "Cuộn"
+            });
             Label lblUnitError = CreateErrorLabel(150, 207);
 
             TextBox txtSupplier = new TextBox { Location = new Point(150, 235), Size = new Size(350, 25) };
@@ -292,7 +304,7 @@ namespace DentalClinicManagement.Pages.Admin
             // Real-time validation
             txtName.TextChanged += (s, e) => ValidateItemNameRealtime(txtName, lblNameError);
             txtQuantity.TextChanged += (s, e) => ValidateQuantityRealtime(txtQuantity, lblQuantityError);
-            txtUnit.TextChanged += (s, e) => ValidateUnitRealtime(txtUnit, lblUnitError);
+            cboUnit.TextChanged += (s, e) => ValidateUnitRealtimeComboBox(cboUnit, lblUnitError);
             txtSupplier.TextChanged += (s, e) => ValidateSupplierRealtime(txtSupplier, lblSupplierError);
 
             form.Controls.Add(new Label { Text = "Tên:", Location = new Point(30, 33), AutoSize = true, Font = new Font("Segoe UI", 9) });
@@ -304,7 +316,7 @@ namespace DentalClinicManagement.Pages.Admin
             form.Controls.Add(txtQuantity);
             form.Controls.Add(lblQuantityError);
             form.Controls.Add(new Label { Text = "Đơn vị:", Location = new Point(30, 183), AutoSize = true, Font = new Font("Segoe UI", 9) });
-            form.Controls.Add(txtUnit);
+            form.Controls.Add(cboUnit);
             form.Controls.Add(lblUnitError);
             form.Controls.Add(new Label { Text = "Nhà cung cấp:", Location = new Point(30, 238), AutoSize = true, Font = new Font("Segoe UI", 9) });
             form.Controls.Add(txtSupplier);
@@ -329,7 +341,7 @@ namespace DentalClinicManagement.Pages.Admin
                             cboTypeForm.SelectedItem = itemType;
 
                         txtQuantity.Text = row["quantity"]?.ToString() ?? "0";
-                        txtUnit.Text = row["unit"]?.ToString() ?? "";
+                        cboUnit.Text = row["unit"]?.ToString() ?? "";
                         txtSupplier.Text = row["supplier"]?.ToString() ?? "";
                     }
                 }
@@ -354,7 +366,7 @@ namespace DentalClinicManagement.Pages.Admin
 
             btnSave.Click += (s, ev) =>
             {
-                if (!ValidateInventoryInput(txtName, txtQuantity, txtUnit, txtSupplier))
+                if (!ValidateInventoryInputWithComboBox(txtName, txtQuantity, cboUnit, txtSupplier))
                     return;
 
                 try
@@ -371,8 +383,8 @@ namespace DentalClinicManagement.Pages.Admin
                             new SqlParameter("@name", txtName.Text.Trim()),
                             new SqlParameter("@type", cboTypeForm.SelectedItem.ToString()),
                             new SqlParameter("@qty", qty),
-                            new SqlParameter("@unit", txtUnit.Text.Trim()), // Required field, no DBNull
-                            new SqlParameter("@supplier", txtSupplier.Text.Trim()), // Required field, no DBNull
+                            new SqlParameter("@unit", cboUnit.Text.Trim()),
+                            new SqlParameter("@supplier", txtSupplier.Text.Trim()),
                             new SqlParameter("@id", itemId.Value)
                         };
 
@@ -391,7 +403,7 @@ namespace DentalClinicManagement.Pages.Admin
                     }
                     else
                     {
-                        // Kiểm tra trùng TÊN + NHÀ CUNG CẤP (cho phép trùng tên nếu khác nhà cung cấp)
+                        // Kiểm tra trùng TÊN + NHÀ CUNG CẤP
                         object existingItem = DatabaseHelper.ExecuteScalar(
                             "SELECT COUNT(*) FROM Inventory WHERE item_name = @name AND supplier = @supplier",
                             new SqlParameter[] {
@@ -412,7 +424,7 @@ namespace DentalClinicManagement.Pages.Admin
                             new SqlParameter("@name", txtName.Text.Trim()),
                             new SqlParameter("@type", cboTypeForm.SelectedItem.ToString()),
                             new SqlParameter("@qty", qty),
-                            new SqlParameter("@unit", txtUnit.Text.Trim()),
+                            new SqlParameter("@unit", cboUnit.Text.Trim()),
                             new SqlParameter("@supplier", txtSupplier.Text.Trim())
                         };
 
@@ -432,7 +444,7 @@ namespace DentalClinicManagement.Pages.Admin
                 }
                 catch (SqlException sqlEx)
                 {
-                    if (sqlEx.Number == 2627 || sqlEx.Number == 2601) // Duplicate key
+                    if (sqlEx.Number == 2627 || sqlEx.Number == 2601)
                     {
                         MessageBoxHelper.ShowError("Tên vật tư/thiết bị đã tồn tại!");
                     }
@@ -456,14 +468,14 @@ namespace DentalClinicManagement.Pages.Admin
             Form form = new Form
             {
                 Text = isImport ? "Nhập kho" : "Xuất kho",
-                Size = new Size(500, 350),
+                Size = new Size(500, isImport ? 450 : 350), // Tăng chiều cao cho form nhập kho
                 StartPosition = FormStartPosition.CenterParent,
                 FormBorderStyle = FormBorderStyle.FixedDialog,
                 MaximizeBox = false,
                 MinimizeBox = false
             };
 
-            // ✅ TẠO CONTROLS
+            // Vật tư
             Label lblItem = new Label
             {
                 Text = "Vật tư:",
@@ -479,6 +491,7 @@ namespace DentalClinicManagement.Pages.Admin
                 DropDownStyle = ComboBoxStyle.DropDownList
             };
 
+            // Số lượng
             Label lblQty = new Label
             {
                 Text = "Số lượng:",
@@ -504,13 +517,44 @@ namespace DentalClinicManagement.Pages.Admin
                 Font = new Font("Segoe UI", 9)
             };
 
+            // ✅ THÊM TRƯỜNG NHÀ CUNG CẤP (CHỈ HIỂN THỊ KHI NHẬP KHO)
+            Label lblSupplier = null;
+            TextBox txtSupplier = null;
+            Label lblSupplierError = null;
+
+            if (isImport)
+            {
+                lblSupplier = new Label
+                {
+                    Text = "Nhà cung cấp:",
+                    Location = new Point(30, 153),
+                    AutoSize = true,
+                    Font = new Font("Segoe UI", 9)
+                };
+
+                txtSupplier = new TextBox
+                {
+                    Location = new Point(120, 150),
+                    Size = new Size(330, 25)
+                };
+
+                lblSupplierError = CreateErrorLabel(120, 177);
+
+                // Real-time validation cho nhà cung cấp
+                txtSupplier.TextChanged += (s, e) => ValidateSupplierRealtimeImport(txtSupplier, lblSupplierError);
+
+                form.Controls.Add(lblSupplier);
+                form.Controls.Add(txtSupplier);
+                form.Controls.Add(lblSupplierError);
+            }
+
             // ✅ VALIDATION REAL-TIME
             txtQty.TextChanged += (s, e) => ValidateImportExportQtyRealtime(txtQty, lblQtyError, isImport);
 
             // ✅ LOAD DỮ LIỆU VÀO COMBOBOX
             try
             {
-                string queryItems = "SELECT item_id, item_name, quantity FROM Inventory ORDER BY item_name";
+                string queryItems = "SELECT item_id, item_name, quantity, supplier FROM Inventory ORDER BY item_name";
                 DataTable dtItems = DatabaseHelper.ExecuteQuery(queryItems);
 
                 if (dtItems == null || dtItems.Rows.Count == 0)
@@ -524,7 +568,7 @@ namespace DentalClinicManagement.Pages.Admin
                 cboItem.DisplayMember = "item_name";
                 cboItem.ValueMember = "item_id";
 
-                // Event hiển thị tồn kho
+                // Event hiển thị tồn kho và tự động điền nhà cung cấp
                 cboItem.SelectedIndexChanged += (s, e) =>
                 {
                     if (cboItem.SelectedIndex >= 0 && cboItem.SelectedValue != null)
@@ -544,6 +588,13 @@ namespace DentalClinicManagement.Pages.Admin
                             {
                                 lblCurrentStock.ForeColor = Color.Blue;
                             }
+
+                            // ✅ TỰ ĐỘNG ĐIỀN NHÀ CUNG CẤP KHI NHẬP KHO
+                            if (isImport && txtSupplier != null)
+                            {
+                                string supplier = row["supplier"]?.ToString() ?? "";
+                                txtSupplier.Text = supplier;
+                            }
                         }
                         catch { }
                     }
@@ -553,7 +604,6 @@ namespace DentalClinicManagement.Pages.Admin
                 if (itemId.HasValue)
                 {
                     cboItem.SelectedValue = itemId.Value;
-                    //cboItem.Enabled = false;
                 }
                 else if (cboItem.Items.Count > 0)
                 {
@@ -575,11 +625,11 @@ namespace DentalClinicManagement.Pages.Admin
             form.Controls.Add(lblQtyError);
             form.Controls.Add(lblCurrentStock);
 
-            // ✅ NÚT SUBMIT (giữ nguyên code cũ của bạn)
+            // ✅ NÚT SUBMIT
             Button btnSubmit = new Button
             {
                 Text = isImport ? "Nhập kho" : "Xuất kho",
-                Location = new Point(190, 160),
+                Location = new Point(190, isImport ? 240 : 160),
                 Size = new Size(120, 35),
                 BackColor = ColorTranslator.FromHtml(isImport ? "#28A745" : "#DC3545"),
                 ForeColor = Color.White,
@@ -589,6 +639,7 @@ namespace DentalClinicManagement.Pages.Admin
 
             btnSubmit.Click += (s, ev) =>
             {
+                // ✅ VALIDATE SỐ LƯỢNG
                 if (!int.TryParse(txtQty.Text, out int qty) || qty <= 0)
                 {
                     MessageBoxHelper.ShowValidationError("Số lượng phải là số nguyên lớn hơn 0!");
@@ -603,12 +654,36 @@ namespace DentalClinicManagement.Pages.Admin
                     return;
                 }
 
+                // ✅ VALIDATE NHÀ CUNG CẤP (CHỈ KHI NHẬP KHO)
+                if (isImport && txtSupplier != null)
+                {
+                    if (string.IsNullOrWhiteSpace(txtSupplier.Text))
+                    {
+                        MessageBoxHelper.ShowValidationError("Vui lòng nhập tên nhà cung cấp!");
+                        txtSupplier.Focus();
+                        return;
+                    }
+
+                    if (txtSupplier.Text.Trim().Length < 2)
+                    {
+                        MessageBoxHelper.ShowValidationError("Tên nhà cung cấp phải có ít nhất 2 ký tự!");
+                        txtSupplier.Focus();
+                        return;
+                    }
+
+                    if (txtSupplier.Text.Trim().Length > 100)
+                    {
+                        MessageBoxHelper.ShowValidationError("Tên nhà cung cấp không được vượt quá 100 ký tự!");
+                        txtSupplier.Focus();
+                        return;
+                    }
+                }
+
                 int selectedItemId = Convert.ToInt32(cboItem.SelectedValue);
                 string selectedItemName = cboItem.Text;
 
                 try
                 {
-                    // === DÙNG TRANSACTION ĐỂ ĐẢM BẢO AN TOÀN ===
                     using (var connection = DatabaseHelper.GetConnection())
                     {
                         connection.Open();
@@ -616,7 +691,7 @@ namespace DentalClinicManagement.Pages.Admin
                         {
                             try
                             {
-                                // 1. LẤY LẠI tồn kho HIỆN TẠI với khóa (SQL Server syntax)
+                                // 1. Lấy lại tồn kho hiện tại
                                 string stockQuery = "SELECT quantity FROM Inventory WITH (UPDLOCK, ROWLOCK) WHERE item_id = @id";
                                 var cmdStock = new SqlCommand(stockQuery, connection, transaction);
                                 cmdStock.Parameters.AddWithValue("@id", selectedItemId);
@@ -640,14 +715,27 @@ namespace DentalClinicManagement.Pages.Admin
                                     return;
                                 }
 
-                                // 2. Cập nhật số lượng
-                                string updateQuery = isImport
-                                    ? "UPDATE Inventory SET quantity = quantity + @qty WHERE item_id = @id"
-                                    : "UPDATE Inventory SET quantity = quantity - @qty WHERE item_id = @id";
+                                // 2. Cập nhật số lượng (và nhà cung cấp nếu nhập kho)
+                                string updateQuery;
+                                SqlCommand cmdUpdate;
 
-                                var cmdUpdate = new SqlCommand(updateQuery, connection, transaction);
-                                cmdUpdate.Parameters.AddWithValue("@qty", qty);
-                                cmdUpdate.Parameters.AddWithValue("@id", selectedItemId);
+                                if (isImport && txtSupplier != null)
+                                {
+                                    // ✅ CẬP NHẬT LUÔN NHÀ CUNG CẤP KHI NHẬP KHO
+                                    updateQuery = "UPDATE Inventory SET quantity = quantity + @qty, supplier = @supplier WHERE item_id = @id";
+                                    cmdUpdate = new SqlCommand(updateQuery, connection, transaction);
+                                    cmdUpdate.Parameters.AddWithValue("@qty", qty);
+                                    cmdUpdate.Parameters.AddWithValue("@supplier", txtSupplier.Text.Trim());
+                                    cmdUpdate.Parameters.AddWithValue("@id", selectedItemId);
+                                }
+                                else
+                                {
+                                    updateQuery = "UPDATE Inventory SET quantity = quantity - @qty WHERE item_id = @id";
+                                    cmdUpdate = new SqlCommand(updateQuery, connection, transaction);
+                                    cmdUpdate.Parameters.AddWithValue("@qty", qty);
+                                    cmdUpdate.Parameters.AddWithValue("@id", selectedItemId);
+                                }
+
                                 int rowsAffected = cmdUpdate.ExecuteNonQuery();
 
                                 if (rowsAffected == 0)
@@ -659,8 +747,8 @@ namespace DentalClinicManagement.Pages.Admin
 
                                 // 3. Ghi log giao dịch
                                 string logQuery = @"INSERT INTO InventoryTransaction 
-                          (item_id, quantity, type, staff_id, trans_date) 
-                          VALUES (@id, @qty, @type, @staffId, GETDATE())";
+                                                  (item_id, quantity, type, staff_id, trans_date) 
+                                                  VALUES (@id, @qty, @type, @staffId, GETDATE())";
 
                                 var cmdLog = new SqlCommand(logQuery, connection, transaction);
                                 cmdLog.Parameters.AddWithValue("@id", selectedItemId);
@@ -669,7 +757,7 @@ namespace DentalClinicManagement.Pages.Admin
                                 cmdLog.Parameters.AddWithValue("@staffId", Auth.CurrentStaffId ?? (object)DBNull.Value);
                                 cmdLog.ExecuteNonQuery();
 
-                                // 4. Commit nếu mọi thứ OK
+                                // 4. Commit
                                 transaction.Commit();
 
                                 MessageBoxHelper.ShowSuccess(isImport ? "Nhập kho thành công!" : "Xuất kho thành công!");
@@ -699,8 +787,8 @@ namespace DentalClinicManagement.Pages.Admin
             form.ShowDialog();
         }
 
-        // Validation methods
-        private bool ValidateInventoryInput(TextBox txtName, TextBox txtQuantity, TextBox txtUnit, TextBox txtSupplier)
+        // ✅ VALIDATION CHO COMBOBOX ĐƠN VỊ
+        private bool ValidateInventoryInputWithComboBox(TextBox txtName, TextBox txtQuantity, ComboBox cboUnit, TextBox txtSupplier)
         {
             if (string.IsNullOrWhiteSpace(txtName.Text))
             {
@@ -723,7 +811,6 @@ namespace DentalClinicManagement.Pages.Admin
                 return false;
             }
 
-            // Parse quantity early so 'qty' exists for subsequent checks
             if (!int.TryParse(txtQuantity.Text, out int qty))
             {
                 MessageBoxHelper.ShowValidationError("Số lượng phải là số nguyên!");
@@ -738,7 +825,6 @@ namespace DentalClinicManagement.Pages.Admin
                 return false;
             }
 
-            // Cảnh báo khi số lượng = 0
             if (qty == 0)
             {
                 var result = MessageBox.Show(
@@ -761,56 +847,45 @@ namespace DentalClinicManagement.Pages.Admin
                 return false;
             }
 
-            if (!string.IsNullOrWhiteSpace(txtUnit.Text) && txtUnit.Text.Trim().Length > 50)
+            // ✅ VALIDATE ĐƠN VỊ (COMBOBOX)
+            if (string.IsNullOrWhiteSpace(cboUnit.Text))
             {
-                MessageBoxHelper.ShowValidationError("Đơn vị không được vượt quá 50 ký tự!");
-                txtUnit.Focus();
+                MessageBoxHelper.ShowValidationError("Vui lòng chọn hoặc nhập đơn vị!");
+                cboUnit.Focus();
                 return false;
             }
 
-            // Yêu cầu nhập đơn vị + không được là "0"
-            if (string.IsNullOrWhiteSpace(txtUnit.Text))
-            {
-                MessageBoxHelper.ShowValidationError("Vui lòng nhập đơn vị (VD: Cái, Hộp, Chiếc, Lọ, ...)!");
-                txtUnit.Focus();
-                return false;
-            }
-
-            string unit = txtUnit.Text.Trim();
+            string unit = cboUnit.Text.Trim();
 
             if (unit.Length < 1)
             {
                 MessageBoxHelper.ShowValidationError("Đơn vị phải có ít nhất 1 ký tự!");
-                txtUnit.Focus();
+                cboUnit.Focus();
                 return false;
             }
 
             if (unit.Length > 50)
             {
                 MessageBoxHelper.ShowValidationError("Đơn vị không được vượt quá 50 ký tự!");
-                txtUnit.Focus();
+                cboUnit.Focus();
                 return false;
             }
 
-            // Chặn trường hợp nhập "0", "00", "000", hoặc chỉ toàn số 0
             if (unit.All(c => c == '0' || char.IsWhiteSpace(c)))
             {
                 MessageBoxHelper.ShowValidationError("Đơn vị không hợp lệ! Không được nhập chỉ toàn số 0.");
-                txtUnit.Focus();
+                cboUnit.Focus();
                 return false;
             }
 
-            // (Tùy chọn mạnh hơn) Chặn luôn nếu chỉ chứa số (ví dụ: "123", "500")
             if (int.TryParse(unit, out _))
             {
-                MessageBoxHelper.ShowValidationError("Đơn vị không được là một con số! Vui lòng nhập chữ (VD: Cái, Hộp, Lọ, Viên, ...)");
-                txtUnit.Focus();
+                MessageBoxHelper.ShowValidationError("Đơn vị không được là một con số! Vui lòng nhập chữ (VD: Cái, Hộp, Lọ, ...)");
+                cboUnit.Focus();
                 return false;
             }
 
-            return true; // Hợp lệ
-
-            // Yêu cầu nhập nhà cung cấp
+            // ✅ VALIDATE NHÀ CUNG CẤP
             if (string.IsNullOrWhiteSpace(txtSupplier.Text))
             {
                 MessageBoxHelper.ShowValidationError("Vui lòng nhập tên nhà cung cấp!");
@@ -873,7 +948,7 @@ namespace DentalClinicManagement.Pages.Admin
             else if (qty == 0)
             {
                 ShowFieldError(txt, lblError, "⚠ Số lượng = 0 (hết hàng)");
-                txt.BackColor = Color.FromArgb(255, 243, 205); // Warning color
+                txt.BackColor = Color.FromArgb(255, 243, 205);
             }
             else if (qty > 1000000)
             {
@@ -885,47 +960,66 @@ namespace DentalClinicManagement.Pages.Admin
             }
         }
 
-        private void ValidateUnitRealtime(TextBox txt, Label lblError)
+        // ✅ VALIDATION REALTIME CHO COMBOBOX ĐƠN VỊ
+        private void ValidateUnitRealtimeComboBox(ComboBox cbo, Label lblError)
         {
-            string unit = txt.Text.Trim();
+            string unit = cbo.Text.Trim();
 
-            if (string.IsNullOrWhiteSpace(txt.Text))
+            if (string.IsNullOrWhiteSpace(cbo.Text))
             {
-                ShowFieldError(txt, lblError, "Đơn vị không được để trống");
+                ShowFieldErrorComboBox(cbo, lblError, "Đơn vị không được để trống");
                 return;
             }
 
             if (unit.Length < 1)
             {
-                ShowFieldError(txt, lblError, "Đơn vị phải có ít nhất 1 ký tự");
+                ShowFieldErrorComboBox(cbo, lblError, "Đơn vị phải có ít nhất 1 ký tự");
                 return;
             }
 
             if (unit.Length > 50)
             {
-                ShowFieldError(txt, lblError, "Đơn vị không được vượt quá 50 ký tự");
+                ShowFieldErrorComboBox(cbo, lblError, "Đơn vị không được vượt quá 50 ký tự");
                 return;
             }
 
-            // Chặn nhập chỉ toàn số 0
             if (unit.All(c => c == '0' || char.IsWhiteSpace(c)))
             {
-                ShowFieldError(txt, lblError, "Không được nhập chỉ toàn số 0");
+                ShowFieldErrorComboBox(cbo, lblError, "Không được nhập chỉ toàn số 0");
                 return;
             }
 
-            // (Tùy chọn) Chặn luôn nếu chỉ chứa số
             if (int.TryParse(unit, out _))
             {
-                ShowFieldError(txt, lblError, "Đơn vị không được là số! (VD: dùng 'Cái' thay vì '1')");
+                ShowFieldErrorComboBox(cbo, lblError, "Đơn vị không được là số!");
                 return;
             }
 
-            // Nếu qua hết các kiểm tra → hợp lệ
-            ClearFieldError(txt, lblError);
+            ClearFieldErrorComboBox(cbo, lblError);
         }
 
         private void ValidateSupplierRealtime(TextBox txt, Label lblError)
+        {
+            if (string.IsNullOrWhiteSpace(txt.Text))
+            {
+                ShowFieldError(txt, lblError, "Nhà cung cấp không được để trống");
+            }
+            else if (txt.Text.Trim().Length < 2)
+            {
+                ShowFieldError(txt, lblError, "Nhà cung cấp phải có ít nhất 2 ký tự");
+            }
+            else if (txt.Text.Trim().Length > 100)
+            {
+                ShowFieldError(txt, lblError, "Nhà cung cấp không được vượt quá 100 ký tự");
+            }
+            else
+            {
+                ClearFieldError(txt, lblError);
+            }
+        }
+
+        // ✅ VALIDATION REALTIME CHO NHÀ CUNG CẤP TRONG FORM NHẬP KHO
+        private void ValidateSupplierRealtimeImport(TextBox txt, Label lblError)
         {
             if (string.IsNullOrWhiteSpace(txt.Text))
             {
@@ -974,9 +1068,9 @@ namespace DentalClinicManagement.Pages.Admin
             if (txt != null)
             {
                 if (message.StartsWith("⚠"))
-                    txt.BackColor = Color.FromArgb(255, 243, 205); // Warning - light orange
+                    txt.BackColor = Color.FromArgb(255, 243, 205);
                 else
-                    txt.BackColor = Color.FromArgb(255, 235, 238); // Error - light red
+                    txt.BackColor = Color.FromArgb(255, 235, 238);
             }
 
             lblError.Text = message;
@@ -984,10 +1078,32 @@ namespace DentalClinicManagement.Pages.Admin
             lblError.Visible = true;
         }
 
+        // ✅ SHOW ERROR CHO COMBOBOX
+        private void ShowFieldErrorComboBox(ComboBox cbo, Label lblError, string message)
+        {
+            if (cbo != null)
+            {
+                cbo.BackColor = Color.FromArgb(255, 235, 238);
+            }
+
+            lblError.Text = message;
+            lblError.ForeColor = Color.Red;
+            lblError.Visible = true;
+        }
+
         private void ClearFieldError(TextBox txt, Label lblError)
         {
             if (txt != null)
                 txt.BackColor = Color.White;
+            lblError.Text = "";
+            lblError.Visible = false;
+        }
+
+        // ✅ CLEAR ERROR CHO COMBOBOX
+        private void ClearFieldErrorComboBox(ComboBox cbo, Label lblError)
+        {
+            if (cbo != null)
+                cbo.BackColor = Color.White;
             lblError.Text = "";
             lblError.Visible = false;
         }

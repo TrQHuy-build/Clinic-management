@@ -179,8 +179,7 @@ namespace DentalClinicManagement.Forms
             this.txtEmail.Name = "txtEmail";
             this.txtEmail.Size = new System.Drawing.Size(290, 50);
             this.txtEmail.TabIndex = 2;
-            this.txtEmail.Text = "doctor1@clinic.com";
-            this.txtEmail.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.txtEmail.Text = "admin@clinic.com";
             // 
             // lblPassword
             // 
@@ -203,25 +202,7 @@ namespace DentalClinicManagement.Forms
             this.txtPassword.Name = "txtPassword";
             this.txtPassword.Size = new System.Drawing.Size(290, 48);
             this.txtPassword.TabIndex = 4;
-            this.txtPassword.Text = "hash_doctor1";
-            this.txtPassword.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            // 
-            // button1
-            // 
-            this.button1.Anchor = System.Windows.Forms.AnchorStyles.Right;
-            this.button1.BackColor = System.Drawing.Color.Black;
-            this.button1.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.button1.FlatAppearance.BorderSize = 0;
-            this.button1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.button1.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold);
-            this.button1.ForeColor = System.Drawing.Color.White;
-            this.button1.Location = new System.Drawing.Point(57, 455);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(290, 45);
-            this.button1.TabIndex = 5;
-            this.button1.Text = "QUÊN MẬT KHẨU";
-            this.button1.UseVisualStyleBackColor = false;
-            this.button1.Click += new System.EventHandler(this.BtnLogin_Click);
+            this.txtPassword.Text = "hash_admin";
             // 
             // btnLogin
             // 
