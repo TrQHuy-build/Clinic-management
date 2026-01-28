@@ -2,6 +2,7 @@
 using System.Data;
 using System.Data.SqlClient;
 using System.Windows.Forms;
+using DentalClinicManagement.Utils;
 
 namespace DentalClinicManagement.DataAccess
 {
@@ -10,15 +11,51 @@ namespace DentalClinicManagement.DataAccess
     /// </summary>
     public class DatabaseHelper
     {
-        // Connection string - CẬP NHẬT THEO MÁY CỦA BẠN
-        private static string connectionString = @"Data Source=vendetta;Initial Catalog=DentalClinicDB;Integrated Security=True;TrustServerCertificate=True";
+        // Connection string - ĐỌC TỪ APP.CONFIG (không hardcode nữa!)
+        private static string connectionString;
 
         /// <summary>
-        /// Cập nhật connection string từ nơi khác
+        /// Static constructor - khởi tạo connection string từ config
+        /// </summary>
+        static DatabaseHelper()
+        {
+            try
+            {
+                connectionString = ConfigHelper.GetConnectionString();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    $"Không thể đọc connection string từ App.config!\n\n" +
+                    $"Error: {ex.Message}\n\n" +
+                    "Vui lòng kiểm tra file App.config có đúng cấu hình không.",
+                    "Lỗi Configuration",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+                
+                // Fallback to default (for backward compatibility)
+                
+                //connectionString = @"Data Source=(localdb)\MSSQLLocalDB;Initial Catalog=DentalClinicDB;Integrated Security=True;TrustServerCertificate=True";
+            }
+        }
+
+        /// <summary>
+        /// Cập nhật connection string từ nơi khác (cho testing hoặc dynamic config)
         /// </summary>
         public static void SetConnectionString(string connStr)
         {
+            if (string.IsNullOrWhiteSpace(connStr))
+                throw new ArgumentException("Connection string cannot be null or empty", nameof(connStr));
+            
             connectionString = connStr;
+        }
+
+        /// <summary>
+        /// Lấy connection string hiện tại (để debug hoặc logging)
+        /// </summary>
+        public static string GetConnectionStringValue()
+        {
+            return connectionString;
         }
 
         /// <summary>
@@ -241,6 +278,110 @@ namespace DentalClinicManagement.DataAccess
                     "Lỗi kết nối", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return false;
             }
+        }
+
+        /// <summary>
+        /// Execute query with automatic soft delete filtering
+        /// Only returns non-deleted records (is_deleted = 0)
+        /// </summary>
+        /// <param name="query">SQL query</param>
+        /// <param name="parameters">Query parameters</param>
+        /// <param name="transaction">Optional transaction</param>
+        /// <returns>DataTable with active records only</returns>
+        public static DataTable ExecuteQueryActiveOnly(string query, SqlParameter[] parameters = null, SqlTransaction transaction = null)
+        {
+            // Add WHERE is_deleted = 0 filter if not already present
+            if (!query.ToUpper().Contains("IS_DELETED"))
+            {
+                // Simple approach: add to WHERE clause if exists, or create new WHERE
+                if (query.ToUpper().Contains("WHERE"))
+                {
+                    query = System.Text.RegularExpressions.Regex.Replace(query, "WHERE", "WHERE is_deleted = 0 AND", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+                }
+                else if (query.ToUpper().Contains("ORDER BY"))
+                {
+                    query = System.Text.RegularExpressions.Regex.Replace(query, "ORDER BY", "WHERE is_deleted = 0 ORDER BY", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+                }
+                else
+                {
+                    // Append WHERE clause at the end
+                    query += " WHERE is_deleted = 0";
+                }
+            }
+
+            return ExecuteQuery(query, parameters, transaction);
+        }
+
+        /// <summary>
+        /// Soft delete a record by setting is_deleted = 1
+        /// </summary>
+        /// <param name="tableName">Table name</param>
+        /// <param name="recordId">Record ID</param>
+        /// <param name="deletedBy">User who deleted the record</param>
+        /// <returns>Number of affected rows</returns>
+        public static int SoftDelete(string tableName, int recordId, string deletedBy = null)
+        {
+            string query = $@"
+                UPDATE {tableName}
+                SET 
+                    is_deleted = 1,
+                    deleted_at = @DeletedAt,
+                    deleted_by = @DeletedBy
+                WHERE id = @Id AND is_deleted = 0";
+
+            SqlParameter[] parameters = new SqlParameter[]
+            {
+                new SqlParameter("@Id", recordId),
+                new SqlParameter("@DeletedAt", DateTime.Now),
+                new SqlParameter("@DeletedBy", deletedBy ?? Environment.UserName)
+            };
+
+            return ExecuteNonQuery(query, parameters);
+        }
+
+        /// <summary>
+        /// Restore a soft-deleted record
+        /// </summary>
+        /// <param name="tableName">Table name</param>
+        /// <param name="recordId">Record ID</param>
+        /// <returns>Number of affected rows</returns>
+        public static int RestoreSoftDeleted(string tableName, int recordId)
+        {
+            string query = $@"
+                UPDATE {tableName}
+                SET 
+                    is_deleted = 0,
+                    deleted_at = NULL,
+                    deleted_by = NULL
+                WHERE id = @Id AND is_deleted = 1";
+
+            SqlParameter[] parameters = new SqlParameter[]
+            {
+                new SqlParameter("@Id", recordId)
+            };
+
+            return ExecuteNonQuery(query, parameters);
+        }
+
+        /// <summary>
+        /// Permanently delete a soft-deleted record
+        /// WARNING: This action cannot be undone!
+        /// </summary>
+        /// <param name="tableName">Table name</param>
+        /// <param name="recordId">Record ID</param>
+        /// <returns>Number of affected rows</returns>
+        public static int HardDelete(string tableName, int recordId)
+        {
+            string query = $@"
+                DELETE FROM {tableName}
+                WHERE id = @Id AND is_deleted = 1";
+
+            SqlParameter[] parameters = new SqlParameter[]
+            {
+                new SqlParameter("@Id", recordId)
+            };
+
+            return ExecuteNonQuery(query, parameters);
         }
     }
 }

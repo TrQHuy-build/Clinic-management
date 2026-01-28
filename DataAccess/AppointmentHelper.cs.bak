@@ -1,0 +1,324 @@
+using System;
+using System.Data;
+using System.Data.SqlClient;
+using DentalClinicManagement.Utils;
+
+namespace DentalClinicManagement.DataAccess
+{
+    /// <summary>
+    /// Helper class để quản lý appointments và kiểm tra conflict
+    /// Giải quyết P1.2: Slot conflict detection
+    /// Giải quyết P1.5: Queue management
+    /// </summary>
+    public class AppointmentHelper
+    {
+        /// <summary>
+        /// Kiểm tra xem slot có còn trống không
+        /// </summary>
+        /// <param name="appointmentDate">Ngày giờ appointment</param>
+        /// <param name="doctorId">ID của bác sĩ (null = check tất cả bác sĩ)</param>
+        /// <param name="maxSlotsPerTime">Số lượng appointment tối đa cùng 1 lúc (default: 4)</param>
+        /// <returns>True nếu còn slot, False nếu đã đầy</returns>
+        public static bool IsSlotAvailable(DateTime appointmentDate, int? doctorId = null, int maxSlotsPerTime = 4)
+        {
+            try
+            {
+                // Query đếm số appointments cùng thời điểm
+                string query = @"
+                    SELECT COUNT(*) 
+                    FROM Appointment
+                    WHERE appointment_date = @appointmentDate
+                        AND status NOT IN ('cancelled', 'rejected', 'completed')
+                        AND is_deleted = 0
+                        AND (@doctorId IS NULL OR assigned_doctor_id = @doctorId)
+                ";
+
+                int currentCount = DatabaseHelper.ExecuteScalar<int>(query, new
+                {
+                    appointmentDate = appointmentDate,
+                    doctorId = doctorId
+                });
+
+                bool isAvailable = currentCount < maxSlotsPerTime;
+
+                Logger.LogAction("SLOT_CHECK", 
+                    $"Slot check for {appointmentDate:yyyy-MM-dd HH:mm} - Current: {currentCount}/{maxSlotsPerTime} - Available: {isAvailable}");
+
+                return isAvailable;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogAction("SLOT_CHECK_ERROR", $"Error checking slot availability: {ex.Message}");
+                return false; // Nếu có lỗi, mặc định là không available (an toàn)
+            }
+        }
+
+        /// <summary>
+        /// Lấy danh sách các slot còn trống trong 1 ngày
+        /// </summary>
+        /// <param name="date">Ngày cần check</param>
+        /// <param name="doctorId">ID bác sĩ (null = tất cả)</param>
+        /// <param name="maxSlotsPerTime">Số slot tối đa mỗi lần</param>
+        /// <returns>DataTable chứa các slot còn trống</returns>
+        public static DataTable GetAvailableSlots(DateTime date, int? doctorId = null, int maxSlotsPerTime = 4)
+        {
+            try
+            {
+                // Lấy working hours từ config (mặc định 8:00 - 18:00)
+                int startHour = 8;
+                int endHour = 18;
+                int slotDurationMinutes = 30;
+
+                DataTable result = new DataTable();
+                result.Columns.Add("Time", typeof(string));
+                result.Columns.Add("DateTime", typeof(DateTime));
+                result.Columns.Add("AvailableSlots", typeof(int));
+                result.Columns.Add("IsAvailable", typeof(bool));
+
+                DateTime currentSlot = date.Date.AddHours(startHour);
+                DateTime endTime = date.Date.AddHours(endHour);
+
+                while (currentSlot < endTime)
+                {
+                    // Đếm số appointments hiện tại ở slot này
+                    string query = @"
+                        SELECT COUNT(*) 
+                        FROM Appointment
+                        WHERE appointment_date = @slotTime
+                            AND status NOT IN ('cancelled', 'rejected', 'completed')
+                            AND is_deleted = 0
+                            AND (@doctorId IS NULL OR assigned_doctor_id = @doctorId)
+                    ";
+
+                    int currentCount = DatabaseHelper.ExecuteScalar<int>(query, new
+                    {
+                        slotTime = currentSlot,
+                        doctorId = doctorId
+                    });
+
+                    int availableSlots = maxSlotsPerTime - currentCount;
+                    bool isAvailable = availableSlots > 0;
+
+                    result.Rows.Add(
+                        currentSlot.ToString("HH:mm"),
+                        currentSlot,
+                        availableSlots,
+                        isAvailable
+                    );
+
+                    currentSlot = currentSlot.AddMinutes(slotDurationMinutes);
+                }
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogAction("AVAILABLE_SLOTS_ERROR", $"Error getting available slots: {ex.Message}");
+                return new DataTable();
+            }
+        }
+
+        /// <summary>
+        /// Lấy số thứ tự trong queue cho appointment
+        /// </summary>
+        /// <param name="appointmentDate">Ngày appointment</param>
+        /// <param name="doctorId">ID bác sĩ (null = tất cả)</param>
+        /// <returns>Số thứ tự queue</returns>
+        public static int GetQueueNumber(DateTime appointmentDate, int? doctorId = null)
+        {
+            try
+            {
+                string query = @"
+                    SELECT COUNT(*) + 1
+                    FROM Appointment
+                    WHERE CAST(appointment_date AS DATE) = CAST(@date AS DATE)
+                        AND appointment_date <= @appointmentDate
+                        AND status NOT IN ('cancelled', 'rejected')
+                        AND is_deleted = 0
+                        AND (@doctorId IS NULL OR assigned_doctor_id = @doctorId)
+                ";
+
+                int queueNumber = DatabaseHelper.ExecuteScalar<int>(query, new
+                {
+                    date = appointmentDate.Date,
+                    appointmentDate = appointmentDate,
+                    doctorId = doctorId
+                });
+
+                return queueNumber;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogAction("QUEUE_ERROR", $"Error getting queue number: {ex.Message}");
+                return 0;
+            }
+        }
+
+        /// <summary>
+        /// Check-in bệnh nhân và cập nhật queue number
+        /// </summary>
+        /// <param name="appointmentId">ID của appointment</param>
+        /// <returns>Queue number</returns>
+        public static int CheckInAppointment(int appointmentId)
+        {
+            try
+            {
+                // Lấy thông tin appointment
+                string selectQuery = @"
+                    SELECT appointment_date, assigned_doctor_id
+                    FROM Appointment
+                    WHERE appointment_id = @appointmentId
+                ";
+
+                DataTable dt = DatabaseHelper.ExecuteQuery(selectQuery, new { appointmentId });
+                
+                if (dt.Rows.Count == 0)
+                {
+                    throw new Exception("Appointment not found");
+                }
+
+                DateTime appointmentDate = Convert.ToDateTime(dt.Rows[0]["appointment_date"]);
+                object doctorIdObj = dt.Rows[0]["assigned_doctor_id"];
+                int? doctorId = doctorIdObj == DBNull.Value ? (int?)null : Convert.ToInt32(doctorIdObj);
+
+                // Lấy queue number
+                int queueNumber = GetQueueNumber(appointmentDate, doctorId);
+
+                // Cập nhật check_in_time và queue_number
+                string updateQuery = @"
+                    UPDATE Appointment
+                    SET check_in_time = GETDATE(),
+                        queue_number = @queueNumber,
+                        status = CASE 
+                            WHEN status = 'booked' THEN 'confirmed'
+                            ELSE status
+                        END
+                    WHERE appointment_id = @appointmentId
+                ";
+
+                DatabaseHelper.ExecuteNonQuery(updateQuery, new
+                {
+                    appointmentId = appointmentId,
+                    queueNumber = queueNumber
+                });
+
+                Logger.LogAction("CHECK_IN", $"Appointment {appointmentId} checked in - Queue #{queueNumber}");
+
+                return queueNumber;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogAction("CHECK_IN_ERROR", $"Error checking in appointment {appointmentId}: {ex.Message}");
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Lấy danh sách queue hiện tại (đang chờ khám)
+        /// </summary>
+        /// <param name="date">Ngày cần xem queue</param>
+        /// <param name="doctorId">ID bác sĩ (null = tất cả)</param>
+        /// <returns>DataTable chứa queue</returns>
+        public static DataTable GetCurrentQueue(DateTime date, int? doctorId = null)
+        {
+            try
+            {
+                string query = @"
+                    SELECT 
+                        a.appointment_id,
+                        a.queue_number,
+                        a.patient_name,
+                        a.phone,
+                        s.service_name,
+                        a.appointment_date,
+                        a.check_in_time,
+                        a.status,
+                        staff.fullname AS doctor_name
+                    FROM Appointment a
+                    LEFT JOIN Service s ON a.service_id = s.service_id
+                    LEFT JOIN Staff st ON a.assigned_doctor_id = st.staff_id
+                    LEFT JOIN UserAccount staff ON st.user_id = staff.user_id
+                    WHERE CAST(a.appointment_date AS DATE) = CAST(@date AS DATE)
+                        AND a.status IN ('confirmed', 'pending')
+                        AND a.check_in_time IS NOT NULL
+                        AND a.is_deleted = 0
+                        AND (@doctorId IS NULL OR a.assigned_doctor_id = @doctorId)
+                    ORDER BY a.queue_number
+                ";
+
+                return DatabaseHelper.ExecuteQuery(query, new
+                {
+                    date = date,
+                    doctorId = doctorId
+                });
+            }
+            catch (Exception ex)
+            {
+                Logger.LogAction("QUEUE_ERROR", $"Error getting current queue: {ex.Message}");
+                return new DataTable();
+            }
+        }
+
+        /// <summary>
+        /// Lấy estimated wait time (thời gian chờ ước tính)
+        /// </summary>
+        /// <param name="queueNumber">Số thứ tự trong queue</param>
+        /// <param name="averageExamTime">Thời gian khám trung bình (phút)</param>
+        /// <returns>Thời gian chờ (phút)</returns>
+        public static int GetEstimatedWaitTime(int queueNumber, int averageExamTime = 30)
+        {
+            try
+            {
+                // Đếm số người đang chờ trước
+                int peopleAhead = queueNumber - 1;
+                if (peopleAhead < 0) peopleAhead = 0;
+
+                // Tính thời gian chờ
+                int waitTime = peopleAhead * averageExamTime;
+
+                return waitTime;
+            }
+            catch
+            {
+                return 0;
+            }
+        }
+
+        /// <summary>
+        /// Kiểm tra xem bác sĩ có available không (không bị trùng lịch)
+        /// </summary>
+        /// <param name="doctorId">ID bác sĩ</param>
+        /// <param name="appointmentDate">Ngày giờ appointment</param>
+        /// <param name="excludeAppointmentId">ID appointment cần loại trừ (dùng khi update)</param>
+        /// <returns>True nếu available</returns>
+        public static bool IsDoctorAvailable(int doctorId, DateTime appointmentDate, int? excludeAppointmentId = null)
+        {
+            try
+            {
+                string query = @"
+                    SELECT COUNT(*)
+                    FROM Appointment
+                    WHERE assigned_doctor_id = @doctorId
+                        AND appointment_date = @appointmentDate
+                        AND status NOT IN ('cancelled', 'rejected', 'completed')
+                        AND is_deleted = 0
+                        AND (@excludeId IS NULL OR appointment_id != @excludeId)
+                ";
+
+                int count = DatabaseHelper.ExecuteScalar<int>(query, new
+                {
+                    doctorId = doctorId,
+                    appointmentDate = appointmentDate,
+                    excludeId = excludeAppointmentId
+                });
+
+                return count == 0;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogAction("DOCTOR_AVAILABLE_ERROR", $"Error checking doctor availability: {ex.Message}");
+                return false;
+            }
+        }
+    }
+}

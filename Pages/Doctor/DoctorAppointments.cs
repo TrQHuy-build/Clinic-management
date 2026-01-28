@@ -135,8 +135,20 @@ namespace DentalClinicManagement.Pages.Doctor
                     new SqlParameter("@doctorId", Auth.CurrentStaffId ?? 0)
                 });
 
+                // ✅ FIX: Check if DataTable and DataGridView are not null
+                if (dt == null || dgvPending == null)
+                {
+                    MessageBoxHelper.ShowError("Không thể tải dữ liệu lịch hẹn chờ xác nhận!");
+                    return;
+                }
+
                 dgvPending.DataSource = dt;
-                dgvPending.Columns["ID"].Visible = false;
+                
+                // ✅ FIX: Check if column exists before accessing
+                if (dgvPending.Columns.Count > 0 && dgvPending.Columns["ID"] != null)
+                {
+                    dgvPending.Columns["ID"].Visible = false;
+                }
 
                 // Add action buttons
                 if (!dgvPending.Columns.Contains("Accept"))
@@ -202,8 +214,20 @@ namespace DentalClinicManagement.Pages.Doctor
                     new SqlParameter("@date", dtpDate.Value.Date)
                 });
 
+                // ✅ FIX: Check if DataTable and DataGridView are not null
+                if (dt == null || dgvConfirmed == null)
+                {
+                    MessageBoxHelper.ShowError("Không thể tải dữ liệu lịch hẹn đã xác nhận!");
+                    return;
+                }
+
                 dgvConfirmed.DataSource = dt;
-                dgvConfirmed.Columns["ID"].Visible = false;
+                
+                // ✅ FIX: Check if column exists before accessing
+                if (dgvConfirmed.Columns.Count > 0 && dgvConfirmed.Columns["ID"] != null)
+                {
+                    dgvConfirmed.Columns["ID"].Visible = false;
+                }
 
                 if (!dgvConfirmed.Columns.Contains("StartExam"))
                 {
@@ -264,8 +288,20 @@ namespace DentalClinicManagement.Pages.Doctor
                     new SqlParameter("@date", dtpDate.Value.Date)
                 });
 
+                // ✅ FIX: Check if DataTable and DataGridView are not null
+                if (dt == null || dgvHistory == null)
+                {
+                    MessageBoxHelper.ShowError("Không thể tải lịch sử khám!");
+                    return;
+                }
+
                 dgvHistory.DataSource = dt;
-                dgvHistory.Columns["ID"].Visible = false;
+                
+                // ✅ FIX: Check if column exists before accessing
+                if (dgvHistory.Columns.Count > 0 && dgvHistory.Columns["ID"] != null)
+                {
+                    dgvHistory.Columns["ID"].Visible = false;
+                }
 
                 foreach (DataGridViewRow row in dgvHistory.Rows)
                 {

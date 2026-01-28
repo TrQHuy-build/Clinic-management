@@ -341,20 +341,42 @@ namespace DentalClinicManagement.Pages.Common
 
             try
             {
-                // Kiểm tra mật khẩu cũ
-                string checkQuery = "SELECT COUNT(*) FROM UserAccount WHERE user_id = @userId AND password_hash = @oldPassword";
-                object count = DatabaseHelper.ExecuteScalar(checkQuery, new SqlParameter[]
+                // Kiểm tra độ mạnh mật khẩu mới
+                var (isValid, errorMessage) = PasswordHasher.ValidatePasswordStrength(newPassword);
+                if (!isValid)
                 {
-                    new SqlParameter("@userId", Auth.CurrentUserId),
-                    new SqlParameter("@oldPassword", oldPassword)
+                    MessageBoxHelper.ShowError(errorMessage);
+                    txtNewPassword.Focus();
+                    ShowFieldError(txtNewPassword, lblNewPasswordError, errorMessage);
+                    return;
+                }
+
+                // Lấy password hash hiện tại
+                string checkQuery = "SELECT password_hash FROM UserAccount WHERE user_id = @userId";
+                DataTable dt = DatabaseHelper.ExecuteQuery(checkQuery, new SqlParameter[]
+                {
+                    new SqlParameter("@userId", Auth.CurrentUserId)
                 });
 
-                if (Convert.ToInt32(count) == 0)
+                if (dt.Rows.Count == 0)
                 {
-                    MessageBoxHelper.ShowError("Mật khẩu cũ không đúng!");
-                    txtOldPassword.Focus();
-                    ShowFieldError(txtOldPassword, lblOldPasswordError, "Mật khẩu cũ không đúng");
+                    MessageBoxHelper.ShowError("Không tìm thấy tài khoản!");
                     return;
+                }
+
+                string currentHash = dt.Rows[0]["password_hash"].ToString();
+
+                // Verify mật khẩu cũ
+                if (!PasswordHasher.VerifyPassword(oldPassword, currentHash))
+                {
+                    // Nếu là format cũ, thử so sánh plain text
+                    if (!(PasswordHasher.IsOldFormat(currentHash) && currentHash == oldPassword))
+                    {
+                        MessageBoxHelper.ShowError("Mật khẩu cũ không đúng!");
+                        txtOldPassword.Focus();
+                        ShowFieldError(txtOldPassword, lblOldPasswordError, "Mật khẩu cũ không đúng");
+                        return;
+                    }
                 }
 
                 // Kiểm tra mật khẩu mới không giống mật khẩu cũ
@@ -366,16 +388,19 @@ namespace DentalClinicManagement.Pages.Common
                     return;
                 }
 
+                // Hash mật khẩu mới bằng PBKDF2
+                string newHash = PasswordHasher.HashPassword(newPassword);
+
                 string updateQuery = "UPDATE UserAccount SET password_hash = @newPassword WHERE user_id = @userId";
                 int result = DatabaseHelper.ExecuteNonQuery(updateQuery, new SqlParameter[]
                 {
-                    new SqlParameter("@newPassword", newPassword),
+                    new SqlParameter("@newPassword", newHash),
                     new SqlParameter("@userId", Auth.CurrentUserId)
                 });
 
                 if (result > 0)
                 {
-                    MessageBoxHelper.ShowSuccess("Đổi mật khẩu thành công!");
+                    MessageBoxHelper.ShowSuccess("Đổi mật khẩu thành công!\n\nMật khẩu đã được mã hóa an toàn bằng PBKDF2.");
                     Logger.LogPasswordChange();
 
                     // Clear fields

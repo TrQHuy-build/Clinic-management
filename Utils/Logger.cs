@@ -33,8 +33,9 @@ namespace DentalClinicManagement.Utils
             }
             catch (Exception ex)
             {
-                // Silent fail - không hiển thị lỗi log để không ảnh hưởng UX
-                Console.WriteLine($"Log error: {ex.Message}");
+                // Ghi lỗi vào file log thay vì Console.WriteLine
+                // Không hiển thị cho user để không ảnh hưởng UX
+                ErrorHandler.LogWarning(ex, $"Failed to log action: {action}", showToUser: false);
             }
         }
 

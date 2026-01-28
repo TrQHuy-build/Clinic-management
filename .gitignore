@@ -26,3 +26,6 @@ packages/
 # Others
 [Tt]humbs.db
 *.db
+
+# md
+*.md

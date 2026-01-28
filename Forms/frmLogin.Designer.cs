@@ -54,7 +54,6 @@ namespace DentalClinicManagement.Forms
             this.txtEmail = new System.Windows.Forms.TextBox();
             this.lblPassword = new System.Windows.Forms.Label();
             this.txtPassword = new System.Windows.Forms.TextBox();
-            this.button1 = new System.Windows.Forms.Button();
             this.btnLogin = new System.Windows.Forms.Button();
             this.leftPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
@@ -126,7 +125,6 @@ namespace DentalClinicManagement.Forms
             this.rightPanel.Controls.Add(this.txtEmail);
             this.rightPanel.Controls.Add(this.lblPassword);
             this.rightPanel.Controls.Add(this.txtPassword);
-            this.rightPanel.Controls.Add(this.button1);
             this.rightPanel.Controls.Add(this.btnLogin);
             this.rightPanel.Location = new System.Drawing.Point(457, 25);
             this.rightPanel.Name = "rightPanel";
@@ -246,7 +244,6 @@ namespace DentalClinicManagement.Forms
         #endregion
         private Button btnTogglePassword;
         private Label label1;
-        private Button button1;
         private PictureBox pictureBox1;
     }
 }

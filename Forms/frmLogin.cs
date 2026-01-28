@@ -63,18 +63,17 @@ namespace DentalClinicManagement.Forms
                     return;
                 }
 
-                // Query đăng nhập
+                // Query đăng nhập - CHỈ LẤY USER THEO EMAIL
                 string query = @"
-                    SELECT u.user_id, u.fullname, u.role, u.email, u.status,
+                    SELECT u.user_id, u.fullname, u.role, u.email, u.status, u.password_hash,
                            s.staff_id, p.patient_id
                     FROM UserAccount u
                     LEFT JOIN Staff s ON u.user_id = s.user_id
                     LEFT JOIN Patient p ON u.user_id = p.user_id
-                    WHERE u.email = @email AND u.password_hash = @password";
+                    WHERE u.email = @email";
 
                 SqlParameter[] parameters = {
-                    new SqlParameter("@email", email),
-                    new SqlParameter("@password", password)
+                    new SqlParameter("@email", email)
                 };
 
                 DataTable dt = DatabaseHelper.ExecuteQuery(query, parameters);
@@ -87,6 +86,41 @@ namespace DentalClinicManagement.Forms
                 }
 
                 DataRow row = dt.Rows[0];
+                string storedHash = row["password_hash"].ToString();
+
+                // VERIFY PASSWORD VỚI HASH
+                if (!PasswordHasher.VerifyPassword(password, storedHash))
+                {
+                    // Nếu verify failed và là format cũ, thử so sánh plain text (backward compatibility)
+                    if (PasswordHasher.IsOldFormat(storedHash) && storedHash == password)
+                    {
+                        // Password đúng nhưng là format cũ - cần update
+                        MessageBox.Show(
+                            "Mật khẩu của bạn đang dùng định dạng cũ (không an toàn).\n\n" +
+                            "Hệ thống sẽ tự động cập nhật sang định dạng mới sau khi đăng nhập.\n\n" +
+                            "Lần đăng nhập tiếp theo bạn sẽ dùng mật khẩu này nhưng đã được mã hóa an toàn.",
+                            "Cảnh báo bảo mật",
+                            MessageBoxButtons.OK,
+                            MessageBoxIcon.Warning);
+
+                        // Update password sang format mới
+                        int updateUserId = Convert.ToInt32(row["user_id"]);
+                        string newHash = PasswordHasher.HashPassword(password);
+                        string updateQuery = "UPDATE UserAccount SET password_hash = @newHash WHERE user_id = @userId";
+                        SqlParameter[] updateParams = {
+                            new SqlParameter("@newHash", newHash),
+                            new SqlParameter("@userId", updateUserId)
+                        };
+                        DatabaseHelper.ExecuteNonQuery(updateQuery, updateParams);
+                    }
+                    else
+                    {
+                        MessageBox.Show("Email hoặc mật khẩu không đúng!", "Đăng nhập thất bại",
+                            MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        return;
+                    }
+                }
+
                 string status = row["status"].ToString();
 
                 if (status.ToLower() != "active")

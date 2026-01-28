@@ -1,0 +1,318 @@
+using System;
+using System.Data;
+using System.Data.SqlClient;
+using DentalClinicManagement.Utils;
+
+namespace DentalClinicManagement.DataAccess
+{
+    /// <summary>
+    /// Helper để tự động tạo Invoice sau khi khám bệnh
+    /// </summary>
+    public class InvoiceAutoGenerator
+    {
+        /// <summary>
+        /// Tạo invoice tự động từ medical record
+        /// </summary>
+        public static int CreateInvoiceFromMedicalRecord(int medicalRecordId, SqlTransaction transaction = null)
+        {
+            try
+            {
+                // 1. Lấy thông tin medical record
+                string queryRecord = @"
+                    SELECT 
+                        mr.patient_id,
+                        mr.staff_id,
+                        mr.record_date,
+                        mr.appointment_id
+                    FROM MedicalRecord mr
+                    WHERE mr.record_id = @recordId
+                ";
+
+                DataTable dtRecord = transaction != null
+                    ? DatabaseHelper.ExecuteQuery(queryRecord, new SqlParameter[] { new SqlParameter("@recordId", medicalRecordId) }, transaction)
+                    : DatabaseHelper.ExecuteQuery(queryRecord, new SqlParameter[] { new SqlParameter("@recordId", medicalRecordId) });
+
+                if (dtRecord.Rows.Count == 0)
+                {
+                    throw new Exception($"Không tìm thấy medical record #{medicalRecordId}");
+                }
+
+                DataRow record = dtRecord.Rows[0];
+                int patientId = Convert.ToInt32(record["patient_id"]);
+                int staffId = Convert.ToInt32(record["staff_id"]);
+                int? appointmentId = record["appointment_id"] != DBNull.Value 
+                    ? (int?)Convert.ToInt32(record["appointment_id"]) 
+                    : null;
+
+                // 2. Tạo Invoice
+                string insertInvoice = @"
+                    INSERT INTO Invoice (patient_id, staff_id, invoice_date, total_amount, status, medical_record_id)
+                    VALUES (@patientId, @staffId, GETDATE(), 0, 'unpaid', @recordId);
+                    SELECT CAST(SCOPE_IDENTITY() AS INT);
+                ";
+
+                object result = transaction != null
+                    ? DatabaseHelper.ExecuteScalar(insertInvoice, new SqlParameter[] {
+                        new SqlParameter("@patientId", patientId),
+                        new SqlParameter("@staffId", staffId),
+                        new SqlParameter("@recordId", medicalRecordId)
+                    }, transaction)
+                    : DatabaseHelper.ExecuteScalar(insertInvoice, new SqlParameter[] {
+                        new SqlParameter("@patientId", patientId),
+                        new SqlParameter("@staffId", staffId),
+                        new SqlParameter("@recordId", medicalRecordId)
+                    });
+
+                int invoiceId = Convert.ToInt32(result ?? 0);
+
+                // 3. Thêm dịch vụ từ appointment (nếu có)
+                if (appointmentId.HasValue)
+                {
+                    AddServicesFromAppointment(invoiceId, appointmentId.Value, transaction);
+                }
+
+                // 4. Thêm thuốc từ prescriptions
+                AddMedicinesFromPrescriptions(invoiceId, medicalRecordId, transaction);
+
+                // 5. Tính tổng tiền
+                UpdateInvoiceTotal(invoiceId, transaction);
+
+                Logger.LogAction("INVOICE_AUTO_CREATED", $"Tạo invoice #{invoiceId} từ medical record #{medicalRecordId}");
+
+                return invoiceId;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogAction("INVOICE_AUTO_CREATE_ERROR", $"Lỗi tạo invoice tự động: {ex.Message}");
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Thêm dịch vụ từ appointment vào invoice
+        /// </summary>
+        private static void AddServicesFromAppointment(int invoiceId, int appointmentId, SqlTransaction transaction)
+        {
+            try
+            {
+                // Lấy service từ appointment
+                string queryService = @"
+                    SELECT service_id 
+                    FROM Appointment
+                    WHERE appointment_id = @appointmentId
+                    AND service_id IS NOT NULL
+                ";
+
+                DataTable dtService = transaction != null
+                    ? DatabaseHelper.ExecuteQuery(queryService, new SqlParameter[] { new SqlParameter("@appointmentId", appointmentId) }, transaction)
+                    : DatabaseHelper.ExecuteQuery(queryService, new SqlParameter[] { new SqlParameter("@appointmentId", appointmentId) });
+
+                if (dtService.Rows.Count > 0 && dtService.Rows[0]["service_id"] != DBNull.Value)
+                {
+                    int serviceId = Convert.ToInt32(dtService.Rows[0]["service_id"]);
+
+                    // Insert vào ServiceUsage (hoặc InvoiceDetails tùy schema)
+                    string insertService = @"
+                        INSERT INTO ServiceUsage (invoice_id, service_id, quantity)
+                        VALUES (@invoiceId, @serviceId, 1)
+                    ";
+
+                    if (transaction != null)
+                    {
+                        DatabaseHelper.ExecuteNonQuery(insertService, new SqlParameter[] {
+                            new SqlParameter("@invoiceId", invoiceId),
+                            new SqlParameter("@serviceId", serviceId)
+                        }, transaction);
+                    }
+                    else
+                    {
+                        DatabaseHelper.ExecuteNonQuery(insertService, new SqlParameter[] {
+                            new SqlParameter("@invoiceId", invoiceId),
+                            new SqlParameter("@serviceId", serviceId)
+                        });
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogAction("ADD_SERVICE_ERROR", $"Lỗi thêm dịch vụ vào invoice: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Thêm thuốc từ prescriptions vào invoice
+        /// </summary>
+        private static void AddMedicinesFromPrescriptions(int invoiceId, int medicalRecordId, SqlTransaction transaction)
+        {
+            try
+            {
+                // Lấy danh sách prescriptions
+                string queryPrescriptions = @"
+                    SELECT prescription_id
+                    FROM Prescription
+                    WHERE record_id = @recordId
+                ";
+
+                DataTable dtPrescriptions = transaction != null
+                    ? DatabaseHelper.ExecuteQuery(queryPrescriptions, new SqlParameter[] { new SqlParameter("@recordId", medicalRecordId) }, transaction)
+                    : DatabaseHelper.ExecuteQuery(queryPrescriptions, new SqlParameter[] { new SqlParameter("@recordId", medicalRecordId) });
+
+                foreach (DataRow row in dtPrescriptions.Rows)
+                {
+                    int prescriptionId = Convert.ToInt32(row["prescription_id"]);
+
+                    // Insert vào InvoicePrescription
+                    string insertPrescription = @"
+                        INSERT INTO InvoicePrescription (invoice_id, prescription_id)
+                        VALUES (@invoiceId, @prescriptionId)
+                    ";
+
+                    if (transaction != null)
+                    {
+                        DatabaseHelper.ExecuteNonQuery(insertPrescription, new SqlParameter[] {
+                            new SqlParameter("@invoiceId", invoiceId),
+                            new SqlParameter("@prescriptionId", prescriptionId)
+                        }, transaction);
+                    }
+                    else
+                    {
+                        DatabaseHelper.ExecuteNonQuery(insertPrescription, new SqlParameter[] {
+                            new SqlParameter("@invoiceId", invoiceId),
+                            new SqlParameter("@prescriptionId", prescriptionId)
+                        });
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogAction("ADD_MEDICINES_ERROR", $"Lỗi thêm thuốc vào invoice: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Tính tổng tiền cho invoice
+        /// </summary>
+        private static void UpdateInvoiceTotal(int invoiceId, SqlTransaction transaction)
+        {
+            try
+            {
+                // Tổng tiền dịch vụ
+                string queryServiceTotal = @"
+                    SELECT ISNULL(SUM(s.price * su.quantity), 0) AS total
+                    FROM ServiceUsage su
+                    INNER JOIN Service s ON su.service_id = s.service_id
+                    WHERE su.invoice_id = @invoiceId
+                ";
+
+                object serviceTotalResult = transaction != null
+                    ? DatabaseHelper.ExecuteScalar(queryServiceTotal, new SqlParameter[] { new SqlParameter("@invoiceId", invoiceId) }, transaction)
+                    : DatabaseHelper.ExecuteScalar(queryServiceTotal, new SqlParameter[] { new SqlParameter("@invoiceId", invoiceId) });
+                
+                decimal serviceTotal = Convert.ToDecimal(serviceTotalResult ?? 0m);
+
+                // Tổng tiền thuốc
+                string queryMedicineTotal = @"
+                    SELECT ISNULL(SUM(m.price * p.quantity), 0) AS total
+                    FROM InvoicePrescription ip
+                    INNER JOIN Prescription p ON ip.prescription_id = p.prescription_id
+                    INNER JOIN Medicine m ON p.medicine_id = m.medicine_id
+                    WHERE ip.invoice_id = @invoiceId
+                ";
+
+                object medicineTotalResult = transaction != null
+                    ? DatabaseHelper.ExecuteScalar(queryMedicineTotal, new SqlParameter[] { new SqlParameter("@invoiceId", invoiceId) }, transaction)
+                    : DatabaseHelper.ExecuteScalar(queryMedicineTotal, new SqlParameter[] { new SqlParameter("@invoiceId", invoiceId) });
+                
+                decimal medicineTotal = Convert.ToDecimal(medicineTotalResult ?? 0m);
+
+                decimal grandTotal = serviceTotal + medicineTotal;
+
+                // Update total_amount
+                string updateTotal = @"
+                    UPDATE Invoice
+                    SET total_amount = @total
+                    WHERE invoice_id = @invoiceId
+                ";
+
+                if (transaction != null)
+                {
+                    DatabaseHelper.ExecuteNonQuery(updateTotal, new SqlParameter[] {
+                        new SqlParameter("@total", grandTotal),
+                        new SqlParameter("@invoiceId", invoiceId)
+                    }, transaction);
+                }
+                else
+                {
+                    DatabaseHelper.ExecuteNonQuery(updateTotal, new SqlParameter[] {
+                        new SqlParameter("@total", grandTotal),
+                        new SqlParameter("@invoiceId", invoiceId)
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogAction("UPDATE_TOTAL_ERROR", $"Lỗi tính tổng tiền invoice: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Kiểm tra xem medical record đã có invoice chưa
+        /// </summary>
+        public static bool HasInvoice(int medicalRecordId)
+        {
+            try
+            {
+                string query = @"
+                    SELECT COUNT(*)
+                    FROM Invoice
+                    WHERE medical_record_id = @recordId
+                    AND ISNULL(is_deleted, 0) = 0
+                ";
+
+                object countResult = DatabaseHelper.ExecuteScalar(query, 
+                    new SqlParameter[] { new SqlParameter("@recordId", medicalRecordId) });
+                
+                int count = Convert.ToInt32(countResult ?? 0);
+
+                return count > 0;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Lấy invoice ID từ medical record
+        /// </summary>
+        public static int? GetInvoiceIdByMedicalRecord(int medicalRecordId)
+        {
+            try
+            {
+                string query = @"
+                    SELECT TOP 1 invoice_id
+                    FROM Invoice
+                    WHERE medical_record_id = @recordId
+                    AND ISNULL(is_deleted, 0) = 0
+                    ORDER BY invoice_date DESC
+                ";
+
+                object result = DatabaseHelper.ExecuteScalar(query,
+                    new SqlParameter[] { new SqlParameter("@recordId", medicalRecordId) });
+
+                if (result != null && result != DBNull.Value)
+                {
+                    return Convert.ToInt32(result);
+                }
+
+                return null;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+    }
+}
+
+
