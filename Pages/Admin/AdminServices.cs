@@ -94,6 +94,16 @@ namespace DentalClinicManagement.Pages.Admin
                 if (dgvServices.Columns["ID"] != null)
                     dgvServices.Columns["ID"].Visible = false;
 
+                // ✅ Set column widths for better display
+                if (dgvServices.Columns["Tên dịch vụ"] != null)
+                    dgvServices.Columns["Tên dịch vụ"].Width = 250;
+                if (dgvServices.Columns["Mô tả"] != null)
+                    dgvServices.Columns["Mô tả"].Width = 350;
+                if (dgvServices.Columns["Giá"] != null)
+                    dgvServices.Columns["Giá"].Width = 150;
+                if (dgvServices.Columns["Trạng thái"] != null)
+                    dgvServices.Columns["Trạng thái"].Width = 120;
+
                 // Định dạng giá
                 if (dgvServices.Columns["Giá"] != null)
                 {
@@ -102,8 +112,8 @@ namespace DentalClinicManagement.Pages.Admin
                 }
 
                 // Thêm cột nút
-                AddButtonColumn("Edit", "Sửa", 70);
-                AddButtonColumn("Delete", "Xóa", 70);
+                AddButtonColumn("Edit", "Sửa", 80);
+                AddButtonColumn("Delete", "Xóa", 80);
 
                 // Định dạng trạng thái và mô tả
                 foreach (DataGridViewRow row in dgvServices.Rows)

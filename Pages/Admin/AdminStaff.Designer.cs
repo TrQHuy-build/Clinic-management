@@ -56,9 +56,9 @@ namespace DentalClinicManagement.Pages.Admin
             this.dgvStaff.Name = "dgvStaff";
             this.dgvStaff.ReadOnly = true;
             this.dgvStaff.RowHeadersWidth = 51;
-            this.dgvStaff.RowTemplate.Height = 35;
+            this.dgvStaff.RowTemplate.Height = 50;
             this.dgvStaff.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.dgvStaff.Size = new System.Drawing.Size(1160, 520);
+            this.dgvStaff.Size = new System.Drawing.Size(1160, 540);
             this.dgvStaff.TabIndex = 2;
             this.dgvStaff.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.DgvStaff_CellClick);
             // 
@@ -161,7 +161,7 @@ namespace DentalClinicManagement.Pages.Admin
             this.Controls.Add(this.dgvStaff);
             this.Name = "AdminStaff";
             this.Padding = new System.Windows.Forms.Padding(20);
-            this.Size = new System.Drawing.Size(1200, 700);
+            this.Size = new System.Drawing.Size(1200, 760);
             ((System.ComponentModel.ISupportInitialize)(this.dgvStaff)).EndInit();
             this.searchPanel.ResumeLayout(false);
             this.searchPanel.PerformLayout();

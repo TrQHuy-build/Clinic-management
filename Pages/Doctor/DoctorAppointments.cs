@@ -311,7 +311,7 @@ dgvPending = CreateDataGridView();
      BackgroundColor = Color.White,
      AllowUserToAddRows = false,
    ReadOnly = true,
-     AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
+     AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.None,
          SelectionMode = DataGridViewSelectionMode.FullRowSelect,
     BorderStyle = BorderStyle.None,
     RowHeadersVisible = false
@@ -397,6 +397,13 @@ dgvPending = CreateDataGridView();
      {
        if (dgvPending.Columns["ID"] != null) dgvPending.Columns["ID"].Visible = false;
    if (dgvPending.Columns["PatientID"] != null) dgvPending.Columns["PatientID"].Visible = false;
+       
+       // Set column widths
+       if (dgvPending.Columns["Bệnh nhân"] != null) dgvPending.Columns["Bệnh nhân"].Width = 180;
+       if (dgvPending.Columns["SĐT"] != null) dgvPending.Columns["SĐT"].Width = 120;
+       if (dgvPending.Columns["Dịch vụ"] != null) dgvPending.Columns["Dịch vụ"].Width = 200;
+       if (dgvPending.Columns["Thời gian"] != null) dgvPending.Columns["Thời gian"].Width = 150;
+       if (dgvPending.Columns["Ghi chú"] != null) dgvPending.Columns["Ghi chú"].Width = 250;
       }
 
      // Add action buttons
@@ -408,7 +415,7 @@ dgvPending = CreateDataGridView();
    HeaderText = "",
               Text = "🩺 Khám ngay",
     UseColumnTextForButtonValue = true,
-           Width = 110
+           Width = 120
         });
 
          dgvPending.Columns.Add(new DataGridViewButtonColumn
@@ -417,7 +424,7 @@ dgvPending = CreateDataGridView();
     HeaderText = "",
    Text = "❌ Hủy",
        UseColumnTextForButtonValue = true,
-         Width = 80
+         Width = 100
       });
        }
 
@@ -482,6 +489,13 @@ if (dgvConfirmed.Columns.Count > 0)
      {
          if (dgvConfirmed.Columns["ID"] != null) dgvConfirmed.Columns["ID"].Visible = false;
 if (dgvConfirmed.Columns["PatientID"] != null) dgvConfirmed.Columns["PatientID"].Visible = false;
+         
+         // Set column widths
+         if (dgvConfirmed.Columns["Bệnh nhân"] != null) dgvConfirmed.Columns["Bệnh nhân"].Width = 200;
+         if (dgvConfirmed.Columns["SĐT"] != null) dgvConfirmed.Columns["SĐT"].Width = 120;
+         if (dgvConfirmed.Columns["Dịch vụ"] != null) dgvConfirmed.Columns["Dịch vụ"].Width = 220;
+         if (dgvConfirmed.Columns["Giờ hẹn"] != null) dgvConfirmed.Columns["Giờ hẹn"].Width = 100;
+         if (dgvConfirmed.Columns["Ghi chú"] != null) dgvConfirmed.Columns["Ghi chú"].Width = 280;
       }
 
      if (!dgvConfirmed.Columns.Contains("StartExam"))
@@ -492,7 +506,7 @@ dgvConfirmed.Columns.Add(new DataGridViewButtonColumn
  HeaderText = "",
  Text = "🩺 Khám ngay",
        UseColumnTextForButtonValue = true,
-           Width = 110
+           Width = 120
    });
      }
 
@@ -553,8 +567,18 @@ if (!row.IsNewRow)
 
   paginationHistory.SetDataSource(dt); // ✅ Use pagination
   
-       if (dgvHistory.Columns.Count > 0 && dgvHistory.Columns["ID"] != null)
-        dgvHistory.Columns["ID"].Visible = false;
+       if (dgvHistory.Columns.Count > 0)
+        {
+         if (dgvHistory.Columns["ID"] != null) dgvHistory.Columns["ID"].Visible = false;
+         
+         // Set column widths
+         if (dgvHistory.Columns["Bệnh nhân"] != null) dgvHistory.Columns["Bệnh nhân"].Width = 180;
+         if (dgvHistory.Columns["SĐT"] != null) dgvHistory.Columns["SĐT"].Width = 120;
+         if (dgvHistory.Columns["Dịch vụ"] != null) dgvHistory.Columns["Dịch vụ"].Width = 200;
+         if (dgvHistory.Columns["Thời gian"] != null) dgvHistory.Columns["Thời gian"].Width = 150;
+         if (dgvHistory.Columns["Trạng thái"] != null) dgvHistory.Columns["Trạng thái"].Width = 130;
+         if (dgvHistory.Columns["Ghi chú"] != null) dgvHistory.Columns["Ghi chú"].Width = 250;
+        }
 
        foreach (DataGridViewRow row in dgvHistory.Rows)
     {

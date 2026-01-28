@@ -127,11 +127,12 @@ Dock = DockStyle.Top,
    };
            dtpTo.ValueChanged += (s, e) => LoadRecords();
 
-         // Row 2: Buttons
+         // Row 2: Buttons - ✅ ĐƯA SANG BÊN PHẢI
           Button btnReset = new Button
     {
         Text = "🔄 Reset",
-        Location = new Point(10, 45),
+        Anchor = AnchorStyles.Top | AnchorStyles.Right,
+        Location = new Point(panelFilter.Width - 370, 45),
         Size = new Size(80, 28),
     BackColor = Color.LightGray,
                  FlatStyle = FlatStyle.Flat,
@@ -151,8 +152,9 @@ Dock = DockStyle.Top,
               {
    Name = "btnExportCsv",
         Text = "📊 Xuất Excel",
-  Location = new Point(100, 45),
-   Size = new Size(110, 28),
+        Anchor = AnchorStyles.Top | AnchorStyles.Right,
+  Location = new Point(panelFilter.Width - 280, 45),
+   Size = new Size(120, 28),
    BackColor = ColorTranslator.FromHtml("#28A745"),
   ForeColor = Color.White,
  FlatStyle = FlatStyle.Flat,
@@ -166,8 +168,9 @@ Dock = DockStyle.Top,
             {
               Name = "btnExportHtml",
      Text = "📄 Xuất PDF/HTML",
-     Location = new Point(220, 45),
- Size = new Size(130, 28),
+     Anchor = AnchorStyles.Top | AnchorStyles.Right,
+ Location = new Point(panelFilter.Width - 150, 45),
+ Size = new Size(140, 28),
  BackColor = ColorTranslator.FromHtml("#17A2B8"),
    ForeColor = Color.White,
   FlatStyle = FlatStyle.Flat,

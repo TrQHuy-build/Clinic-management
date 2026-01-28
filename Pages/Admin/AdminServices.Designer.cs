@@ -85,9 +85,9 @@ namespace DentalClinicManagement.Pages.Admin
             this.dgvServices.Name = "dgvServices";
             this.dgvServices.ReadOnly = true;
             this.dgvServices.RowHeadersWidth = 51;
-            this.dgvServices.RowTemplate.Height = 35;
+            this.dgvServices.RowTemplate.Height = 50;
             this.dgvServices.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.dgvServices.Size = new System.Drawing.Size(1205, 615);
+            this.dgvServices.Size = new System.Drawing.Size(1160, 540);
             this.dgvServices.TabIndex = 2;
             this.dgvServices.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.DgvServices_CellClick);
             // 
@@ -122,7 +122,7 @@ namespace DentalClinicManagement.Pages.Admin
             this.searchPanel.Controls.Add(this.btnAdd);
             this.searchPanel.Location = new System.Drawing.Point(20, 67);
             this.searchPanel.Name = "searchPanel";
-            this.searchPanel.Size = new System.Drawing.Size(1205, 60);
+            this.searchPanel.Size = new System.Drawing.Size(1160, 60);
             this.searchPanel.TabIndex = 1;
             // 
             // lblSearch
@@ -175,9 +175,9 @@ namespace DentalClinicManagement.Pages.Admin
             this.pnlPagination.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             this.pnlPagination.BackColor = System.Drawing.Color.White;
             this.pnlPagination.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.pnlPagination.Location = new System.Drawing.Point(20, 768);
+            this.pnlPagination.Location = new System.Drawing.Point(20, 690);
             this.pnlPagination.Name = "pnlPagination";
-            this.pnlPagination.Size = new System.Drawing.Size(1205, 50);
+            this.pnlPagination.Size = new System.Drawing.Size(1160, 50);
 
             // ========================================
             // Page Info Label
@@ -322,9 +322,6 @@ namespace DentalClinicManagement.Pages.Admin
             this.pnlPagination.Controls.Add(this.txtPageNumber);
             this.pnlPagination.Controls.Add(this.btnGoToPage);
             
-            // Update dgvServices height
-            this.dgvServices.Size = new System.Drawing.Size(1205, 610);
-            
             // AdminServices
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
@@ -336,7 +333,7 @@ namespace DentalClinicManagement.Pages.Admin
             this.Controls.Add(this.dgvServices);
             this.Name = "AdminServices";
             this.Padding = new System.Windows.Forms.Padding(20);
-            this.Size = new System.Drawing.Size(1245, 840);
+            this.Size = new System.Drawing.Size(1200, 760);
             ((System.ComponentModel.ISupportInitialize)(this.dgvServices)).EndInit();
             this.searchPanel.ResumeLayout(false);
             this.searchPanel.PerformLayout();

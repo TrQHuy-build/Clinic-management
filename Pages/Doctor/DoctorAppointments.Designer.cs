@@ -54,7 +54,7 @@ namespace DentalClinicManagement.Pages.Doctor
             this.dgvAppointments.Name = "dgvAppointments";
             this.dgvAppointments.ReadOnly = true;
             this.dgvAppointments.RowHeadersWidth = 51;
-            this.dgvAppointments.RowTemplate.Height = 35;
+            this.dgvAppointments.RowTemplate.Height = 50;
             this.dgvAppointments.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
             this.dgvAppointments.Size = new System.Drawing.Size(1160, 519);
             this.dgvAppointments.TabIndex = 2;

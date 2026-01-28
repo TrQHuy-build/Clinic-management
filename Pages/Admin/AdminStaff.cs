@@ -72,6 +72,24 @@ namespace DentalClinicManagement.Pages.Admin
                 if (dgvStaff.Columns["ID"] != null)
                     dgvStaff.Columns["ID"].Visible = false;
 
+                // ✅ Set column widths for better display
+                if (dgvStaff.Columns["Họ tên"] != null)
+                    dgvStaff.Columns["Họ tên"].Width = 180;
+                if (dgvStaff.Columns["SĐT"] != null)
+                    dgvStaff.Columns["SĐT"].Width = 120;
+                if (dgvStaff.Columns["Email"] != null)
+                    dgvStaff.Columns["Email"].Width = 200;
+                if (dgvStaff.Columns["Chức vụ"] != null)
+                    dgvStaff.Columns["Chức vụ"].Width = 100;
+                if (dgvStaff.Columns["Chuyên môn"] != null)
+                    dgvStaff.Columns["Chuyên môn"].Width = 150;
+                if (dgvStaff.Columns["Lương"] != null)
+                    dgvStaff.Columns["Lương"].Width = 130;
+                if (dgvStaff.Columns["Ngày vào"] != null)
+                    dgvStaff.Columns["Ngày vào"].Width = 110;
+                if (dgvStaff.Columns["Trạng thái"] != null)
+                    dgvStaff.Columns["Trạng thái"].Width = 120;
+
                 // Format lương
                 if (dgvStaff.Columns["Lương"] != null)
                 {
@@ -84,8 +102,8 @@ namespace DentalClinicManagement.Pages.Admin
                     dgvStaff.Columns["Ngày vào"].DefaultCellStyle.Format = "dd/MM/yyyy";
 
                 // Thêm nút Edit/Delete
-                AddButtonColumn("Edit", "Sửa", 70);
-                AddButtonColumn("Delete", "Xóa", 70);
+                AddButtonColumn("Edit", "Sửa", 80);
+                AddButtonColumn("Delete", "Xóa", 80);
 
                 // Format trạng thái và chuyên môn
                 foreach (DataGridViewRow row in dgvStaff.Rows)
