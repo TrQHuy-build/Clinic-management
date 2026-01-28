@@ -11,8 +11,9 @@ namespace DentalClinicManagement.DataAccess
     public class DatabaseHelper
     {
         // Connection string - CẬP NHẬT THEO MÁY CỦA BẠN
-        private static string connectionString = @"Data Source=DESKTOP-CLDPE3P\MSSQLSEVER;Initial Catalog=DentalClinicDB;Integrated Security=True;TrustServerCertificate=True";
-
+        //private static string connectionString = @"Data Source=DESKTOP-CLDPE3P\MSSQLSEVER;Initial Catalog=DentalClinicDB;Integrated Security=True;TrustServerCertificate=True";
+        // ĐOẠN CODE MỚI (Dùng cho kết nối qua mạng LAN)
+        private static string connectionString = @"Data Source=192.168.1.127,1433;Initial Catalog=DentalClinicDB;User ID=BacSi;Password=123456;TrustServerCertificate=True";
         /// <summary>
         /// Cập nhật connection string từ nơi khác
         /// </summary>

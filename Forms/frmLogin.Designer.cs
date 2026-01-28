@@ -55,8 +55,8 @@ namespace DentalClinicManagement.Forms
             this.txtEmail = new System.Windows.Forms.TextBox();
             this.lblPassword = new System.Windows.Forms.Label();
             this.txtPassword = new System.Windows.Forms.TextBox();
-            this.btnQMK = new System.Windows.Forms.Button();
             this.btnLogin = new System.Windows.Forms.Button();
+            this.BtnQuenMK = new System.Windows.Forms.Button();
             this.leftPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.rightPanel.SuspendLayout();
@@ -127,7 +127,7 @@ namespace DentalClinicManagement.Forms
             this.rightPanel.Controls.Add(this.txtEmail);
             this.rightPanel.Controls.Add(this.lblPassword);
             this.rightPanel.Controls.Add(this.txtPassword);
-            this.rightPanel.Controls.Add(this.btnQMK);
+            this.rightPanel.Controls.Add(this.BtnQuenMK);
             this.rightPanel.Controls.Add(this.btnLogin);
             this.rightPanel.Location = new System.Drawing.Point(457, 25);
             this.rightPanel.Name = "rightPanel";
@@ -179,8 +179,8 @@ namespace DentalClinicManagement.Forms
             this.txtEmail.Multiline = true;
             this.txtEmail.Name = "txtEmail";
             this.txtEmail.Size = new System.Drawing.Size(290, 50);
-            this.txtEmail.TabIndex = 2;
-
+            this.txtEmail.TabIndex = 10;
+            this.txtEmail.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             // 
             // lblPassword
             // 
@@ -204,26 +204,7 @@ namespace DentalClinicManagement.Forms
             this.txtPassword.PasswordChar = '*';
             this.txtPassword.Size = new System.Drawing.Size(290, 48);
             this.txtPassword.TabIndex = 4;
-
             this.txtPassword.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            // 
-            // btnQMK
-            // 
-            this.btnQMK.Anchor = System.Windows.Forms.AnchorStyles.Right;
-            this.btnQMK.BackColor = System.Drawing.Color.Black;
-            this.btnQMK.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.btnQMK.FlatAppearance.BorderSize = 0;
-            this.btnQMK.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnQMK.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold);
-            this.btnQMK.ForeColor = System.Drawing.Color.White;
-            this.btnQMK.Location = new System.Drawing.Point(57, 455);
-            this.btnQMK.Name = "btnQMK";
-            this.btnQMK.Size = new System.Drawing.Size(290, 45);
-            this.btnQMK.TabIndex = 5;
-            this.btnQMK.Text = "QUÊN MẬT KHẨU";
-            this.btnQMK.UseVisualStyleBackColor = false;
-            this.btnQMK.Click += new System.EventHandler(this.BtnQMK);
-
             // 
             // btnLogin
             // 
@@ -241,6 +222,23 @@ namespace DentalClinicManagement.Forms
             this.btnLogin.Text = "ĐĂNG NHẬP";
             this.btnLogin.UseVisualStyleBackColor = false;
             this.btnLogin.Click += new System.EventHandler(this.BtnLogin_Click);
+            // 
+            // BtnQuenMK
+            // 
+            this.BtnQuenMK.Anchor = System.Windows.Forms.AnchorStyles.Right;
+            this.BtnQuenMK.BackColor = System.Drawing.Color.Black;
+            this.BtnQuenMK.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.BtnQuenMK.FlatAppearance.BorderSize = 0;
+            this.BtnQuenMK.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.BtnQuenMK.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold);
+            this.BtnQuenMK.ForeColor = System.Drawing.Color.White;
+            this.BtnQuenMK.Location = new System.Drawing.Point(57, 456);
+            this.BtnQuenMK.Name = "BtnQuenMK";
+            this.BtnQuenMK.Size = new System.Drawing.Size(290, 45);
+            this.BtnQuenMK.TabIndex = 5;
+            this.BtnQuenMK.Text = "QUÊN MẬT KHẨU";
+            this.BtnQuenMK.UseVisualStyleBackColor = false;
+            this.BtnQuenMK.Click += new System.EventHandler(this.BtnQMK);
             // 
             // frmLogin
             // 
@@ -267,7 +265,7 @@ namespace DentalClinicManagement.Forms
         #endregion
         private Button btnTogglePassword;
         private Label label1;
-        private Button btnQMK;
         private PictureBox pictureBox1;
+        private Button BtnQuenMK;
     }
 }
