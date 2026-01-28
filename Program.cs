@@ -32,6 +32,10 @@ namespace DentalClinicManagement
             }
 
             // Run login form
+            
+                //frmMigration migrationForm = new frmMigration();
+                //migrationForm.ShowDialog();
+            
             Application.Run(new frmLogin());
         }
     }

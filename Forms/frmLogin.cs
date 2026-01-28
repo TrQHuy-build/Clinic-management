@@ -10,28 +10,44 @@ namespace DentalClinicManagement.Forms
 {
     public partial class frmLogin : Form
     {
+        private string actualPassword = "";
+
         public frmLogin()
         {
             InitializeComponent();
             btnTogglePassword.FlatStyle = FlatStyle.Flat; 
             btnTogglePassword.FlatAppearance.BorderSize = 0; 
             btnTogglePassword.Cursor = Cursors.Hand;
-            txtPassword.UseSystemPasswordChar = true;
-            btnTogglePassword.Text = "👁";
-
-              
-
+            txtPassword.UseSystemPasswordChar = false;
+            btnTogglePassword.Text = "🙈";
         }
+
         private void btnTogglePassword_Click(object sender, EventArgs e)
         {
             txtPassword.UseSystemPasswordChar = !txtPassword.UseSystemPasswordChar;
 
             if (txtPassword.UseSystemPasswordChar)
-                btnTogglePassword.Text = "🙈";   // Đang ẩn
+            {
+                // Đang ẩn - hiển thị dấu *
+                actualPassword = txtPassword.Text;
+                btnTogglePassword.Text = "🙈";
+            }
             else
-                btnTogglePassword.Text = "👁";  // Đang hiện
+            {
+                // Đang hiện - hiển thị ký tự thực tế
+                actualPassword = txtPassword.Text;
+                btnTogglePassword.Text = "👁";
+            }
         }
 
+        private void txtPassword_TextChanged(object sender, EventArgs e)
+        {
+            // Cập nhật mật khẩu thực tế khi người dùng nhập
+            if (txtPassword.UseSystemPasswordChar)
+            {
+                actualPassword = txtPassword.Text;
+            }
+        }
 
         private void BtnLogin_Click(object sender, EventArgs e)
         {
@@ -63,18 +79,17 @@ namespace DentalClinicManagement.Forms
                     return;
                 }
 
-                // Query đăng nhập
+                // Query lấy user và hash mật khẩu từ DB
                 string query = @"
-                    SELECT u.user_id, u.fullname, u.role, u.email, u.status,
+                    SELECT u.user_id, u.fullname, u.role, u.email, u.status, u.password_hash,
                            s.staff_id, p.patient_id
                     FROM UserAccount u
                     LEFT JOIN Staff s ON u.user_id = s.user_id
                     LEFT JOIN Patient p ON u.user_id = p.user_id
-                    WHERE u.email = @email AND u.password_hash = @password";
+                    WHERE u.email = @email";
 
                 SqlParameter[] parameters = {
-                    new SqlParameter("@email", email),
-                    new SqlParameter("@password", password)
+                    new SqlParameter("@email", email)
                 };
 
                 DataTable dt = DatabaseHelper.ExecuteQuery(query, parameters);
@@ -92,6 +107,15 @@ namespace DentalClinicManagement.Forms
                 if (status.ToLower() != "active")
                 {
                     MessageBox.Show("Tài khoản đã bị khóa!", "Đăng nhập thất bại",
+                        MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+
+                // ✅ Xác minh mật khẩu với hash lưu trong DB
+                string passwordHash = row["password_hash"].ToString();
+                if (!PasswordHelper.VerifyPassword(password, passwordHash))
+                {
+                    MessageBox.Show("Email hoặc mật khẩu không đúng!", "Đăng nhập thất bại",
                         MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;
                 }
@@ -129,44 +153,20 @@ namespace DentalClinicManagement.Forms
             }
         }
 
+        private void BtnQMK(object sender, EventArgs e)
+        {
+            frmQuenMatKhau forgotForm = new frmQuenMatKhau();
+            forgotForm.ShowDialog();
+        }
         private void BtnClose_Click(object sender, EventArgs e)
         {
-            
             Application.Exit();
         }
 
-
-        private void lblSubtitle_Click(object sender, EventArgs e)
-        {
-
-        }
-
-
-
-        private void txtPassword_TextChanged(object sender, EventArgs e)
-
-        {
-
-        }
-
-        private void rightPanel_Paint(object sender, PaintEventArgs e)
-        {
-           
-        }
-
-        private void lblWelcome_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void label1_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void pictureBox1_Click(object sender, EventArgs e)
-        {
-
-        }
+        private void lblSubtitle_Click(object sender, EventArgs e) { }
+        private void rightPanel_Paint(object sender, PaintEventArgs e) { }
+        private void lblWelcome_Click(object sender, EventArgs e) { }
+        private void label1_Click(object sender, EventArgs e) { }
+        private void pictureBox1_Click(object sender, EventArgs e) { }
     }
 }

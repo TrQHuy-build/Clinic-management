@@ -335,21 +335,19 @@ namespace DentalClinicManagement.Pages.Common
             if (!ValidatePasswordInput())
                 return;
 
-
             string oldPassword = txtOldPassword.Text.Trim();
             string newPassword = txtNewPassword.Text.Trim();
 
             try
             {
-                // Kiểm tra mật khẩu cũ
-                string checkQuery = "SELECT COUNT(*) FROM UserAccount WHERE user_id = @userId AND password_hash = @oldPassword";
-                object count = DatabaseHelper.ExecuteScalar(checkQuery, new SqlParameter[]
+                // Kiểm tra mật khẩu cũ - lấy hash từ DB rồi so sánh
+                string checkQuery = "SELECT password_hash FROM UserAccount WHERE user_id = @userId";
+                object hashObj = DatabaseHelper.ExecuteScalar(checkQuery, new SqlParameter[]
                 {
-                    new SqlParameter("@userId", Auth.CurrentUserId),
-                    new SqlParameter("@oldPassword", oldPassword)
+                    new SqlParameter("@userId", Auth.CurrentUserId)
                 });
 
-                if (Convert.ToInt32(count) == 0)
+                if (hashObj == null || !(PasswordHelper.VerifyPassword(oldPassword, hashObj.ToString())))
                 {
                     MessageBoxHelper.ShowError("Mật khẩu cũ không đúng!");
                     txtOldPassword.Focus();
@@ -366,10 +364,13 @@ namespace DentalClinicManagement.Pages.Common
                     return;
                 }
 
+                // ✅ Mã hóa mật khẩu mới
+                string hashedNewPassword = PasswordHelper.HashPassword(newPassword);
+
                 string updateQuery = "UPDATE UserAccount SET password_hash = @newPassword WHERE user_id = @userId";
                 int result = DatabaseHelper.ExecuteNonQuery(updateQuery, new SqlParameter[]
                 {
-                    new SqlParameter("@newPassword", newPassword),
+                    new SqlParameter("@newPassword", hashedNewPassword),
                     new SqlParameter("@userId", Auth.CurrentUserId)
                 });
 
