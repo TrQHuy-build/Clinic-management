@@ -35,9 +35,10 @@ namespace DentalClinicManagement.Pages.Patient
                     txtPhone.Text = dt.Rows[0]["phone"].ToString();
                     if (dt.Rows[0]["date_of_birth"] != DBNull.Value)
                         dtpDOB.Value = Convert.ToDateTime(dt.Rows[0]["date_of_birth"]);
-                    cboGender.SelectedItem = dt.Rows[0]["gender"].ToString();
-                    txtAddress.Text = dt.Rows[0]["address"].ToString();
-                    txtInsurance.Text = dt.Rows[0]["insurance"].ToString();
+                    if (dt.Rows[0]["gender"] != DBNull.Value)
+                        cboGender.SelectedItem = dt.Rows[0]["gender"].ToString();
+                    txtAddress.Text = dt.Rows[0]["address"] != DBNull.Value ? dt.Rows[0]["address"].ToString() : "";
+                    txtInsurance.Text = dt.Rows[0]["insurance"] != DBNull.Value ? dt.Rows[0]["insurance"].ToString() : "";
                 }
             }
             catch (Exception ex)
@@ -48,9 +49,48 @@ namespace DentalClinicManagement.Pages.Patient
 
         private void BtnSave_Click(object sender, EventArgs e)
         {
-            if (!Validator.IsNotEmpty(txtFullname.Text) || !Validator.IsValidPhone(txtPhone.Text))
+            // ✅ Validate Fullname
+            if (!ValidationHelper.IsNotEmpty(txtFullname.Text))
             {
-                MessageBoxHelper.ShowValidationError("Vui lòng nhập đầy đủ thông tin!");
+                MessageBoxHelper.ShowValidationError("Vui lòng nhập họ tên!");
+                txtFullname.Focus();
+                return;
+            }
+
+            if (!ValidationHelper.IsValidFullname(txtFullname.Text))
+            {
+                MessageBoxHelper.ShowValidationError("Họ tên chỉ được chứa chữ cái, khoảng trắng và dấu chấm!");
+                txtFullname.Focus();
+                return;
+            }
+
+            // ✅ Validate Phone
+            if (!ValidationHelper.IsNotEmpty(txtPhone.Text))
+            {
+                MessageBoxHelper.ShowValidationError("Vui lòng nhập số điện thoại!");
+                txtPhone.Focus();
+                return;
+            }
+
+            if (!ValidationHelper.IsValidVietnamPhone(txtPhone.Text))
+            {
+                MessageBoxHelper.ShowValidationError("Số điện thoại phải là 10-11 chữ số và bắt đầu bằng 0 (VD: 0901234567)!");
+                txtPhone.Focus();
+                return;
+            }
+
+            // ✅ Validate Date of Birth
+            if (!ValidationHelper.IsValidDateOfBirth(dtpDOB.Value))
+            {
+                MessageBoxHelper.ShowValidationError(ValidationHelper.GetDateOfBirthErrorMessage(dtpDOB.Value));
+                return;
+            }
+
+            // ✅ Validate Gender
+            if (cboGender.SelectedItem == null || string.IsNullOrWhiteSpace(cboGender.SelectedItem.ToString()))
+            {
+                MessageBoxHelper.ShowValidationError("Vui lòng chọn giới tính!");
+                cboGender.Focus();
                 return;
             }
 

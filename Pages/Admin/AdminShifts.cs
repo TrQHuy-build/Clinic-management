@@ -15,6 +15,7 @@ namespace DentalClinicManagement.Pages.Admin
         public AdminShifts()
         {
             InitializeComponent();
+            dtpDate.Value = DateTime.Today;
             LoadShifts();
         }
 
@@ -42,10 +43,6 @@ namespace DentalClinicManagement.Pages.Admin
                 // ✅ FIX: Kiểm tra nếu không có dữ liệu
                 if (dt == null || dt.Rows.Count == 0)
                 {
-                    // Hiển thị thông báo không có lịch trực
-                    string selectedDate = dtpDate.Value.ToString("dd/MM/yyyy");
-                    MessageBoxHelper.ShowInfo($"Không có lịch trực ngày {selectedDate}");
-
                     // Vẫn gán DataSource rỗng để DataGridView hiển thị header
                     dgvShifts.DataSource = dt;
                 }
@@ -156,6 +153,34 @@ namespace DentalClinicManagement.Pages.Admin
             catch (Exception ex)
             {
                 MessageBoxHelper.ShowError($"Lỗi tải dữ liệu: {ex.Message}");
+            }
+        }
+
+        private void BtnRefresh_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (sender is Button btn)
+                {
+                    btn.Enabled = false;
+                    btn.Text = "Đang tải...";
+                }
+                LoadShifts();
+                if (sender is Button btn2)
+                {
+                    btn2.Enabled = true;
+                    btn2.Text = "🔄 Làm mới";
+                }
+                MessageBoxHelper.ShowInfo("Dữ liệu đã được làm mới!");
+            }
+            catch (Exception ex)
+            {
+                MessageBoxHelper.ShowError($"Lỗi làm mới: {ex.Message}");
+                if (sender is Button btn)
+                {
+                    btn.Enabled = true;
+                    btn.Text = "🔄 Làm mới";
+                }
             }
         }
 

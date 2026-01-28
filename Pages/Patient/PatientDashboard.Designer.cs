@@ -21,8 +21,8 @@ namespace DentalClinicManagement.Pages.Patient
 
         private void InitializeComponent()
         {
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle5 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle6 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
             this.lblTitle = new System.Windows.Forms.Label();
             this.statsPanel = new System.Windows.Forms.FlowLayoutPanel();
             this.cardAppointments = new System.Windows.Forms.Panel();
@@ -66,15 +66,13 @@ namespace DentalClinicManagement.Pages.Patient
             // 
             // statsPanel
             // 
-            this.statsPanel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
             this.statsPanel.BackColor = System.Drawing.Color.Transparent;
             this.statsPanel.Controls.Add(this.cardAppointments);
             this.statsPanel.Controls.Add(this.cardInvoices);
             this.statsPanel.Controls.Add(this.cardRecords);
             this.statsPanel.Location = new System.Drawing.Point(20, 90);
             this.statsPanel.Name = "statsPanel";
-            this.statsPanel.Size = new System.Drawing.Size(1163, 150);
+            this.statsPanel.Size = new System.Drawing.Size(1141, 150);
             this.statsPanel.TabIndex = 1;
             // 
             // cardAppointments
@@ -86,7 +84,7 @@ namespace DentalClinicManagement.Pages.Patient
             this.cardAppointments.Location = new System.Drawing.Point(3, 3);
             this.cardAppointments.Margin = new System.Windows.Forms.Padding(3, 3, 20, 3);
             this.cardAppointments.Name = "cardAppointments";
-            this.cardAppointments.Size = new System.Drawing.Size(280, 130);
+            this.cardAppointments.Size = new System.Drawing.Size(382, 130);
             this.cardAppointments.TabIndex = 0;
             // 
             // iconAppointments
@@ -128,10 +126,10 @@ namespace DentalClinicManagement.Pages.Patient
             this.cardInvoices.Controls.Add(this.iconInvoices);
             this.cardInvoices.Controls.Add(this.lblInvoices);
             this.cardInvoices.Controls.Add(this.valueInvoices);
-            this.cardInvoices.Location = new System.Drawing.Point(306, 3);
+            this.cardInvoices.Location = new System.Drawing.Point(408, 3);
             this.cardInvoices.Margin = new System.Windows.Forms.Padding(3, 3, 20, 3);
             this.cardInvoices.Name = "cardInvoices";
-            this.cardInvoices.Size = new System.Drawing.Size(343, 130);
+            this.cardInvoices.Size = new System.Drawing.Size(345, 130);
             this.cardInvoices.TabIndex = 1;
             // 
             // iconInvoices
@@ -139,7 +137,7 @@ namespace DentalClinicManagement.Pages.Patient
             this.iconInvoices.AutoSize = true;
             this.iconInvoices.Font = new System.Drawing.Font("Segoe MDL2 Assets", 32F);
             this.iconInvoices.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(220)))), ((int)(((byte)(53)))), ((int)(((byte)(69)))));
-            this.iconInvoices.Location = new System.Drawing.Point(22, 35);
+            this.iconInvoices.Location = new System.Drawing.Point(3, 35);
             this.iconInvoices.Name = "iconInvoices";
             this.iconInvoices.Size = new System.Drawing.Size(77, 54);
             this.iconInvoices.TabIndex = 0;
@@ -150,7 +148,7 @@ namespace DentalClinicManagement.Pages.Patient
             this.lblInvoices.AutoSize = true;
             this.lblInvoices.Font = new System.Drawing.Font("Segoe UI", 11F);
             this.lblInvoices.ForeColor = System.Drawing.Color.Gray;
-            this.lblInvoices.Location = new System.Drawing.Point(111, 35);
+            this.lblInvoices.Location = new System.Drawing.Point(84, 35);
             this.lblInvoices.Name = "lblInvoices";
             this.lblInvoices.Size = new System.Drawing.Size(227, 25);
             this.lblInvoices.TabIndex = 1;
@@ -173,11 +171,12 @@ namespace DentalClinicManagement.Pages.Patient
             this.cardRecords.Controls.Add(this.iconRecords);
             this.cardRecords.Controls.Add(this.lblRecords);
             this.cardRecords.Controls.Add(this.valueRecords);
-            this.cardRecords.Location = new System.Drawing.Point(672, 3);
+            this.cardRecords.Location = new System.Drawing.Point(776, 3);
             this.cardRecords.Margin = new System.Windows.Forms.Padding(3, 3, 20, 3);
             this.cardRecords.Name = "cardRecords";
-            this.cardRecords.Size = new System.Drawing.Size(280, 130);
+            this.cardRecords.Size = new System.Drawing.Size(335, 130);
             this.cardRecords.TabIndex = 2;
+            this.cardRecords.Paint += new System.Windows.Forms.PaintEventHandler(this.cardRecords_Paint);
             // 
             // iconRecords
             // 
@@ -244,14 +243,14 @@ namespace DentalClinicManagement.Pages.Patient
             this.dgvUpcoming.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
             this.dgvUpcoming.BackgroundColor = System.Drawing.Color.White;
             this.dgvUpcoming.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            dataGridViewCellStyle5.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle5.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(122)))), ((int)(((byte)(204)))));
-            dataGridViewCellStyle5.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
-            dataGridViewCellStyle5.ForeColor = System.Drawing.Color.White;
-            dataGridViewCellStyle5.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle5.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle5.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dgvUpcoming.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle5;
+            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(122)))), ((int)(((byte)(204)))));
+            dataGridViewCellStyle1.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            dataGridViewCellStyle1.ForeColor = System.Drawing.Color.White;
+            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dgvUpcoming.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
             this.dgvUpcoming.ColumnHeadersHeight = 35;
             this.dgvUpcoming.EnableHeadersVisualStyles = false;
             this.dgvUpcoming.Location = new System.Drawing.Point(15, 50);
@@ -265,14 +264,13 @@ namespace DentalClinicManagement.Pages.Patient
             // 
             // invoicePanel
             // 
-            this.invoicePanel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.invoicePanel.BackColor = System.Drawing.Color.White;
             this.invoicePanel.Controls.Add(this.lblInvoiceTitle);
             this.invoicePanel.Controls.Add(this.dgvInvoices);
-            this.invoicePanel.Location = new System.Drawing.Point(613, 260);
+            this.invoicePanel.Location = new System.Drawing.Point(596, 260);
             this.invoicePanel.Name = "invoicePanel";
             this.invoicePanel.Padding = new System.Windows.Forms.Padding(15);
-            this.invoicePanel.Size = new System.Drawing.Size(570, 393);
+            this.invoicePanel.Size = new System.Drawing.Size(535, 393);
             this.invoicePanel.TabIndex = 3;
             // 
             // lblInvoiceTitle
@@ -296,23 +294,23 @@ namespace DentalClinicManagement.Pages.Patient
             this.dgvInvoices.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
             this.dgvInvoices.BackgroundColor = System.Drawing.Color.White;
             this.dgvInvoices.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            dataGridViewCellStyle6.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle6.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(220)))), ((int)(((byte)(53)))), ((int)(((byte)(69)))));
-            dataGridViewCellStyle6.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
-            dataGridViewCellStyle6.ForeColor = System.Drawing.Color.White;
-            dataGridViewCellStyle6.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle6.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle6.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dgvInvoices.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle6;
+            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(220)))), ((int)(((byte)(53)))), ((int)(((byte)(69)))));
+            dataGridViewCellStyle2.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            dataGridViewCellStyle2.ForeColor = System.Drawing.Color.White;
+            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dgvInvoices.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle2;
             this.dgvInvoices.ColumnHeadersHeight = 35;
             this.dgvInvoices.EnableHeadersVisualStyles = false;
-            this.dgvInvoices.Location = new System.Drawing.Point(15, 50);
+            this.dgvInvoices.Location = new System.Drawing.Point(21, 47);
             this.dgvInvoices.Name = "dgvInvoices";
             this.dgvInvoices.ReadOnly = true;
             this.dgvInvoices.RowHeadersWidth = 51;
             this.dgvInvoices.RowTemplate.Height = 30;
             this.dgvInvoices.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.dgvInvoices.Size = new System.Drawing.Size(540, 328);
+            this.dgvInvoices.Size = new System.Drawing.Size(505, 328);
             this.dgvInvoices.TabIndex = 1;
             // 
             // PatientDashboard
@@ -327,7 +325,7 @@ namespace DentalClinicManagement.Pages.Patient
             this.Controls.Add(this.lblTitle);
             this.Name = "PatientDashboard";
             this.Padding = new System.Windows.Forms.Padding(20);
-            this.Size = new System.Drawing.Size(1203, 685);
+            this.Size = new System.Drawing.Size(1364, 796);
             this.statsPanel.ResumeLayout(false);
             this.cardAppointments.ResumeLayout(false);
             this.cardAppointments.PerformLayout();

@@ -67,13 +67,13 @@ namespace DentalClinicManagement.Pages.Patient
             this.dgvInvoices.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
             this.dgvInvoices.ColumnHeadersHeight = 40;
             this.dgvInvoices.EnableHeadersVisualStyles = false;
-            this.dgvInvoices.Location = new System.Drawing.Point(17, 68);
+            this.dgvInvoices.Location = new System.Drawing.Point(17, 80);
             this.dgvInvoices.Name = "dgvInvoices";
             this.dgvInvoices.ReadOnly = true;
             this.dgvInvoices.RowHeadersWidth = 51;
             this.dgvInvoices.RowTemplate.Height = 35;
             this.dgvInvoices.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.dgvInvoices.Size = new System.Drawing.Size(1525, 743);
+            this.dgvInvoices.Size = new System.Drawing.Size(1525, 731);
             this.dgvInvoices.TabIndex = 1;
             this.dgvInvoices.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.DgvInvoices_CellClick);
             // 

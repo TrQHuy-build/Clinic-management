@@ -54,6 +54,7 @@ namespace DentalClinicManagement.Forms
             this.txtEmail = new System.Windows.Forms.TextBox();
             this.lblPassword = new System.Windows.Forms.Label();
             this.txtPassword = new System.Windows.Forms.TextBox();
+            this.BtnQmk = new System.Windows.Forms.Button();
             this.btnLogin = new System.Windows.Forms.Button();
             this.leftPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
@@ -125,6 +126,7 @@ namespace DentalClinicManagement.Forms
             this.rightPanel.Controls.Add(this.txtEmail);
             this.rightPanel.Controls.Add(this.lblPassword);
             this.rightPanel.Controls.Add(this.txtPassword);
+            this.rightPanel.Controls.Add(this.BtnQmk);
             this.rightPanel.Controls.Add(this.btnLogin);
             this.rightPanel.Location = new System.Drawing.Point(457, 25);
             this.rightPanel.Name = "rightPanel";
@@ -177,7 +179,8 @@ namespace DentalClinicManagement.Forms
             this.txtEmail.Name = "txtEmail";
             this.txtEmail.Size = new System.Drawing.Size(290, 50);
             this.txtEmail.TabIndex = 2;
-            this.txtEmail.Text = "doctor1@clinic.com";
+            this.txtEmail.Text = "";
+            this.txtEmail.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             // 
             // lblPassword
             // 
@@ -198,9 +201,29 @@ namespace DentalClinicManagement.Forms
             this.txtPassword.Location = new System.Drawing.Point(56, 296);
             this.txtPassword.Multiline = true;
             this.txtPassword.Name = "txtPassword";
+            this.txtPassword.PasswordChar = '*';
             this.txtPassword.Size = new System.Drawing.Size(290, 48);
             this.txtPassword.TabIndex = 4;
-            this.txtPassword.Text = "hash_doctor1";
+            this.txtPassword.Text = "";
+            this.txtPassword.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.txtPassword.UseSystemPasswordChar = true;
+            // 
+            // BtnQmk
+            // 
+            this.BtnQmk.Anchor = System.Windows.Forms.AnchorStyles.Right;
+            this.BtnQmk.BackColor = System.Drawing.Color.Black;
+            this.BtnQmk.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.BtnQmk.FlatAppearance.BorderSize = 0;
+            this.BtnQmk.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.BtnQmk.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold);
+            this.BtnQmk.ForeColor = System.Drawing.Color.White;
+            this.BtnQmk.Location = new System.Drawing.Point(57, 457);
+            this.BtnQmk.Name = "BtnQmk";
+            this.BtnQmk.Size = new System.Drawing.Size(290, 45);
+            this.BtnQmk.TabIndex = 5;
+            this.BtnQmk.Text = "QUÊN MẬT KHẨU";
+            this.BtnQmk.UseVisualStyleBackColor = false;
+            this.BtnQmk.Click += new System.EventHandler(this.BtnQmk_Click);
             // 
             // btnLogin
             // 
@@ -245,5 +268,6 @@ namespace DentalClinicManagement.Forms
         private Button btnTogglePassword;
         private Label label1;
         private PictureBox pictureBox1;
+        private Button BtnQmk;
     }
 }

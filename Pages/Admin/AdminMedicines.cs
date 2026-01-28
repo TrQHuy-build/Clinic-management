@@ -126,6 +126,34 @@ namespace DentalClinicManagement.Pages.Admin
             }
         }
 
+        private void BtnRefresh_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (sender is Button btn)
+                {
+                    btn.Enabled = false;
+                    btn.Text = "Đang tải...";
+                }
+                LoadMedicines();
+                if (sender is Button btn2)
+                {
+                    btn2.Enabled = true;
+                    btn2.Text = "🔄 Làm mới";
+                }
+                MessageBoxHelper.ShowInfo("Dữ liệu đã được làm mới!");
+            }
+            catch (Exception ex)
+            {
+                MessageBoxHelper.ShowError($"Lỗi làm mới: {ex.Message}");
+                if (sender is Button btn)
+                {
+                    btn.Enabled = true;
+                    btn.Text = "🔄 Làm mới";
+                }
+            }
+        }
+
         private void BtnAdd_Click(object sender, EventArgs e)
         {
             ShowAddEditForm(null);

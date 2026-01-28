@@ -11,6 +11,12 @@ namespace DentalClinicManagement.Pages.Admin
 {
     public partial class AdminServices : UserControl
     {
+        // ✅ PHÂN TRANG
+        private int currentPage = 1;
+        private int pageSize = 50; // Số bản ghi mỗi trang
+        private int totalRecords = 0;
+        private int totalPages = 0;
+
         public AdminServices()
         {
             InitializeComponent();
@@ -22,6 +28,11 @@ namespace DentalClinicManagement.Pages.Admin
             try
             {
                 string search = txtSearch?.Text?.Trim() ?? "";
+
+                // ✅ TÍNH TOÁN OFFSET CHO PHÂN TRANG
+                int offset = (currentPage - 1) * pageSize;
+
+                // ✅ QUERY CHỈ LẤY DỮ LIỆU CẦN HIỂN THỊ CHO TRANG HIỆN TẠI
                 string query = @"
                     SELECT
                         service_id AS [ID],
@@ -31,12 +42,53 @@ namespace DentalClinicManagement.Pages.Admin
                         status AS [Trạng thái]
                     FROM Service
                     WHERE service_name LIKE @search OR description LIKE @search
-                    ORDER BY service_name";
+                    ORDER BY service_name
+                    OFFSET @offset ROWS
+                    FETCH NEXT @pageSize ROWS ONLY";
 
-                SqlParameter[] parameters = { new SqlParameter("@search", $"%{search}%") };
+                SqlParameter[] parameters = {
+                    new SqlParameter("@search", $"%{search}%"),
+                    new SqlParameter("@offset", offset),
+                    new SqlParameter("@pageSize", pageSize)
+                };
+
                 DataTable dt = DatabaseHelper.ExecuteQuery(query, parameters);
 
+                // ✅ LẤY TỔNG SỐ BẢN GHI ĐỂ TÍNH TỔNG SỐ TRANG
+                string countQuery = "SELECT COUNT(*) FROM Service WHERE service_name LIKE @search OR description LIKE @search";
+                SqlParameter[] countParams = { new SqlParameter("@search", $"%{search}%") };
+                object countResult = DatabaseHelper.ExecuteScalar(countQuery, countParams);
+                totalRecords = countResult != null ? Convert.ToInt32(countResult) : 0;
+                totalPages = (int)Math.Ceiling((double)totalRecords / pageSize);
+
+                // ✅ KIỂM TRA DỮ LIỆU
+                if (dt == null || dt.Rows.Count == 0)
+                {
+                    if (currentPage == 1)
+                    {
+                        MessageBoxHelper.ShowInfo("Chưa có dịch vụ nào trong hệ thống.");
+                    }
+                    else
+                    {
+                        MessageBoxHelper.ShowInfo($"Không có dữ liệu ở trang {currentPage}.");
+                        // Quay về trang trước
+                        if (currentPage > 1)
+                        {
+                            currentPage--;
+                            LoadServices();
+                            return;
+                        }
+                    }
+
+                    dgvServices.DataSource = dt;
+                    UpdatePaginationControls();
+                    return;
+                }
+
                 dgvServices.DataSource = dt;
+
+                // ✅ CẬP NHẬT PAGINATION CONTROLS
+                UpdatePaginationControls();
 
                 // Ẩn ID
                 if (dgvServices.Columns["ID"] != null)
@@ -107,6 +159,175 @@ namespace DentalClinicManagement.Pages.Admin
             }
         }
 
+        // ✅ CẬP NHẬT CONTROLS PHÂN TRANG
+        private void UpdatePaginationControls()
+        {
+            try
+            {
+                // Kiểm tra controls tồn tại
+                if (lblPageInfo == null || btnPrevious == null || btnNext == null ||
+                    btnFirst == null || btnLast == null)
+                {
+                    return;
+                }
+
+                // Update label thông tin trang
+                int fromRecord = totalRecords > 0 ? (currentPage - 1) * pageSize + 1 : 0;
+                int toRecord = Math.Min(currentPage * pageSize, totalRecords);
+
+                lblPageInfo.Text = $"Trang {currentPage}/{totalPages} (Hiển thị {fromRecord}-{toRecord} / {totalRecords} bản ghi)";
+
+                // Enable/Disable buttons
+                btnFirst.Enabled = currentPage > 1;
+                btnPrevious.Enabled = currentPage > 1;
+                btnNext.Enabled = currentPage < totalPages;
+                btnLast.Enabled = currentPage < totalPages;
+
+                // Đổi màu button khi disabled
+                Color enabledColor = ColorTranslator.FromHtml("#007ACC");
+                Color disabledColor = Color.LightGray;
+
+                btnFirst.BackColor = btnFirst.Enabled ? enabledColor : disabledColor;
+                btnPrevious.BackColor = btnPrevious.Enabled ? enabledColor : disabledColor;
+                btnNext.BackColor = btnNext.Enabled ? enabledColor : disabledColor;
+                btnLast.BackColor = btnLast.Enabled ? enabledColor : disabledColor;
+            }
+            catch (Exception ex)
+            {
+                // Silent fail - không hiện lỗi cho phần UI này
+                Console.WriteLine($"Error updating pagination: {ex.Message}");
+            }
+        }
+
+        // ✅ EVENT HANDLERS CHO PHÂN TRANG
+        private void BtnFirst_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (currentPage != 1)
+                {
+                    currentPage = 1;
+                    LoadServices();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBoxHelper.ShowError($"Lỗi: {ex.Message}");
+            }
+        }
+
+        private void BtnPrevious_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (currentPage > 1)
+                {
+                    currentPage--;
+                    LoadServices();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBoxHelper.ShowError($"Lỗi: {ex.Message}");
+            }
+        }
+
+        private void BtnNext_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (currentPage < totalPages)
+                {
+                    currentPage++;
+                    LoadServices();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBoxHelper.ShowError($"Lỗi: {ex.Message}");
+            }
+        }
+
+        private void BtnLast_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (currentPage != totalPages && totalPages > 0)
+                {
+                    currentPage = totalPages;
+                    LoadServices();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBoxHelper.ShowError($"Lỗi: {ex.Message}");
+            }
+        }
+
+        // ✅ THAY ĐỔI KÍCH THƯỚC TRANG
+        private void CboPageSize_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                if (cboPageSize == null || cboPageSize.SelectedItem == null)
+                    return;
+
+                int newPageSize = Convert.ToInt32(cboPageSize.SelectedItem);
+                if (newPageSize != pageSize)
+                {
+                    pageSize = newPageSize;
+                    currentPage = 1; // Reset về trang 1
+                    LoadServices();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBoxHelper.ShowError($"Lỗi: {ex.Message}");
+            }
+        }
+
+        // ✅ NHẢY ĐẾN TRANG CỤ THỂ
+        private void BtnGoToPage_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (txtPageNumber == null || string.IsNullOrWhiteSpace(txtPageNumber.Text))
+                {
+                    MessageBoxHelper.ShowValidationError("Vui lòng nhập số trang!");
+                    return;
+                }
+
+                if (!int.TryParse(txtPageNumber.Text, out int pageNumber))
+                {
+                    MessageBoxHelper.ShowValidationError("Số trang phải là số nguyên!");
+                    txtPageNumber.Focus();
+                    return;
+                }
+
+                if (pageNumber < 1)
+                {
+                    MessageBoxHelper.ShowValidationError("Số trang phải lớn hơn 0!");
+                    txtPageNumber.Focus();
+                    return;
+                }
+
+                if (pageNumber > totalPages)
+                {
+                    MessageBoxHelper.ShowValidationError($"Số trang không vượt quá {totalPages}!");
+                    txtPageNumber.Focus();
+                    return;
+                }
+
+                currentPage = pageNumber;
+                txtPageNumber.Clear();
+                LoadServices();
+            }
+            catch (Exception ex)
+            {
+                MessageBoxHelper.ShowError($"Lỗi: {ex.Message}");
+            }
+        }
+
         private void DgvServices_CellClick(object sender, DataGridViewCellEventArgs e)
         {
             if (e.RowIndex < 0) return;
@@ -130,6 +351,38 @@ namespace DentalClinicManagement.Pages.Admin
         private void BtnAdd_Click(object sender, EventArgs e)
         {
             ShowAddEditForm(null);
+        }
+
+        private void BtnRefresh_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (sender is Button btn)
+                {
+                    btn.Enabled = false;
+                    btn.Text = "Đang tải...";
+                }
+
+                LoadServices();
+
+                if (sender is Button btn2)
+                {
+                    btn2.Enabled = true;
+                    btn2.Text = "🔄 Làm mới";
+                }
+
+                MessageBoxHelper.ShowInfo("Dữ liệu đã được làm mới!");
+            }
+            catch (Exception ex)
+            {
+                MessageBoxHelper.ShowError($"Lỗi làm mới: {ex.Message}");
+
+                if (sender is Button btn)
+                {
+                    btn.Enabled = true;
+                    btn.Text = "🔄 Làm mới";
+                }
+            }
         }
 
         private void ShowAddEditForm(int? serviceId)
@@ -718,7 +971,10 @@ namespace DentalClinicManagement.Pages.Admin
             };
         }
 
-        // Event handlers
-        private void txtSearch_TextChanged(object sender, EventArgs e) => LoadServices();
+        private void txtSearch_TextChanged(object sender, EventArgs e)
+        {
+            currentPage = 1; // Reset về trang 1 khi tìm kiếm
+            LoadServices();
+        }
     }
 }

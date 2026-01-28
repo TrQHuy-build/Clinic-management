@@ -19,6 +19,7 @@ namespace DentalClinicManagement.Pages.Admin
         private Panel cardRevenue;
         private Panel recentPanel;
         private Label lblRecent;
+        private Button btnRefresh;
         private DataGridView dgvAppointments;
 
         /// <summary> 
@@ -48,6 +49,7 @@ namespace DentalClinicManagement.Pages.Admin
             this.statsPanel = new System.Windows.Forms.FlowLayoutPanel();
             this.recentPanel = new System.Windows.Forms.Panel();
             this.lblRecent = new System.Windows.Forms.Label();
+            this.btnRefresh = new System.Windows.Forms.Button();
             this.dgvAppointments = new System.Windows.Forms.DataGridView();
             this.recentPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvAppointments)).BeginInit();
@@ -58,7 +60,7 @@ namespace DentalClinicManagement.Pages.Admin
             this.lblTitle.AutoSize = true;
             this.lblTitle.Font = new System.Drawing.Font("Segoe UI", 24F, System.Drawing.FontStyle.Bold);
             this.lblTitle.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(122)))), ((int)(((byte)(204)))));
-            this.lblTitle.Location = new System.Drawing.Point(0, 0);
+            this.lblTitle.Location = new System.Drawing.Point(20, 20);
             this.lblTitle.Name = "lblTitle";
             this.lblTitle.Size = new System.Drawing.Size(469, 54);
             this.lblTitle.TabIndex = 0;
@@ -68,20 +70,24 @@ namespace DentalClinicManagement.Pages.Admin
             // 
             this.statsPanel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.statsPanel.Location = new System.Drawing.Point(0, 57);
+            this.statsPanel.Location = new System.Drawing.Point(20, 80);
             this.statsPanel.Name = "statsPanel";
-            this.statsPanel.Size = new System.Drawing.Size(1318, 167);
+            this.statsPanel.Size = new System.Drawing.Size(1500, 130);  // ✅ Giảm từ 1900 → 1500 (fit 4 cards: 240+240+240+300 + margins)
             this.statsPanel.TabIndex = 1;
             // 
             // recentPanel
             // 
+            this.recentPanel.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            | System.Windows.Forms.AnchorStyles.Left)
+            | System.Windows.Forms.AnchorStyles.Right)));  // ✅ Thêm Anchor để fit
             this.recentPanel.BackColor = System.Drawing.Color.White;
             this.recentPanel.Controls.Add(this.lblRecent);
+            this.recentPanel.Controls.Add(this.btnRefresh);
             this.recentPanel.Controls.Add(this.dgvAppointments);
-            this.recentPanel.Location = new System.Drawing.Point(0, 225);
+            this.recentPanel.Location = new System.Drawing.Point(20, 220);  // ✅ Điều chỉnh vị trí
             this.recentPanel.Name = "recentPanel";
             this.recentPanel.Padding = new System.Windows.Forms.Padding(20);
-            this.recentPanel.Size = new System.Drawing.Size(1318, 602);
+            this.recentPanel.Size = new System.Drawing.Size(1500, 620);  // ✅ Giảm từ 1900 → 1500 (đồng bộ)
             this.recentPanel.TabIndex = 2;
             // 
             // lblRecent
@@ -95,6 +101,23 @@ namespace DentalClinicManagement.Pages.Admin
             this.lblRecent.TabIndex = 0;
             this.lblRecent.Text = "Lịch hẹn gần đây";
             // 
+            // btnRefresh
+            // 
+            this.btnRefresh.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnRefresh.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(108)))), ((int)(((byte)(117)))), ((int)(((byte)(125)))));
+            this.btnRefresh.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btnRefresh.FlatAppearance.BorderSize = 0;
+            this.btnRefresh.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnRefresh.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
+            this.btnRefresh.ForeColor = System.Drawing.Color.White;
+            this.btnRefresh.Location = new System.Drawing.Point(1180, 12);
+            this.btnRefresh.Name = "btnRefresh";
+            this.btnRefresh.Size = new System.Drawing.Size(120, 35);
+            this.btnRefresh.TabIndex = 1;
+            this.btnRefresh.Text = "🔄 Làm mới";
+            this.btnRefresh.UseVisualStyleBackColor = false;
+            this.btnRefresh.Click += new System.EventHandler(this.BtnRefresh_Click);
+            // 
             // dgvAppointments
             // 
             this.dgvAppointments.AllowUserToAddRows = false;
@@ -105,7 +128,7 @@ namespace DentalClinicManagement.Pages.Admin
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.dgvAppointments.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
-            this.dgvAppointments.BackgroundColor = System.Drawing.Color.SeaShell;
+            this.dgvAppointments.BackgroundColor = System.Drawing.Color.White;
             this.dgvAppointments.BorderStyle = System.Windows.Forms.BorderStyle.None;
             dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
             dataGridViewCellStyle2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(122)))), ((int)(((byte)(204)))));
@@ -123,20 +146,20 @@ namespace DentalClinicManagement.Pages.Admin
             this.dgvAppointments.RowHeadersWidth = 51;
             this.dgvAppointments.RowTemplate.Height = 35;
             this.dgvAppointments.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.dgvAppointments.Size = new System.Drawing.Size(1299, 526);
-            this.dgvAppointments.TabIndex = 1;
+            this.dgvAppointments.Size = new System.Drawing.Size(1440, 540);  // ✅ Giảm width từ 1880 → 1440
+            this.dgvAppointments.TabIndex = 2;
             this.dgvAppointments.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgvAppointments_CellContentClick);
             // 
             // AdminDashboard
             // 
-            this.AutoScroll = true;
+            this.AutoScroll = false;  // ✅ Tắt cuộn, fit hoàn toàn
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(240)))), ((int)(((byte)(242)))), ((int)(((byte)(245)))));
             this.Controls.Add(this.lblTitle);
             this.Controls.Add(this.statsPanel);
             this.Controls.Add(this.recentPanel);
             this.Name = "AdminDashboard";
-            this.Padding = new System.Windows.Forms.Padding(20);
-            this.Size = new System.Drawing.Size(1318, 834);
+            this.Padding = new System.Windows.Forms.Padding(20, 20, 20, 0);  // ✅ Giảm padding bottom
+            this.Size = new System.Drawing.Size(1540, 860);  // ✅ Giảm width từ 1940 → 1540
             this.recentPanel.ResumeLayout(false);
             this.recentPanel.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvAppointments)).EndInit();
@@ -154,11 +177,14 @@ namespace DentalClinicManagement.Pages.Admin
         /// </summary>
         private Panel CreateStatCard(string iconKey, string label, string value, string color)
         {
+            // Xác định kích thước card dựa trên loại
+            int cardWidth = (iconKey == "Money") ? 300 : 240;  // ✅ Giảm: Money 380→300, các card khác 260→240
+            
             Panel card = new Panel
             {
-                Size = new Size(260, 130),
+                Size = new Size(cardWidth, 110),
                 BackColor = Color.White,
-                Margin = new Padding(15)
+                Margin = new Padding(5)  // ✅ Giảm từ 10 → 5
             };
 
             // Border nhẹ
@@ -168,45 +194,45 @@ namespace DentalClinicManagement.Pages.Admin
                     0, 0, card.Width - 1, card.Height - 1);
             };
 
-            // === DÙNG IF-ELSE THAY SWITCH EXPRESSION ===
+            // === ✅ ICON ĐÚNG TỪNG CDL2 ASSETS ===
             string iconChar;
             if (iconKey == "Patient")
-                iconChar = "\uE77B";      // User
+                iconChar = "\uE77B";      // User icon
             else if (iconKey == "Doctor")
-                iconChar = "\uE8C3";      // Doctor
+                iconChar = "\uE7F8";      // Medical/Doctor icon
             else if (iconKey == "Calendar")
-                iconChar = "\uE787";      // Calendar
+                iconChar = "\uE787";      // Calendar icon
             else if (iconKey == "Money")
-                iconChar = "\uE7C8";      // Money
+                iconChar = "\uE7C8";      // Money/Wallet icon
             else
                 iconChar = "\uE946";      // Default
 
             Label lblIcon = new Label
             {
                 Text = iconChar,
-                Font = new Font("Segoe MDL2 Assets", 36F),
+                Font = new Font("Segoe MDL2 Assets", 28F),
                 ForeColor = ColorTranslator.FromHtml(color),
                 AutoSize = true,
-                Location = new Point(20, 25)
+                Location = new Point(12, 16)  // ✅ Điều chỉnh cho card nhỏ hơn
             };
 
             Label lblLabel = new Label
             {
                 Text = label,
-                Font = new Font("Segoe UI", 11F),
+                Font = new Font("Segoe UI", 9F),  // ✅ Giảm từ 10F → 9F
                 ForeColor = Color.Gray,
                 AutoSize = true,
-                Location = new Point(90, 30)
+                Location = new Point(60, 18)
             };
 
             Label lblValue = new Label
             {
                 Name = "value_" + label,
                 Text = value,
-                Font = new Font("Segoe UI", 20F, FontStyle.Bold),
+                Font = new Font("Segoe UI", 16F, FontStyle.Bold),  // ✅ Giảm từ 18F → 16F
                 ForeColor = ColorTranslator.FromHtml(color),
                 AutoSize = true,
-                Location = new Point(90, 60)
+                Location = new Point(60, 48)
             };
 
             card.Controls.Add(lblIcon);

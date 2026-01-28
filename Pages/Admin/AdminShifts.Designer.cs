@@ -27,6 +27,7 @@ namespace DentalClinicManagement.Pages.Admin
             this.lblTitle = new System.Windows.Forms.Label();
             this.panel = new System.Windows.Forms.Panel();
             this.lblSearch = new System.Windows.Forms.Label();
+            this.btnRefresh = new System.Windows.Forms.Button();
             this.btnAdd = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dgvShifts)).BeginInit();
             this.panel.SuspendLayout();
@@ -80,9 +81,12 @@ namespace DentalClinicManagement.Pages.Admin
             // 
             // panel
             // 
+            this.panel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.panel.BackColor = System.Drawing.Color.White;
             this.panel.Controls.Add(this.lblSearch);
             this.panel.Controls.Add(this.dtpDate);
+            this.panel.Controls.Add(this.btnRefresh);
             this.panel.Controls.Add(this.btnAdd);
             this.panel.Location = new System.Drawing.Point(20, 80);
             this.panel.Name = "panel";
@@ -99,8 +103,26 @@ namespace DentalClinicManagement.Pages.Admin
             this.lblSearch.TabIndex = 2;
             this.lblSearch.Text = "Chọn ngày:";
             // 
+            // btnRefresh
+            // 
+            this.btnRefresh.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnRefresh.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(108)))), ((int)(((byte)(117)))), ((int)(((byte)(125)))));
+            this.btnRefresh.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btnRefresh.FlatAppearance.BorderSize = 0;
+            this.btnRefresh.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnRefresh.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
+            this.btnRefresh.ForeColor = System.Drawing.Color.White;
+            this.btnRefresh.Location = new System.Drawing.Point(818, 13);
+            this.btnRefresh.Name = "btnRefresh";
+            this.btnRefresh.Size = new System.Drawing.Size(137, 35);
+            this.btnRefresh.TabIndex = 2;
+            this.btnRefresh.Text = "🔄 Làm mới";
+            this.btnRefresh.UseVisualStyleBackColor = false;
+            this.btnRefresh.Click += new System.EventHandler(this.BtnRefresh_Click);
+            // 
             // btnAdd
             // 
+            this.btnAdd.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.btnAdd.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(40)))), ((int)(((byte)(167)))), ((int)(((byte)(69)))));
             this.btnAdd.Cursor = System.Windows.Forms.Cursors.Hand;
             this.btnAdd.FlatAppearance.BorderSize = 0;
@@ -140,6 +162,7 @@ namespace DentalClinicManagement.Pages.Admin
         private System.Windows.Forms.DateTimePicker dtpDate;
         private Label lblTitle;
         private Panel panel;
+        private Button btnRefresh;
         private Button btnAdd;
         private Label lblSearch;
     }
