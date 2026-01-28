@@ -42,7 +42,7 @@ namespace DentalClinicManagement.Pages.Doctor
             // Panel đăng ký lịch trực
             panelRegister = new Panel
             {
-                Location = new Point(440, 90),
+                Location = new Point(660, 90),
                 Size = new Size(520, 350),
                 BackColor = Color.White,
                 BorderStyle = BorderStyle.FixedSingle

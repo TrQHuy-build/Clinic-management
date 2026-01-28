@@ -59,14 +59,18 @@ namespace DentalClinicManagement.Pages.Doctor
         /// </summary>
         private void InitializeAdvancedSearch()
         {
+            // Ẩn panelSearch cũ
+            if (panelSearch != null)
+                panelSearch.Visible = false;
+                
             // Thêm panel filter nếu chưa có
             if (this.Controls.Find("panelFilter", false).Length == 0)
             {
               Panel panelFilter = new Panel
    {
               Name = "panelFilter",
-Dock = DockStyle.Top,
-          Height = 80,
+              Location = new Point(20, 75),
+              Size = new Size(912, 85),
          BackColor = Color.White,
         Padding = new Padding(10)
     };
@@ -100,7 +104,7 @@ Dock = DockStyle.Top,
        DateTimePicker dtpFrom = new DateTimePicker
       {
          Name = "dtpFrom",
-        Location = new Point(370, 12),
+        Location = new Point(380, 12),
             Size = new Size(120, 25),
           Format = DateTimePickerFormat.Short,
             Value = DateTime.Today.AddMonths(-1),
@@ -111,7 +115,7 @@ Dock = DockStyle.Top,
               Label lblTo = new Label
       {
  Text = "Đến ngày:",
-          Location = new Point(500, 15),
+          Location = new Point(510, 15),
       AutoSize = true,
    Font = new Font("Segoe UI", 9)
            };
@@ -119,19 +123,30 @@ Dock = DockStyle.Top,
         DateTimePicker dtpTo = new DateTimePicker
         {
     Name = "dtpTo",
-             Location = new Point(570, 12),
+             Location = new Point(590, 12),
          Size = new Size(120, 25),
          Format = DateTimePickerFormat.Short,
          Value = DateTime.Today,
     Font = new Font("Segoe UI", 9)
    };
            dtpTo.ValueChanged += (s, e) => LoadRecords();
+           
+         // Label hiển thị tổng số - đặt ở Row 1
+         Label lblCount = new Label
+     {
+  Name = "lblCount",
+          Text = "Tổng: 0 hồ sơ",
+          Location = new Point(730, 15),
+         AutoSize = true,
+   Font = new Font("Segoe UI", 9, FontStyle.Bold),
+           ForeColor = ColorTranslator.FromHtml("#667eea")
+ };
 
          // Row 2: Buttons
           Button btnReset = new Button
     {
         Text = "🔄 Reset",
-        Location = new Point(10, 45),
+        Location = new Point(10, 50),
         Size = new Size(80, 28),
     BackColor = Color.LightGray,
                  FlatStyle = FlatStyle.Flat,
@@ -151,7 +166,7 @@ Dock = DockStyle.Top,
               {
    Name = "btnExportCsv",
         Text = "📊 Xuất Excel",
-  Location = new Point(100, 45),
+  Location = new Point(100, 50),
    Size = new Size(110, 28),
    BackColor = ColorTranslator.FromHtml("#28A745"),
   ForeColor = Color.White,
@@ -166,7 +181,7 @@ Dock = DockStyle.Top,
             {
               Name = "btnExportHtml",
      Text = "📄 Xuất PDF/HTML",
-     Location = new Point(220, 45),
+     Location = new Point(200, 50),
  Size = new Size(130, 28),
  BackColor = ColorTranslator.FromHtml("#17A2B8"),
    ForeColor = Color.White,
@@ -176,17 +191,6 @@ Dock = DockStyle.Top,
                 };
       btnExportHtml.FlatAppearance.BorderSize = 0;
                 btnExportHtml.Click += BtnExportHtml_Click;
-
-      // Label hiển thị tổng số
-         Label lblCount = new Label
-     {
-  Name = "lblCount",
-          Text = "Tổng: 0 hồ sơ",
-          Location = new Point(570, 50),
-         AutoSize = true,
-   Font = new Font("Segoe UI", 9, FontStyle.Bold),
-           ForeColor = ColorTranslator.FromHtml("#667eea")
- };
 
     panelFilter.Controls.AddRange(new Control[] {
         lblSearch, txtAdvSearch, lblFrom, dtpFrom, lblTo, dtpTo,

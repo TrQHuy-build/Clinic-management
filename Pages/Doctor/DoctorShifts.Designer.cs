@@ -92,7 +92,7 @@ namespace DentalClinicManagement.Pages.Doctor
             this.dgvShifts.RowHeadersWidth = 51;
             this.dgvShifts.RowTemplate.Height = 35;
             this.dgvShifts.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.dgvShifts.Size = new System.Drawing.Size(400, 450);
+            this.dgvShifts.Size = new System.Drawing.Size(620, 450);
             this.dgvShifts.TabIndex = 2;
             // 
             // DoctorShifts
