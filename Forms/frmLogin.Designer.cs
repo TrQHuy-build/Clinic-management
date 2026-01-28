@@ -179,7 +179,11 @@ namespace DentalClinicManagement.Forms
             this.txtEmail.Name = "txtEmail";
             this.txtEmail.Size = new System.Drawing.Size(290, 50);
             this.txtEmail.TabIndex = 2;
+
             this.txtEmail.Text = "admin@clinic.com";
+
+           
+
             this.txtEmail.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             // 
             // lblPassword
@@ -204,7 +208,9 @@ namespace DentalClinicManagement.Forms
             this.txtPassword.PasswordChar = '*';
             this.txtPassword.Size = new System.Drawing.Size(290, 48);
             this.txtPassword.TabIndex = 4;
+
             this.txtPassword.Text = "hash_admin";
+
             this.txtPassword.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.txtPassword.UseSystemPasswordChar = true;
             // 

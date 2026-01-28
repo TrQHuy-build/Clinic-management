@@ -302,9 +302,6 @@
     <None Include="Resources\133864911312596807.jpg" />
     <None Include="Resources\Screenshot 2025-11-23 054832.png" />
     <None Include="Resources\dentist.jpg" />
-    <EmbeddedResource Include="Forms\frmLogin.resx">
-      <DependentUpon>frmLogin.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="Pages\Admin\AdminDashboard.resx">
       <DependentUpon>AdminDashboard.cs</DependentUpon>
     </EmbeddedResource>

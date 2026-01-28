@@ -99,10 +99,11 @@ namespace DentalClinicManagement.Pages.Common
             // 
             // txtFullname
             // 
-            this.txtFullname.Font = new System.Drawing.Font("Segoe UI", 11F);
+            this.txtFullname.Font = new System.Drawing.Font("Segoe UI", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txtFullname.Location = new System.Drawing.Point(172, 67);
+            this.txtFullname.Multiline = true;
             this.txtFullname.Name = "txtFullname";
-            this.txtFullname.Size = new System.Drawing.Size(400, 32);
+            this.txtFullname.Size = new System.Drawing.Size(451, 49);
             this.txtFullname.TabIndex = 2;
             // 
             // lblPhone
@@ -117,10 +118,11 @@ namespace DentalClinicManagement.Pages.Common
             // 
             // txtPhone
             // 
-            this.txtPhone.Font = new System.Drawing.Font("Segoe UI", 11F);
+            this.txtPhone.Font = new System.Drawing.Font("Segoe UI", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txtPhone.Location = new System.Drawing.Point(172, 148);
+            this.txtPhone.Multiline = true;
             this.txtPhone.Name = "txtPhone";
-            this.txtPhone.Size = new System.Drawing.Size(400, 32);
+            this.txtPhone.Size = new System.Drawing.Size(451, 49);
             this.txtPhone.TabIndex = 4;
             // 
             // lblEmail
@@ -136,11 +138,12 @@ namespace DentalClinicManagement.Pages.Common
             // txtEmail
             // 
             this.txtEmail.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(240)))), ((int)(((byte)(242)))), ((int)(((byte)(245)))));
-            this.txtEmail.Font = new System.Drawing.Font("Segoe UI", 11F);
+            this.txtEmail.Font = new System.Drawing.Font("Segoe UI", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txtEmail.Location = new System.Drawing.Point(172, 227);
+            this.txtEmail.Multiline = true;
             this.txtEmail.Name = "txtEmail";
             this.txtEmail.ReadOnly = true;
-            this.txtEmail.Size = new System.Drawing.Size(400, 32);
+            this.txtEmail.Size = new System.Drawing.Size(451, 49);
             this.txtEmail.TabIndex = 6;
             // 
             // btnSave
@@ -151,7 +154,7 @@ namespace DentalClinicManagement.Pages.Common
             this.btnSave.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnSave.Font = new System.Drawing.Font("Segoe UI", 11F, System.Drawing.FontStyle.Bold);
             this.btnSave.ForeColor = System.Drawing.Color.White;
-            this.btnSave.Location = new System.Drawing.Point(236, 299);
+            this.btnSave.Location = new System.Drawing.Point(398, 301);
             this.btnSave.Name = "btnSave";
             this.btnSave.Size = new System.Drawing.Size(225, 40);
             this.btnSave.TabIndex = 7;
@@ -182,7 +185,7 @@ namespace DentalClinicManagement.Pages.Common
             // 
             // btnToggleConfirmPassword
             // 
-            this.btnToggleConfirmPassword.Location = new System.Drawing.Point(595, 226);
+            this.btnToggleConfirmPassword.Location = new System.Drawing.Point(586, 231);
             this.btnToggleConfirmPassword.Name = "btnToggleConfirmPassword";
             this.btnToggleConfirmPassword.Size = new System.Drawing.Size(40, 25);
             this.btnToggleConfirmPassword.TabIndex = 10;
@@ -191,7 +194,7 @@ namespace DentalClinicManagement.Pages.Common
             // 
             // btnToggleNewPassword
             // 
-            this.btnToggleNewPassword.Location = new System.Drawing.Point(595, 148);
+            this.btnToggleNewPassword.Location = new System.Drawing.Point(586, 152);
             this.btnToggleNewPassword.Name = "btnToggleNewPassword";
             this.btnToggleNewPassword.Size = new System.Drawing.Size(40, 25);
             this.btnToggleNewPassword.TabIndex = 9;
@@ -200,7 +203,7 @@ namespace DentalClinicManagement.Pages.Common
             // 
             // btnToggleOldPassword
             // 
-            this.btnToggleOldPassword.Location = new System.Drawing.Point(595, 69);
+            this.btnToggleOldPassword.Location = new System.Drawing.Point(586, 73);
             this.btnToggleOldPassword.Name = "btnToggleOldPassword";
             this.btnToggleOldPassword.Size = new System.Drawing.Size(40, 25);
             this.btnToggleOldPassword.TabIndex = 8;
@@ -232,8 +235,9 @@ namespace DentalClinicManagement.Pages.Common
             // 
             this.txtOldPassword.Font = new System.Drawing.Font("Segoe UI", 11F);
             this.txtOldPassword.Location = new System.Drawing.Point(195, 67);
+            this.txtOldPassword.Multiline = true;
             this.txtOldPassword.Name = "txtOldPassword";
-            this.txtOldPassword.Size = new System.Drawing.Size(441, 32);
+            this.txtOldPassword.Size = new System.Drawing.Size(441, 54);
             this.txtOldPassword.TabIndex = 2;
             // 
             // lblNewPassword
@@ -250,8 +254,9 @@ namespace DentalClinicManagement.Pages.Common
             // 
             this.txtNewPassword.Font = new System.Drawing.Font("Segoe UI", 11F);
             this.txtNewPassword.Location = new System.Drawing.Point(195, 144);
+            this.txtNewPassword.Multiline = true;
             this.txtNewPassword.Name = "txtNewPassword";
-            this.txtNewPassword.Size = new System.Drawing.Size(441, 32);
+            this.txtNewPassword.Size = new System.Drawing.Size(441, 54);
             this.txtNewPassword.TabIndex = 4;
             // 
             // lblConfirmPassword
@@ -268,8 +273,9 @@ namespace DentalClinicManagement.Pages.Common
             // 
             this.txtConfirmPassword.Font = new System.Drawing.Font("Segoe UI", 11F);
             this.txtConfirmPassword.Location = new System.Drawing.Point(195, 222);
+            this.txtConfirmPassword.Multiline = true;
             this.txtConfirmPassword.Name = "txtConfirmPassword";
-            this.txtConfirmPassword.Size = new System.Drawing.Size(441, 32);
+            this.txtConfirmPassword.Size = new System.Drawing.Size(441, 54);
             this.txtConfirmPassword.TabIndex = 6;
             // 
             // lblHint
@@ -277,7 +283,7 @@ namespace DentalClinicManagement.Pages.Common
             this.lblHint.AutoSize = true;
             this.lblHint.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Italic);
             this.lblHint.ForeColor = System.Drawing.Color.Gray;
-            this.lblHint.Location = new System.Drawing.Point(197, 286);
+            this.lblHint.Location = new System.Drawing.Point(191, 201);
             this.lblHint.Name = "lblHint";
             this.lblHint.Size = new System.Drawing.Size(224, 20);
             this.lblHint.TabIndex = 7;
@@ -291,7 +297,7 @@ namespace DentalClinicManagement.Pages.Common
             this.btnChangePassword.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnChangePassword.Font = new System.Drawing.Font("Segoe UI", 11F, System.Drawing.FontStyle.Bold);
             this.btnChangePassword.ForeColor = System.Drawing.Color.White;
-            this.btnChangePassword.Location = new System.Drawing.Point(298, 311);
+            this.btnChangePassword.Location = new System.Drawing.Point(486, 301);
             this.btnChangePassword.Name = "btnChangePassword";
             this.btnChangePassword.Size = new System.Drawing.Size(150, 40);
             this.btnChangePassword.TabIndex = 8;

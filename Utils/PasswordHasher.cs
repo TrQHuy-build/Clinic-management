@@ -65,7 +65,15 @@ namespace DentalClinicManagement.Utils
                 string[] parts = hashedPassword.Split(':');
                 if (parts.Length != 3)
                 {
-                    // Format cũ (plain text hoặc hash yếu) - return false để bắt đổi password
+                    // ✅ BACKWARD COMPATIBILITY: Format cũ (plain text như "hash_staff1")
+                    // So sánh trực tiếp với password hoặc với dạng "hash_<password>"
+                    if (hashedPassword == password)
+                        return true;
+                    if (hashedPassword == $"hash_{password}")
+                        return true;
+                    // Nếu password là "staff1" và hash là "hash_staff1" -> match
+                    if (hashedPassword.StartsWith("hash_") && hashedPassword.Substring(5) == password)
+                        return true;
                     return false;
                 }
 
