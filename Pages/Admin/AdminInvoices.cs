@@ -11,6 +11,12 @@ namespace DentalClinicManagement.Pages.Admin
 {
     public partial class AdminInvoices : UserControl
     {
+        // ✅ PHÂN TRANG
+        private int currentPage = 1;
+        private int pageSize = 50; // Số bản ghi mỗi trang
+        private int totalRecords = 0;
+        private int totalPages = 0;
+
         public AdminInvoices()
         {
             InitializeComponent();
@@ -29,12 +35,10 @@ namespace DentalClinicManagement.Pages.Admin
                     return;
                 }
 
-                // Khởi tạo ComboBox trạng thái nếu chưa có
-                if (cboStatus.Items.Count == 0)
+                // Mặc định chọn "Tất cả" nếu chưa chọn gì
+                if (cboStatus.SelectedIndex < 0)
                 {
-                    cboStatus.Items.Clear();
-                    cboStatus.Items.AddRange(new object[] { "Tất cả", "paid", "unpaid", "cancelled" });
-                    cboStatus.SelectedIndex = 0; // Mặc định "Tất cả"
+                    cboStatus.SelectedIndex = 0;
                 }
             }
             catch (Exception ex)
@@ -78,6 +82,10 @@ namespace DentalClinicManagement.Pages.Admin
                         return;
                 }
 
+                // ✅ TÍNH TOÁN OFFSET CHO PHÂN TRANG
+                int offset = (currentPage - 1) * pageSize;
+
+                // ✅ QUERY CHỈ LẤY DỮ LIỆU CẦN HIỂN THỊ CHO TRANG HIỆN TẠI
                 string query = @"
                     SELECT
                         i.invoice_id AS [Mã HĐ],
@@ -97,28 +105,83 @@ namespace DentalClinicManagement.Pages.Admin
                     new SqlParameter("@to", toDate)
                 };
 
+                // Map Vietnamese status to English
+                string statusFilter = selectedStatus;
+                if (selectedStatus == "Đã thanh toán")
+                    statusFilter = "paid";
+                else if (selectedStatus == "Chưa thanh toán")
+                    statusFilter = "unpaid";
+                else if (selectedStatus == "Đã hủy")
+                    statusFilter = "cancelled";
+
                 if (selectedStatus != "Tất cả")
                 {
                     query += " AND i.status = @status";
-                    parameters.Add(new SqlParameter("@status", selectedStatus));
+                    parameters.Add(new SqlParameter("@status", statusFilter));
                 }
 
-                query += " ORDER BY i.invoice_date DESC";
+                query += @" ORDER BY i.invoice_date DESC
+                    OFFSET @offset ROWS
+                    FETCH NEXT @pageSize ROWS ONLY";
+
+                parameters.Add(new SqlParameter("@offset", offset));
+                parameters.Add(new SqlParameter("@pageSize", pageSize));
 
                 DataTable dt = DatabaseHelper.ExecuteQuery(query, parameters.ToArray());
 
-                // ✅ FIX: Kiểm tra dữ liệu rỗng
+                // ✅ LẤY TỔNG SỐ BẢN GHI ĐỂ TÍNH TỔNG SỐ TRANG
+                string countQuery = @"
+                    SELECT COUNT(*)
+                    FROM Invoice i
+                    INNER JOIN Patient p ON i.patient_id = p.patient_id
+                    INNER JOIN UserAccount u ON p.user_id = u.user_id
+                    WHERE CAST(i.invoice_date AS DATE) BETWEEN @from AND @to";
+
+                var countParams = new List<SqlParameter>
+                {
+                    new SqlParameter("@from", fromDate),
+                    new SqlParameter("@to", toDate)
+                };
+
+                if (selectedStatus != "Tất cả")
+                {
+                    countQuery += " AND i.status = @status";
+                    countParams.Add(new SqlParameter("@status", statusFilter));
+                }
+
+                object countResult = DatabaseHelper.ExecuteScalar(countQuery, countParams.ToArray());
+                totalRecords = countResult != null ? Convert.ToInt32(countResult) : 0;
+                totalPages = (int)Math.Ceiling((double)totalRecords / pageSize);
+
+                // ✅ KIỂM TRA DỮ LIỆU
                 if (dt == null || dt.Rows.Count == 0)
                 {
-                    string statusText = selectedStatus == "Tất cả" ? "" : $" với trạng thái '{Formatter.FormatStatus(selectedStatus)}'";
-                    MessageBoxHelper.ShowInfo($"Không có hóa đơn nào từ {fromDate:dd/MM/yyyy} đến {toDate:dd/MM/yyyy}{statusText}");
+                    if (currentPage == 1)
+                    {
+                        string statusText = selectedStatus == "Tất cả" ? "" : $" với trạng thái '{Formatter.FormatStatus(selectedStatus)}'";
+                        MessageBoxHelper.ShowInfo($"Không có hóa đơn nào từ {fromDate:dd/MM/yyyy} đến {toDate:dd/MM/yyyy}{statusText}");
+                    }
+                    else
+                    {
+                        MessageBoxHelper.ShowInfo($"Không có dữ liệu ở trang {currentPage}.");
+                        // Quay về trang trước
+                        if (currentPage > 1)
+                        {
+                            currentPage--;
+                            LoadInvoices();
+                            return;
+                        }
+                    }
 
-                    // Vẫn gán DataSource rỗng để hiển thị header
                     dgvInvoices.DataSource = dt;
+                    UpdatePaginationControls();
                     return;
                 }
 
                 dgvInvoices.DataSource = dt;
+
+                // ✅ CẬP NHẬT PAGINATION CONTROLS
+                UpdatePaginationControls();
 
                 // ✅ FIX: Cấu hình DataGridView
                 if (dgvInvoices.Columns.Count > 0)
@@ -242,6 +305,175 @@ namespace DentalClinicManagement.Pages.Admin
             catch (Exception ex)
             {
                 MessageBoxHelper.ShowError($"Lỗi tải hóa đơn: {ex.Message}");
+            }
+        }
+
+        // ✅ CẬP NHẬT CONTROLS PHÂN TRANG
+        private void UpdatePaginationControls()
+        {
+            try
+            {
+                // Kiểm tra controls tồn tại
+                if (lblPageInfo == null || btnPrevious == null || btnNext == null ||
+                    btnFirst == null || btnLast == null)
+                {
+                    return;
+                }
+
+                // Update label thông tin trang
+                int fromRecord = totalRecords > 0 ? (currentPage - 1) * pageSize + 1 : 0;
+                int toRecord = Math.Min(currentPage * pageSize, totalRecords);
+
+                lblPageInfo.Text = $"Trang {currentPage}/{totalPages} (Hiển thị {fromRecord}-{toRecord} / {totalRecords} bản ghi)";
+
+                // Enable/Disable buttons
+                btnFirst.Enabled = currentPage > 1;
+                btnPrevious.Enabled = currentPage > 1;
+                btnNext.Enabled = currentPage < totalPages;
+                btnLast.Enabled = currentPage < totalPages;
+
+                // Đổi màu button khi disabled
+                Color enabledColor = ColorTranslator.FromHtml("#007ACC");
+                Color disabledColor = Color.LightGray;
+
+                btnFirst.BackColor = btnFirst.Enabled ? enabledColor : disabledColor;
+                btnPrevious.BackColor = btnPrevious.Enabled ? enabledColor : disabledColor;
+                btnNext.BackColor = btnNext.Enabled ? enabledColor : disabledColor;
+                btnLast.BackColor = btnLast.Enabled ? enabledColor : disabledColor;
+            }
+            catch (Exception ex)
+            {
+                // Silent fail - không hiện lỗi cho phần UI này
+                Console.WriteLine($"Error updating pagination: {ex.Message}");
+            }
+        }
+
+        // ✅ EVENT HANDLERS CHO PHÂN TRANG
+        private void BtnFirst_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (currentPage != 1)
+                {
+                    currentPage = 1;
+                    LoadInvoices();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBoxHelper.ShowError($"Lỗi: {ex.Message}");
+            }
+        }
+
+        private void BtnPrevious_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (currentPage > 1)
+                {
+                    currentPage--;
+                    LoadInvoices();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBoxHelper.ShowError($"Lỗi: {ex.Message}");
+            }
+        }
+
+        private void BtnNext_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (currentPage < totalPages)
+                {
+                    currentPage++;
+                    LoadInvoices();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBoxHelper.ShowError($"Lỗi: {ex.Message}");
+            }
+        }
+
+        private void BtnLast_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (currentPage != totalPages && totalPages > 0)
+                {
+                    currentPage = totalPages;
+                    LoadInvoices();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBoxHelper.ShowError($"Lỗi: {ex.Message}");
+            }
+        }
+
+        // ✅ THAY ĐỔI KÍCH THƯỚC TRANG
+        private void CboPageSize_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                if (cboPageSize == null || cboPageSize.SelectedItem == null)
+                    return;
+
+                int newPageSize = Convert.ToInt32(cboPageSize.SelectedItem);
+                if (newPageSize != pageSize)
+                {
+                    pageSize = newPageSize;
+                    currentPage = 1; // Reset về trang 1
+                    LoadInvoices();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBoxHelper.ShowError($"Lỗi: {ex.Message}");
+            }
+        }
+
+        // ✅ NHẢY ĐẾN TRANG CỤ THỂ
+        private void BtnGoToPage_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (txtPageNumber == null || string.IsNullOrWhiteSpace(txtPageNumber.Text))
+                {
+                    MessageBoxHelper.ShowValidationError("Vui lòng nhập số trang!");
+                    return;
+                }
+
+                if (!int.TryParse(txtPageNumber.Text, out int pageNumber))
+                {
+                    MessageBoxHelper.ShowValidationError("Số trang phải là số nguyên!");
+                    txtPageNumber.Focus();
+                    return;
+                }
+
+                if (pageNumber < 1)
+                {
+                    MessageBoxHelper.ShowValidationError("Số trang phải lớn hơn 0!");
+                    txtPageNumber.Focus();
+                    return;
+                }
+
+                if (pageNumber > totalPages)
+                {
+                    MessageBoxHelper.ShowValidationError($"Số trang không vượt quá {totalPages}!");
+                    txtPageNumber.Focus();
+                    return;
+                }
+
+                currentPage = pageNumber;
+                txtPageNumber.Clear();
+                LoadInvoices();
+            }
+            catch (Exception ex)
+            {
+                MessageBoxHelper.ShowError($"Lỗi: {ex.Message}");
             }
         }
 
@@ -374,16 +606,30 @@ namespace DentalClinicManagement.Pages.Admin
                         BorderStyle = BorderStyle.Fixed3D
                     };
 
-                    // ✅ FIX: Query chi tiết dịch vụ
+                    // ✅ FIX: Query chi tiết dịch vụ - lấy từ cả ServiceUsage và InvoicePrescription
                     string serviceQuery = @"
                         SELECT 
                             s.service_name AS [Dịch vụ], 
                             su.quantity AS [SL], 
                             s.price AS [Đơn giá],
-                            s.price * su.quantity AS [Thành tiền]
+                            (s.price * su.quantity) AS [Thành tiền]
                         FROM ServiceUsage su
                         INNER JOIN Service s ON su.service_id = s.service_id
-                        WHERE su.invoice_id = @id";
+                        WHERE su.invoice_id = @id
+                        
+                        UNION ALL
+                        
+                        SELECT 
+                            m.name AS [Dịch vụ],
+                            CAST(p.dosage AS INT) AS [SL],
+                            m.price AS [Đơn giá],
+                            (m.price * CAST(p.dosage AS INT)) AS [Thành tiền]
+                        FROM InvoicePrescription ip
+                        INNER JOIN Prescription p ON ip.prescription_id = p.prescription_id
+                        INNER JOIN Medicine m ON p.medicine_id = m.medicine_id
+                        WHERE ip.invoice_id = @id
+                        
+                        ORDER BY [Dịch vụ]";
 
                     DataTable dtServices = DatabaseHelper.ExecuteQuery(
                         serviceQuery,
@@ -484,6 +730,8 @@ namespace DentalClinicManagement.Pages.Admin
             }
         }
 
+        
+
         // ✅ FIX: Event handlers với try-catch
         private void dtpFrom_ValueChanged(object sender, EventArgs e)
         {
@@ -496,6 +744,7 @@ namespace DentalClinicManagement.Pages.Admin
                     dtpFrom.Value = dtpTo.Value;
                     return;
                 }
+                currentPage = 1; // Reset trang khi thay đổi filter
                 LoadInvoices();
             }
             catch (Exception ex)
@@ -515,6 +764,7 @@ namespace DentalClinicManagement.Pages.Admin
                     dtpTo.Value = dtpFrom.Value;
                     return;
                 }
+                currentPage = 1; // Reset trang khi thay đổi filter
                 LoadInvoices();
             }
             catch (Exception ex)
@@ -523,10 +773,39 @@ namespace DentalClinicManagement.Pages.Admin
             }
         }
 
+        private void BtnRefresh_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (sender is Button btn)
+                {
+                    btn.Enabled = false;
+                    btn.Text = "Đang tải...";
+                }
+                LoadInvoices();
+                if (sender is Button btn2)
+                {
+                    btn2.Enabled = true;
+                    btn2.Text = "🔄 Làm mới";
+                }
+                MessageBoxHelper.ShowInfo("Dữ liệu đã được làm mới!");
+            }
+            catch (Exception ex)
+            {
+                MessageBoxHelper.ShowError($"Lỗi làm mới: {ex.Message}");
+                if (sender is Button btn)
+                {
+                    btn.Enabled = true;
+                    btn.Text = "🔄 Làm mới";
+                }
+            }
+        }
+
         private void cboStatus_SelectedIndexChanged(object sender, EventArgs e)
         {
             try
             {
+                currentPage = 1; // Reset trang khi thay đổi filter
                 LoadInvoices();
             }
             catch (Exception ex)

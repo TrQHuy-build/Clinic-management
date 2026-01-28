@@ -57,7 +57,7 @@ namespace DentalClinicManagement.Pages.Admin
             this.dgvSalary.RowHeadersWidth = 51;
             this.dgvSalary.RowTemplate.Height = 35;
             this.dgvSalary.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.dgvSalary.Size = new System.Drawing.Size(1160, 520);
+            this.dgvSalary.Size = new System.Drawing.Size(1119, 520);
             this.dgvSalary.TabIndex = 2;
             // 
             // cboMonth
@@ -71,7 +71,7 @@ namespace DentalClinicManagement.Pages.Admin
             // cboYear
             // 
             this.cboYear.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cboYear.Location = new System.Drawing.Point(239, 17);
+            this.cboYear.Location = new System.Drawing.Point(267, 17);
             this.cboYear.Name = "cboYear";
             this.cboYear.Size = new System.Drawing.Size(100, 24);
             this.cboYear.TabIndex = 3;
@@ -89,6 +89,8 @@ namespace DentalClinicManagement.Pages.Admin
             // 
             // panel
             // 
+            this.panel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.panel.BackColor = System.Drawing.Color.White;
             this.panel.Controls.Add(this.BtnRefresh);
             this.panel.Controls.Add(this.lblMonth);
@@ -97,7 +99,7 @@ namespace DentalClinicManagement.Pages.Admin
             this.panel.Controls.Add(this.cboYear);
             this.panel.Location = new System.Drawing.Point(20, 80);
             this.panel.Name = "panel";
-            this.panel.Size = new System.Drawing.Size(1160, 60);
+            this.panel.Size = new System.Drawing.Size(1119, 60);
             this.panel.TabIndex = 1;
             // 
             // BtnRefresh
@@ -108,7 +110,7 @@ namespace DentalClinicManagement.Pages.Admin
             this.BtnRefresh.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.BtnRefresh.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
             this.BtnRefresh.ForeColor = System.Drawing.Color.White;
-            this.BtnRefresh.Location = new System.Drawing.Point(407, 11);
+            this.BtnRefresh.Location = new System.Drawing.Point(1398, 13);
             this.BtnRefresh.Name = "BtnRefresh";
             this.BtnRefresh.Size = new System.Drawing.Size(120, 35);
             this.BtnRefresh.TabIndex = 5;
@@ -128,7 +130,7 @@ namespace DentalClinicManagement.Pages.Admin
             // lblYear
             // 
             this.lblYear.AutoSize = true;
-            this.lblYear.Location = new System.Drawing.Point(190, 20);
+            this.lblYear.Location = new System.Drawing.Point(218, 20);
             this.lblYear.Name = "lblYear";
             this.lblYear.Size = new System.Drawing.Size(39, 16);
             this.lblYear.TabIndex = 2;
@@ -144,7 +146,8 @@ namespace DentalClinicManagement.Pages.Admin
             this.Controls.Add(this.dgvSalary);
             this.Name = "AdminSalary";
             this.Padding = new System.Windows.Forms.Padding(20);
-            this.Size = new System.Drawing.Size(1200, 700);
+            this.Size = new System.Drawing.Size(1159, 700);
+            this.Load += new System.EventHandler(this.AdminSalary_Load);
             ((System.ComponentModel.ISupportInitialize)(this.dgvSalary)).EndInit();
             this.panel.ResumeLayout(false);
             this.panel.PerformLayout();

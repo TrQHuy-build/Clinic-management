@@ -19,7 +19,19 @@ namespace DentalClinicManagement.Pages.Admin
         private ComboBox cboType;
         private Button btnAdd;
         private Button btnImport;
+        private Button btnRefresh;
         private DataGridView dgvInventory;
+
+        // ✅ PHÂN TRANG
+        private Label lblPageInfo;
+        private Button btnFirst;
+        private Button btnPrevious;
+        private Button btnNext;
+        private Button btnLast;
+        private ComboBox cboPageSize;
+        private TextBox txtPageNumber;
+        private Button btnGoToPage;
+        private Panel pnlPagination;
 
         /// <summary> 
         /// Clean up any resources being used.
@@ -51,9 +63,20 @@ namespace DentalClinicManagement.Pages.Admin
             this.lblType = new System.Windows.Forms.Label();
             this.cboType = new System.Windows.Forms.ComboBox();
             this.btnAdd = new System.Windows.Forms.Button();
+            this.btnRefresh = new System.Windows.Forms.Button();
             this.btnImport = new System.Windows.Forms.Button();
             this.dgvInventory = new System.Windows.Forms.DataGridView();
+            this.lblPageInfo = new System.Windows.Forms.Label();
+            this.btnFirst = new System.Windows.Forms.Button();
+            this.btnPrevious = new System.Windows.Forms.Button();
+            this.btnNext = new System.Windows.Forms.Button();
+            this.btnLast = new System.Windows.Forms.Button();
+            this.cboPageSize = new System.Windows.Forms.ComboBox();
+            this.txtPageNumber = new System.Windows.Forms.TextBox();
+            this.btnGoToPage = new System.Windows.Forms.Button();
+            this.pnlPagination = new System.Windows.Forms.Panel();
             this.searchPanel.SuspendLayout();
+            this.pnlPagination.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvInventory)).BeginInit();
             this.SuspendLayout();
             // 
@@ -76,6 +99,7 @@ namespace DentalClinicManagement.Pages.Admin
             this.searchPanel.Controls.Add(this.lblType);
             this.searchPanel.Controls.Add(this.cboType);
             this.searchPanel.Controls.Add(this.btnAdd);
+            this.searchPanel.Controls.Add(this.btnRefresh);
             this.searchPanel.Controls.Add(this.btnImport);
             this.searchPanel.Location = new System.Drawing.Point(21, 60);
             this.searchPanel.Name = "searchPanel";
@@ -133,13 +157,29 @@ namespace DentalClinicManagement.Pages.Admin
             this.btnAdd.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnAdd.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
             this.btnAdd.ForeColor = System.Drawing.Color.White;
-            this.btnAdd.Location = new System.Drawing.Point(955, 13);
+            this.btnAdd.Location = new System.Drawing.Point(815, 13);
             this.btnAdd.Name = "btnAdd";
             this.btnAdd.Size = new System.Drawing.Size(120, 35);
             this.btnAdd.TabIndex = 4;
             this.btnAdd.Text = "+ Thêm mới";
             this.btnAdd.UseVisualStyleBackColor = false;
             this.btnAdd.Click += new System.EventHandler(this.BtnAdd_Click);
+            // 
+            // btnRefresh
+            // 
+            this.btnRefresh.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(108)))), ((int)(((byte)(117)))), ((int)(((byte)(125)))));
+            this.btnRefresh.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btnRefresh.FlatAppearance.BorderSize = 0;
+            this.btnRefresh.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnRefresh.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
+            this.btnRefresh.ForeColor = System.Drawing.Color.White;
+            this.btnRefresh.Location = new System.Drawing.Point(954, 13);
+            this.btnRefresh.Name = "btnRefresh";
+            this.btnRefresh.Size = new System.Drawing.Size(120, 35);
+            this.btnRefresh.TabIndex = 6;
+            this.btnRefresh.Text = "🔄 Làm mới";
+            this.btnRefresh.UseVisualStyleBackColor = false;
+            this.btnRefresh.Click += new System.EventHandler(this.BtnRefresh_Click);
             // 
             // btnImport
             // 
@@ -187,19 +227,180 @@ namespace DentalClinicManagement.Pages.Admin
             this.dgvInventory.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
             this.dgvInventory.Size = new System.Drawing.Size(1407, 623);
             this.dgvInventory.TabIndex = 2;
-            this.dgvInventory.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.DgvInventory_CellClick);
+            
+            // ========================================
+            // Pagination Panel
+            // ========================================
+            this.pnlPagination = new System.Windows.Forms.Panel();
+            this.pnlPagination.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            this.pnlPagination.BackColor = System.Drawing.Color.White;
+            this.pnlPagination.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.pnlPagination.Location = new System.Drawing.Point(23, 765);
+            this.pnlPagination.Name = "pnlPagination";
+            this.pnlPagination.Size = new System.Drawing.Size(1407, 50);
+
+            // ========================================
+            // Page Info Label
+            // ========================================
+            this.lblPageInfo.AutoSize = true;
+            this.lblPageInfo.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.lblPageInfo.Location = new System.Drawing.Point(15, 15);
+            this.lblPageInfo.Name = "lblPageInfo";
+            this.lblPageInfo.Text = "Trang 1/1 (Hiển thị 1-50 / 100 bản ghi)";
+
+            // ========================================
+            // Page Size Label & ComboBox
+            // ========================================
+            System.Windows.Forms.Label lblPageSize = new System.Windows.Forms.Label();
+            lblPageSize.AutoSize = true;
+            lblPageSize.Font = new System.Drawing.Font("Segoe UI", 9F);
+            lblPageSize.Location = new System.Drawing.Point(350, 15);
+            lblPageSize.Text = "Hiển thị:";
+
+            this.cboPageSize.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cboPageSize.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.cboPageSize.Location = new System.Drawing.Point(415, 12);
+            this.cboPageSize.Name = "cboPageSize";
+            this.cboPageSize.Size = new System.Drawing.Size(80, 25);
+            this.cboPageSize.Items.AddRange(new object[] { 25, 50, 100, 200 });
+            this.cboPageSize.SelectedIndex = 1;
+            this.cboPageSize.SelectedIndexChanged += new System.EventHandler(this.CboPageSize_SelectedIndexChanged);
+
+            System.Windows.Forms.Label lblRecords = new System.Windows.Forms.Label();
+            lblRecords.AutoSize = true;
+            lblRecords.Font = new System.Drawing.Font("Segoe UI", 9F);
+            lblRecords.Location = new System.Drawing.Point(500, 15);
+            lblRecords.Text = "bản ghi/trang";
+
+            // ========================================
+            // Navigation Buttons (Center)
+            // ========================================
+            int centerX = 750;
+            int buttonY = 10;
+            int buttonWidth = 80;
+            int buttonHeight = 32;
+            int spacing = 5;
+
+            this.btnFirst.BackColor = System.Drawing.ColorTranslator.FromHtml("#007ACC");
+            this.btnFirst.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnFirst.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.btnFirst.ForeColor = System.Drawing.Color.White;
+            this.btnFirst.Location = new System.Drawing.Point(centerX, buttonY);
+            this.btnFirst.Name = "btnFirst";
+            this.btnFirst.Size = new System.Drawing.Size(buttonWidth, buttonHeight);
+            this.btnFirst.Text = "⏮ Đầu";
+            this.btnFirst.UseVisualStyleBackColor = false;
+            this.btnFirst.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btnFirst.Click += new System.EventHandler(this.BtnFirst_Click);
+
+            this.btnPrevious.BackColor = System.Drawing.ColorTranslator.FromHtml("#007ACC");
+            this.btnPrevious.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnPrevious.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.btnPrevious.ForeColor = System.Drawing.Color.White;
+            this.btnPrevious.Location = new System.Drawing.Point(centerX + buttonWidth + spacing, buttonY);
+            this.btnPrevious.Name = "btnPrevious";
+            this.btnPrevious.Size = new System.Drawing.Size(buttonWidth, buttonHeight);
+            this.btnPrevious.Text = "◀ Trước";
+            this.btnPrevious.UseVisualStyleBackColor = false;
+            this.btnPrevious.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btnPrevious.Click += new System.EventHandler(this.BtnPrevious_Click);
+
+            this.btnNext.BackColor = System.Drawing.ColorTranslator.FromHtml("#007ACC");
+            this.btnNext.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnNext.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.btnNext.ForeColor = System.Drawing.Color.White;
+            this.btnNext.Location = new System.Drawing.Point(centerX + (buttonWidth + spacing) * 2, buttonY);
+            this.btnNext.Name = "btnNext";
+            this.btnNext.Size = new System.Drawing.Size(buttonWidth, buttonHeight);
+            this.btnNext.Text = "Sau ▶";
+            this.btnNext.UseVisualStyleBackColor = false;
+            this.btnNext.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btnNext.Click += new System.EventHandler(this.BtnNext_Click);
+
+            this.btnLast.BackColor = System.Drawing.ColorTranslator.FromHtml("#007ACC");
+            this.btnLast.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnLast.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.btnLast.ForeColor = System.Drawing.Color.White;
+            this.btnLast.Location = new System.Drawing.Point(centerX + (buttonWidth + spacing) * 3, buttonY);
+            this.btnLast.Name = "btnLast";
+            this.btnLast.Size = new System.Drawing.Size(buttonWidth, buttonHeight);
+            this.btnLast.Text = "Cuối ⏭";
+            this.btnLast.UseVisualStyleBackColor = false;
+            this.btnLast.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btnLast.Click += new System.EventHandler(this.BtnLast_Click);
+
+            // ========================================
+            // Go To Page (Right side)
+            // ========================================
+            System.Windows.Forms.Label lblGoTo = new System.Windows.Forms.Label();
+            lblGoTo.AutoSize = true;
+            lblGoTo.Font = new System.Drawing.Font("Segoe UI", 9F);
+            lblGoTo.Location = new System.Drawing.Point(1200, 17);
+            lblGoTo.Text = "Đến trang:";
+
+            this.txtPageNumber.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.txtPageNumber.Location = new System.Drawing.Point(1280, 13);
+            this.txtPageNumber.Name = "txtPageNumber";
+            this.txtPageNumber.Size = new System.Drawing.Size(60, 25);
+            this.txtPageNumber.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.txtPageNumber.KeyPress += (s, e) =>
+            {
+                if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar))
+                {
+                    e.Handled = true;
+                }
+                if (e.KeyChar == (char)Keys.Enter)
+                {
+                    BtnGoToPage_Click(this.btnGoToPage, null);
+                    e.Handled = true;
+                }
+            };
+
+            this.btnGoToPage.BackColor = System.Drawing.ColorTranslator.FromHtml("#007ACC");
+            this.btnGoToPage.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnGoToPage.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.btnGoToPage.ForeColor = System.Drawing.Color.White;
+            this.btnGoToPage.Location = new System.Drawing.Point(1345, 10);
+            this.btnGoToPage.Name = "btnGoToPage";
+            this.btnGoToPage.Size = new System.Drawing.Size(50, 32);
+            this.btnGoToPage.Text = "→";
+            this.btnGoToPage.UseVisualStyleBackColor = false;
+            this.btnGoToPage.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btnGoToPage.Click += new System.EventHandler(this.BtnGoToPage_Click);
+
+            // ========================================
+            // Add controls to Pagination Panel
+            // ========================================
+            this.pnlPagination.Controls.Add(this.lblPageInfo);
+            this.pnlPagination.Controls.Add(lblPageSize);
+            this.pnlPagination.Controls.Add(this.cboPageSize);
+            this.pnlPagination.Controls.Add(lblRecords);
+            this.pnlPagination.Controls.Add(this.btnFirst);
+            this.pnlPagination.Controls.Add(this.btnPrevious);
+            this.pnlPagination.Controls.Add(this.btnNext);
+            this.pnlPagination.Controls.Add(this.btnLast);
+            this.pnlPagination.Controls.Add(lblGoTo);
+            this.pnlPagination.Controls.Add(this.txtPageNumber);
+            this.pnlPagination.Controls.Add(this.btnGoToPage);
+            
+            // Update dgvInventory height and location
+            this.dgvInventory.Size = new System.Drawing.Size(1407, 620);
+            this.dgvInventory.Location = new System.Drawing.Point(23, 131);
             // 
             // AdminInventory
             // 
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(240)))), ((int)(((byte)(242)))), ((int)(((byte)(245)))));
+            this.Controls.Add(this.pnlPagination);
             this.Controls.Add(this.lblTitle);
             this.Controls.Add(this.searchPanel);
             this.Controls.Add(this.dgvInventory);
             this.Name = "AdminInventory";
             this.Padding = new System.Windows.Forms.Padding(20);
-            this.Size = new System.Drawing.Size(1453, 772);
+            this.Size = new System.Drawing.Size(1453, 830);
             this.searchPanel.ResumeLayout(false);
             this.searchPanel.PerformLayout();
+            this.pnlPagination.ResumeLayout(false);
+            this.pnlPagination.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvInventory)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();

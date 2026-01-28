@@ -16,7 +16,7 @@ namespace DentalClinicManagement.Pages.Admin
             }
             base.Dispose(disposing);
         }
-
+        
         #region Windows Form Designer generated code
 
         private void InitializeComponent()

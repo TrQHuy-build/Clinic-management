@@ -292,5 +292,10 @@ namespace DentalClinicManagement.Pages.Admin
                 }
             }
         }
+
+        private void AdminSalary_Load(object sender, EventArgs e)
+        {
+
+        }
     }
 }

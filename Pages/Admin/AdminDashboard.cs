@@ -2,6 +2,7 @@
 using System.Data;
 using System.Windows.Forms;
 using DentalClinicManagement.DataAccess;
+using DentalClinicManagement.Utils;
 
 namespace DentalClinicManagement.Pages.Admin
 {
@@ -60,7 +61,39 @@ namespace DentalClinicManagement.Pages.Admin
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Lỗi: {ex.Message}", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBoxHelper.ShowError($"Lỗi tải dữ liệu: {ex.Message}");
+            }
+        }
+
+        private void BtnRefresh_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (sender is Button btn)
+                {
+                    btn.Enabled = false;
+                    btn.Text = "Đang tải...";
+                }
+
+                LoadDashboardData();
+
+                if (sender is Button btn2)
+                {
+                    btn2.Enabled = true;
+                    btn2.Text = "🔄 Làm mới";
+                }
+
+                MessageBoxHelper.ShowInfo("Dữ liệu đã được làm mới!");
+            }
+            catch (Exception ex)
+            {
+                MessageBoxHelper.ShowError($"Lỗi làm mới: {ex.Message}");
+
+                if (sender is Button btn)
+                {
+                    btn.Enabled = true;
+                    btn.Text = "🔄 Làm mới";
+                }
             }
         }
 
