@@ -15,6 +15,14 @@ namespace DentalClinicManagement.Pages.Admin
         public AdminMedicines()
         {
             InitializeComponent();
+
+            // ✅ ĐẢM BẢO KẾT NỐI SỰ KIỆN TÌM KIẾM
+            if (txtSearch != null)
+            {
+                txtSearch.TextChanged -= txtSearch_TextChanged; // Xóa nếu đã có
+                txtSearch.TextChanged += txtSearch_TextChanged; // Thêm mới
+            }
+
             LoadMedicines();
         }
 
@@ -23,16 +31,18 @@ namespace DentalClinicManagement.Pages.Admin
             try
             {
                 string search = txtSearch?.Text?.Trim() ?? "";
+
+                // ✅ SỬA QUERY - THÊM ĐIỀU KIỆN ĐÚNG
                 string query = @"
-            SELECT
-                medicine_id AS [ID],
-                name AS [Tên thuốc],
-                unit AS [Đơn vị],
-                manufacturer AS [Nhà sản xuất],
-                price AS [Giá]
-            FROM Medicine
-            WHERE name LIKE @search OR manufacturer LIKE @search
-            ORDER BY name";
+                    SELECT
+                        medicine_id AS [ID],
+                        name AS [Tên thuốc],
+                        unit AS [Đơn vị],
+                        manufacturer AS [Nhà sản xuất],
+                        price AS [Giá]
+                    FROM Medicine
+                    WHERE (@search = '' OR name LIKE @search OR manufacturer LIKE @search)
+                    ORDER BY name";
 
                 SqlParameter[] parameters = { new SqlParameter("@search", $"%{search}%") };
                 DataTable dt = DatabaseHelper.ExecuteQuery(query, parameters);
@@ -142,7 +152,7 @@ namespace DentalClinicManagement.Pages.Admin
                 TextBox txtPrice = CreateTextBox(150, 195);
                 Label lblPriceError = CreateErrorLabel(150, 222);
 
-                // REALTIME VALIDATION - CHỈ THÊM VÀO ĐÂY
+                // REALTIME VALIDATION
                 txtName.TextChanged += (s, e) => ValidateNameRealtime(txtName, lblNameError, medicineId);
                 txtUnit.TextChanged += (s, e) => ValidateUnitRealtime(txtUnit, lblUnitError);
                 txtManufacturer.TextChanged += (s, e) => ValidateManufacturerRealtime(txtManufacturer, lblManufacturerError);
@@ -377,9 +387,13 @@ namespace DentalClinicManagement.Pages.Admin
             };
         }
 
-        private void txtSearch_TextChanged(object sender, EventArgs e) => LoadMedicines();
+        // ✅ SỰ KIỆN TÌM KIẾM - ĐẢM BẢO HOẠT ĐỘNG
+        private void txtSearch_TextChanged(object sender, EventArgs e)
+        {
+            LoadMedicines();
+        }
 
-        // ================================ VALIDATION MỚI THÊM ===============================
+        // ================================ VALIDATION ===============================
 
         private readonly HashSet<string> _validUnits = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
@@ -456,18 +470,28 @@ namespace DentalClinicManagement.Pages.Admin
             else if (p > 999999999)
                 ShowFieldError(txt, lbl, "Giá tối đa 999.999.999 VNĐ");
             else if (p == 0)
-                ShowFieldError(txt, lbl, "Giá = 0 VNĐ");
+                ShowFieldError(txt, lbl, "⚠ Giá = 0 VNĐ");
             else if (p < 100)
-                ShowFieldError(txt, lbl, "Giá rất thấp (< 5.000 VNĐ)");
+                ShowFieldError(txt, lbl, "⚠ Giá rất thấp (< 100 VNĐ)");
             else if (p > 10000000)
-                ShowFieldError(txt, lbl, "Giá rất cao (> 10 triệu VNĐ)");
+                ShowFieldError(txt, lbl, "⚠ Giá rất cao (> 10 triệu VNĐ)");
             else
                 ClearFieldError(txt, lbl);
         }
 
         private void ShowFieldError(TextBox txt, Label lbl, string message)
         {
-            txt.BackColor = Color.FromArgb(255, 235, 238);
+            if (message.StartsWith("⚠"))
+            {
+                txt.BackColor = Color.FromArgb(255, 243, 205); // Warning - màu cam nhạt
+                lbl.ForeColor = Color.Orange;
+            }
+            else
+            {
+                txt.BackColor = Color.FromArgb(255, 235, 238); // Error - màu đỏ nhạt
+                lbl.ForeColor = Color.Red;
+            }
+
             lbl.Text = message;
             lbl.Visible = true;
         }
