@@ -173,6 +173,29 @@ namespace DentalClinicManagement.Forms
             currentPage.Dock = DockStyle.Fill;
             panelContent.Controls.Add(currentPage);
         }
+        
+        /// <summary>
+        /// Public method để chuyển sang tab Khám bệnh từ bên ngoài
+        /// </summary>
+        public void NavigateToExamine()
+        {
+            // Tìm menu item "Khám bệnh"
+            SidebarMenuItem examineMenuItem = null;
+            foreach (var item in menuItems)
+            {
+                if (item.MenuText == "Khám bệnh")
+                {
+                    examineMenuItem = item;
+                    break;
+                }
+            }
+            
+            // Click vào menu item đó
+            if (examineMenuItem != null)
+            {
+                examineMenuItem.PerformClick();
+            }
+        }
 
         private void BtnLogout_Click(object sender, EventArgs e)
         {

@@ -108,7 +108,7 @@ namespace DentalClinicManagement.Pages.Patient
             this.formPanel.Location = new System.Drawing.Point(23, 65);
             this.formPanel.Name = "formPanel";
             this.formPanel.Padding = new System.Windows.Forms.Padding(30);
-            this.formPanel.Size = new System.Drawing.Size(700, 550);
+            this.formPanel.Size = new System.Drawing.Size(380, 550);
             this.formPanel.TabIndex = 1;
             // 
             // lblPatientName
@@ -124,9 +124,9 @@ namespace DentalClinicManagement.Pages.Patient
             // txtPatientName
             // 
             this.txtPatientName.Font = new System.Drawing.Font("Segoe UI", 11F);
-            this.txtPatientName.Location = new System.Drawing.Point(180, 30);
+            this.txtPatientName.Location = new System.Drawing.Point(130, 30);
             this.txtPatientName.Name = "txtPatientName";
-            this.txtPatientName.Size = new System.Drawing.Size(400, 32);
+            this.txtPatientName.Size = new System.Drawing.Size(230, 32);
             this.txtPatientName.TabIndex = 1;
             // 
             // lblPhone
@@ -142,9 +142,9 @@ namespace DentalClinicManagement.Pages.Patient
             // txtPhone
             // 
             this.txtPhone.Font = new System.Drawing.Font("Segoe UI", 11F);
-            this.txtPhone.Location = new System.Drawing.Point(180, 75);
+            this.txtPhone.Location = new System.Drawing.Point(130, 75);
             this.txtPhone.Name = "txtPhone";
-            this.txtPhone.Size = new System.Drawing.Size(400, 32);
+            this.txtPhone.Size = new System.Drawing.Size(230, 32);
             this.txtPhone.TabIndex = 3;
             // 
             // lblEmail
@@ -160,9 +160,9 @@ namespace DentalClinicManagement.Pages.Patient
             // txtEmail
             // 
             this.txtEmail.Font = new System.Drawing.Font("Segoe UI", 11F);
-            this.txtEmail.Location = new System.Drawing.Point(180, 120);
+            this.txtEmail.Location = new System.Drawing.Point(130, 120);
             this.txtEmail.Name = "txtEmail";
-            this.txtEmail.Size = new System.Drawing.Size(400, 32);
+            this.txtEmail.Size = new System.Drawing.Size(230, 32);
             this.txtEmail.TabIndex = 5;
             // 
             // lblService
@@ -179,9 +179,9 @@ namespace DentalClinicManagement.Pages.Patient
             // 
             this.cboService.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cboService.Font = new System.Drawing.Font("Segoe UI", 11F);
-            this.cboService.Location = new System.Drawing.Point(180, 165);
+            this.cboService.Location = new System.Drawing.Point(130, 165);
             this.cboService.Name = "cboService";
-            this.cboService.Size = new System.Drawing.Size(400, 33);
+            this.cboService.Size = new System.Drawing.Size(230, 33);
             this.cboService.TabIndex = 7;
             // 
             // lblDate
@@ -198,9 +198,9 @@ namespace DentalClinicManagement.Pages.Patient
             // 
             this.dtpDate.Font = new System.Drawing.Font("Segoe UI", 11F);
             this.dtpDate.Format = System.Windows.Forms.DateTimePickerFormat.Short;
-            this.dtpDate.Location = new System.Drawing.Point(180, 210);
+            this.dtpDate.Location = new System.Drawing.Point(130, 210);
             this.dtpDate.Name = "dtpDate";
-            this.dtpDate.Size = new System.Drawing.Size(200, 32);
+            this.dtpDate.Size = new System.Drawing.Size(150, 32);
             this.dtpDate.TabIndex = 9;
             // 
             // lblTime
@@ -229,16 +229,16 @@ namespace DentalClinicManagement.Pages.Patient
             "16",
             "17",
             "18"});
-            this.cboHour.Location = new System.Drawing.Point(180, 255);
+            this.cboHour.Location = new System.Drawing.Point(130, 255);
             this.cboHour.Name = "cboHour";
-            this.cboHour.Size = new System.Drawing.Size(80, 33);
+            this.cboHour.Size = new System.Drawing.Size(70, 33);
             this.cboHour.TabIndex = 11;
             // 
             // lblColon
             // 
             this.lblColon.AutoSize = true;
             this.lblColon.Font = new System.Drawing.Font("Segoe UI", 14F, System.Drawing.FontStyle.Bold);
-            this.lblColon.Location = new System.Drawing.Point(265, 258);
+            this.lblColon.Location = new System.Drawing.Point(202, 258);
             this.lblColon.Name = "lblColon";
             this.lblColon.Size = new System.Drawing.Size(21, 32);
             this.lblColon.TabIndex = 12;
@@ -253,9 +253,9 @@ namespace DentalClinicManagement.Pages.Patient
             "15",
             "30",
             "45"});
-            this.cboMinute.Location = new System.Drawing.Point(289, 255);
+            this.cboMinute.Location = new System.Drawing.Point(225, 255);
             this.cboMinute.Name = "cboMinute";
-            this.cboMinute.Size = new System.Drawing.Size(85, 33);
+            this.cboMinute.Size = new System.Drawing.Size(70, 33);
             this.cboMinute.TabIndex = 13;
             // 
             // lblNotes
@@ -271,11 +271,11 @@ namespace DentalClinicManagement.Pages.Patient
             // txtNotes
             // 
             this.txtNotes.Font = new System.Drawing.Font("Segoe UI", 11F);
-            this.txtNotes.Location = new System.Drawing.Point(180, 300);
+            this.txtNotes.Location = new System.Drawing.Point(130, 300);
             this.txtNotes.Multiline = true;
             this.txtNotes.Name = "txtNotes";
             this.txtNotes.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.txtNotes.Size = new System.Drawing.Size(400, 80);
+            this.txtNotes.Size = new System.Drawing.Size(230, 80);
             this.txtNotes.TabIndex = 15;
             // 
             // btnBook
@@ -286,7 +286,7 @@ namespace DentalClinicManagement.Pages.Patient
             this.btnBook.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnBook.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold);
             this.btnBook.ForeColor = System.Drawing.Color.White;
-            this.btnBook.Location = new System.Drawing.Point(180, 400);
+            this.btnBook.Location = new System.Drawing.Point(130, 400);
             this.btnBook.Name = "btnBook";
             this.btnBook.Size = new System.Drawing.Size(200, 45);
             this.btnBook.TabIndex = 16;

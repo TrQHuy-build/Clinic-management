@@ -279,7 +279,7 @@ namespace DentalClinicManagement.Pages.Doctor
             this.Controls.Add(this.lblTitle);
             this.Name = "DoctorExamine";
             this.Padding = new System.Windows.Forms.Padding(20);
-            this.Size = new System.Drawing.Size(904, 1090);
+            this.Size = new System.Drawing.Size(1400, 800);
             this.panelPatient.ResumeLayout(false);
             this.panelPatient.PerformLayout();
             this.panelDiagnosis.ResumeLayout(false);

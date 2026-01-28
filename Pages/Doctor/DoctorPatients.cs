@@ -9,10 +9,24 @@ namespace DentalClinicManagement.Pages.Doctor
 {
     public partial class DoctorPatients : UserControl
     {
+        private SimplePagination pagination; // ✅ Add pagination
+
         public DoctorPatients()
         {
             InitializeComponent();
+            InitializePagination(); // ✅ Initialize pagination
             LoadPatients();
+        }
+
+        /// <summary>
+        /// ✅ Initialize pagination (12 rows per page)
+        /// </summary>
+        private void InitializePagination()
+        {
+            pagination = new SimplePagination(dgvPatients, 12);
+            Panel paginationPanel = pagination.GetPaginationPanel();
+            paginationPanel.Dock = DockStyle.Bottom;
+            this.Controls.Add(paginationPanel);
         }
 
         private void LoadPatients()
@@ -37,7 +51,7 @@ namespace DentalClinicManagement.Pages.Doctor
 
                 var parameters = new[] { new SqlParameter("@staffId", Auth.CurrentStaffId.Value) };
                 DataTable dt = DatabaseHelper.ExecuteQuery(query, parameters);
-                dgvPatients.DataSource = dt;
+                pagination.SetDataSource(dt); // ✅ Use pagination
 
                 foreach (DataGridViewRow row in dgvPatients.Rows)
                 {

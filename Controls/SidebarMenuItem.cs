@@ -133,5 +133,13 @@ namespace DentalClinicManagement.Controls
                 lblText.Font = new Font("Segoe UI", 11);
             }
         }
+
+        /// <summary>
+        /// Programmatically trigger Click event on this menu item
+        /// </summary>
+        public void PerformClick()
+        {
+            this.OnClick(EventArgs.Empty);
+        }
     }
 }

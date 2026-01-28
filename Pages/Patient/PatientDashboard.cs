@@ -64,14 +64,14 @@ namespace DentalClinicManagement.Pages.Patient
                 // === 4. Chi tiết lịch hẹn ===
                 string queryAppointmentDetails = @"
                     SELECT TOP 5
-                        FORMAT(appointment_date, 'dd/MM/yyyy HH:mm') AS [Ngày giờ],
+                        FORMAT(a.appointment_date, 'dd/MM/yyyy HH:mm') AS [Ngày giờ],
                         s.service_name AS [Dịch vụ],
-                        status AS [Trạng thái]
+                        a.status AS [Trạng thái]
                     FROM Appointment a
                     LEFT JOIN Service s ON a.service_id = s.service_id
-                    WHERE patient_name = @patientName
-                    AND appointment_date >= GETDATE()
-                    ORDER BY appointment_date";
+                    WHERE a.patient_name = @patientName
+                    AND a.appointment_date >= GETDATE()
+                    ORDER BY a.appointment_date";
 
                 DataTable dtAppointments = DatabaseHelper.ExecuteQuery(queryAppointmentDetails, new[] { new SqlParameter("@patientName", patientName) });
                 dgvUpcoming.DataSource = dtAppointments;
@@ -79,12 +79,12 @@ namespace DentalClinicManagement.Pages.Patient
                 // === 5. Chi tiết hóa đơn ===
                 string queryInvoiceDetails = @"
                     SELECT
-                        invoice_id AS [Mã HĐ],
-                        FORMAT(invoice_date, 'dd/MM/yyyy') AS [Ngày],
-                        FORMAT(total_amount, 'N0') + 'đ' AS [Số tiền]
-                    FROM Invoice
-                    WHERE patient_id = @patientId AND status = N'unpaid'
-                    ORDER BY invoice_date DESC";
+                        i.invoice_id AS [Mã HĐ],
+                        FORMAT(i.invoice_date, 'dd/MM/yyyy') AS [Ngày],
+                        FORMAT(i.total_amount, 'N0') + 'đ' AS [Số tiền]
+                    FROM Invoice i
+                    WHERE i.patient_id = @patientId AND i.status = N'unpaid'
+                    ORDER BY i.invoice_date DESC";
 
                 DataTable dtInvoices = DatabaseHelper.ExecuteQuery(queryInvoiceDetails, new[] { new SqlParameter("@patientId", patientId) });
                 dgvInvoices.DataSource = dtInvoices;

@@ -50,6 +50,9 @@ namespace DentalClinicManagement.Pages.Doctor
             // 
             // dgvAppointments
             // 
+            this.dgvAppointments.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.dgvAppointments.BackgroundColor = System.Drawing.Color.White;
             this.dgvAppointments.BorderStyle = System.Windows.Forms.BorderStyle.None;
             dataGridViewCellStyle1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(122)))), ((int)(((byte)(204)))));
@@ -80,6 +83,8 @@ namespace DentalClinicManagement.Pages.Doctor
             // 
             // statsPanel
             // 
+            this.statsPanel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.statsPanel.BackColor = System.Drawing.Color.Transparent;
             this.statsPanel.Controls.Add(this.card1);
             this.statsPanel.Location = new System.Drawing.Point(20, 80);
@@ -225,6 +230,9 @@ namespace DentalClinicManagement.Pages.Doctor
             // 
             // appointmentPanel
             // 
+            this.appointmentPanel.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.appointmentPanel.BackColor = System.Drawing.Color.White;
             this.appointmentPanel.Controls.Add(this.lblAppointments);
             this.appointmentPanel.Controls.Add(this.dgvAppointments);
@@ -273,6 +281,7 @@ namespace DentalClinicManagement.Pages.Doctor
             this.Name = "DoctorDashboard";
             this.Padding = new System.Windows.Forms.Padding(20, 20, 20, 20);
             this.Size = new System.Drawing.Size(1200, 700);
+            this.Load += new System.EventHandler(this.DoctorDashboard_Load);
             ((System.ComponentModel.ISupportInitialize)(this.dgvAppointments)).EndInit();
             this.statsPanel.ResumeLayout(false);
             this.card1.ResumeLayout(false);

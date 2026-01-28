@@ -1,4 +1,6 @@
 ﻿using DentalClinicManagement.DataAccess;
+using DentalClinicManagement.Forms;
+using DentalClinicManagement.Services;
 using DentalClinicManagement.Utils;
 using System;
 using System.Data;
@@ -17,467 +19,755 @@ namespace DentalClinicManagement.Pages.Doctor
         private DataGridView dgvPending;
         private DataGridView dgvConfirmed;
         private DataGridView dgvHistory;
+        
+        // ✅ Pagination for 3 tabs
+        private SimplePagination paginationPending;
+        private SimplePagination paginationConfirmed;
+        private SimplePagination paginationHistory;
+  
+        // ✅ Panel thông báo số lịch hẹn mới
+        private Panel notificationPanel;
+  private Label lblNotificationCount;
 
-        public DoctorAppointments()
+        // ✅ Advanced search controls
+        private TextBox txtSearchPatient;
+    private ComboBox cboServiceFilter;
+
+public DoctorAppointments()
         {
-            InitializeComponent();
-            InitializeTabs();
-            LoadAllAppointments();
+   InitializeComponent();
+InitializeNotificationPanel();
+      InitializeTabs();
+       InitializePagination(); // ✅ Add pagination
+       LoadAllAppointments();
+    
+  // ✅ Bắt đầu theo dõi thông báo
+    StartNotificationMonitoring();
+   }
+
+      /// <summary>
+        /// ✅ TÍNH NĂNG 1: Panel hiển thị số thông báo lịch hẹn mới
+  /// </summary>
+  private void InitializeNotificationPanel()
+    {
+            notificationPanel = new Panel
+     {
+         Dock = DockStyle.Top,
+     Height = 50,
+   BackColor = ColorTranslator.FromHtml("#FFF3CD"),
+  Visible = false,
+              Padding = new Padding(15, 10, 15, 10)
+     };
+
+     lblNotificationCount = new Label
+      {
+   Text = "🔔 Bạn có 0 lịch hẹn mới đang chờ xác nhận",
+       Dock = DockStyle.Fill,
+       Font = new Font("Segoe UI", 11, FontStyle.Bold),
+      ForeColor = ColorTranslator.FromHtml("#856404"),
+   TextAlign = ContentAlignment.MiddleLeft
+        };
+
+   Button btnDismiss = new Button
+     {
+    Text = "✕",
+      Dock = DockStyle.Right,
+   Width = 40,
+           FlatStyle = FlatStyle.Flat,
+    BackColor = Color.Transparent,
+       ForeColor = ColorTranslator.FromHtml("#856404"),
+       Font = new Font("Segoe UI", 12, FontStyle.Bold),
+     Cursor = Cursors.Hand
+ };
+            btnDismiss.FlatAppearance.BorderSize = 0;
+      btnDismiss.Click += (s, e) => notificationPanel.Visible = false;
+
+    notificationPanel.Controls.Add(lblNotificationCount);
+      notificationPanel.Controls.Add(btnDismiss);
+            this.Controls.Add(notificationPanel);
         }
 
-        private void InitializeTabs()
+        /// <summary>
+     /// ✅ TÍNH NĂNG 1: Bắt đầu theo dõi thông báo realtime
+        /// </summary>
+    private void StartNotificationMonitoring()
+  {
+    NotificationService.Instance.OnNewAppointment += (s, e) =>
+    {
+    if (this.InvokeRequired)
+      {
+           this.Invoke(new Action(() => HandleNewAppointment(e)));
+     }
+      else
+     {
+    HandleNewAppointment(e);
+        }
+     };
+
+            NotificationService.Instance.OnNotificationCountChanged += (s, count) =>
+     {
+     if (this.InvokeRequired)
+  {
+       this.Invoke(new Action(() => UpdateNotificationBadge(count)));
+     }
+     else
+      {
+UpdateNotificationBadge(count);
+          }
+  };
+
+         NotificationService.Instance.StartMonitoring(30); // Check mỗi 30 giây
+    }
+
+ private void HandleNewAppointment(NewAppointmentEventArgs e)
+    {
+         // Hiển thị notification panel
+   notificationPanel.Visible = true;
+  lblNotificationCount.Text = $"🔔 Bạn có {e.NewCount} lịch hẹn mới đang chờ!";
+     
+         // Hiển thị popup notification
+    NotificationService.ShowNotificationPopup(
+    this.FindForm(),
+      "Lịch hẹn mới!",
+   $"Bạn có {e.NewCount} lịch hẹn mới được gán.",
+      5000);
+
+ // Refresh danh sách
+    LoadAllAppointments();
+ }
+
+        private void UpdateNotificationBadge(int count)
         {
-            // Create TabControl
-            tabControl = new TabControl
+       if (count > 0)
+  {
+       notificationPanel.Visible = true;
+        lblNotificationCount.Text = $"🔔 Bạn có {count} lịch hẹn đang chờ xử lý";
+      }
+       else
+      {
+        notificationPanel.Visible = false;
+     }
+
+    // Update tab title
+     if (tabPending != null)
+    {
+      tabPending.Text = count > 0 ? $"🔔 Yêu cầu khám ({count})" : "🔔 Yêu cầu khám mới";
+    }
+        }
+
+  private void InitializeTabs()
+        {
+     // Create TabControl
+       tabControl = new TabControl
             {
-                Dock = DockStyle.Fill,
-                Font = new Font("Segoe UI", 10)
-            };
+Dock = DockStyle.Fill,
+  Font = new Font("Segoe UI", 10)
+        };
 
-            // Tab 1: Yêu cầu khám mới
-            tabPending = new TabPage("🔔 Yêu cầu khám mới");
-            dgvPending = CreateDataGridView();
-            tabPending.Controls.Add(dgvPending);
+     // Tab 1: Yêu cầu khám mới
+     tabPending = new TabPage("🔔 Yêu cầu khám mới");
+dgvPending = CreateDataGridView();
+     tabPending.Controls.Add(dgvPending);
 
-            // Tab 2: Đã xác nhận
-            tabConfirmed = new TabPage("✅ Đã xác nhận");
+        // Tab 2: Đã xác nhận
+      tabConfirmed = new TabPage("✅ Lịch hẹn hôm nay");
             dgvConfirmed = CreateDataGridView();
-            tabConfirmed.Controls.Add(dgvConfirmed);
+  tabConfirmed.Controls.Add(dgvConfirmed);
 
-            // Tab 3: Lịch sử
-            tabHistory = new TabPage("📋 Lịch sử");
-            dgvHistory = CreateDataGridView();
-            tabHistory.Controls.Add(dgvHistory);
+  // Tab 3: Lịch sử
+    tabHistory = new TabPage("📋 Lịch sử");
+ dgvHistory = CreateDataGridView();
+    tabHistory.Controls.Add(dgvHistory);
 
-            tabControl.TabPages.AddRange(new TabPage[] { tabPending, tabConfirmed, tabHistory });
+       tabControl.TabPages.AddRange(new TabPage[] { tabPending, tabConfirmed, tabHistory });
 
-            // Replace existing dgvAppointments with tabControl
-            this.Controls.Clear();
+     // Clear existing controls
+       this.Controls.Clear();
 
-            // Add date filter panel at top
-            Panel panelTop = new Panel
+            // ✅ TÍNH NĂNG 4: Panel tìm kiếm nâng cao
+   Panel panelSearch = new Panel
+         {
+   Dock = DockStyle.Top,
+       Height = 65,
+  BackColor = Color.White,
+    Padding = new Padding(15)
+    };
+
+     // Search by patient name
+   Label lblSearch = new Label
             {
-                Dock = DockStyle.Top,
-                Height = 60,
-                BackColor = Color.White
-            };
+           Text = "🔍 Tìm bệnh nhân:",
+  Location = new Point(15, 20),
+    AutoSize = true,
+   Font = new Font("Segoe UI", 9)
+         };
 
-            Label lblDate = new Label
+  txtSearchPatient = new TextBox
             {
-                Text = "Ngày:",
-                Location = new Point(20, 18),
-                AutoSize = true,
-                Font = new Font("Segoe UI", 10)
-            };
+      Location = new Point(130, 17),
+ Size = new Size(180, 25),
+          Font = new Font("Segoe UI", 9)
+       };
+  txtSearchPatient.TextChanged += (s, e) => LoadAllAppointments();
 
-            dtpDate.Location = new Point(70, 15);
-            dtpDate.Size = new Size(200, 25);
+  // Filter by service
+   Label lblService = new Label
+       {
+ Text = "Dịch vụ:",
+      Location = new Point(330, 20),
+   AutoSize = true,
+        Font = new Font("Segoe UI", 9)
+     };
 
-            btnToday.Location = new Point(280, 15);
-            btnToday.Size = new Size(100, 30);
-            btnToday.Text = "Hôm nay";
+  cboServiceFilter = new ComboBox
+   {
+         Location = new Point(390, 17),
+     Size = new Size(180, 25),
+ DropDownStyle = ComboBoxStyle.DropDownList,
+       Font = new Font("Segoe UI", 9)
+      };
+       LoadServiceFilter();
+    cboServiceFilter.SelectedIndexChanged += (s, e) => LoadAllAppointments();
 
-            panelTop.Controls.AddRange(new Control[] { lblDate, dtpDate, btnToday });
+    // Date filter
+     Label lblDate = new Label
+   {
+    Text = "Ngày:",
+    Location = new Point(590, 20),
+    AutoSize = true,
+      Font = new Font("Segoe UI", 9)
+     };
 
-            this.Controls.Add(tabControl);
-            this.Controls.Add(panelTop);
+      dtpDate.Location = new Point(635, 17);
+  dtpDate.Size = new Size(120, 25);
 
-            tabControl.SelectedIndexChanged += (s, e) => LoadAllAppointments();
+  // Today button
+   btnToday.Location = new Point(765, 15);
+      btnToday.Size = new Size(80, 28);
+  btnToday.Text = "Hôm nay";
+
+         panelSearch.Controls.AddRange(new Control[] {
+     lblSearch, txtSearchPatient,
+        lblService, cboServiceFilter,
+     lblDate, dtpDate, btnToday
+    });
+
+      this.Controls.Add(tabControl);
+       this.Controls.Add(panelSearch);
+   this.Controls.Add(notificationPanel);
+
+         tabControl.SelectedIndexChanged += (s, e) => LoadAllAppointments();
         }
+
+        /// <summary>
+        /// ✅ Initialize pagination for all 3 tabs (12 rows per page)
+        /// </summary>
+        private void InitializePagination()
+        {
+            // Pagination for Tab 1: Yêu cầu khám mới
+            paginationPending = new SimplePagination(dgvPending, 12);
+            Panel paginationPanelPending = paginationPending.GetPaginationPanel();
+            paginationPanelPending.Dock = DockStyle.Bottom;
+            tabPending.Controls.Add(paginationPanelPending);
+
+            // Pagination for Tab 2: Đã xác nhận
+            paginationConfirmed = new SimplePagination(dgvConfirmed, 12);
+            Panel paginationPanelConfirmed = paginationConfirmed.GetPaginationPanel();
+            paginationPanelConfirmed.Dock = DockStyle.Bottom;
+            tabConfirmed.Controls.Add(paginationPanelConfirmed);
+
+            // Pagination for Tab 3: Lịch sử
+            paginationHistory = new SimplePagination(dgvHistory, 12);
+            Panel paginationPanelHistory = paginationHistory.GetPaginationPanel();
+            paginationPanelHistory.Dock = DockStyle.Bottom;
+            tabHistory.Controls.Add(paginationPanelHistory);
+        }
+
+      private void LoadServiceFilter()
+    {
+        try
+      {
+       cboServiceFilter.Items.Clear();
+ cboServiceFilter.Items.Add("-- Tất cả dịch vụ --");
+
+  string query = "SELECT service_name FROM Service WHERE status = 'available' ORDER BY service_name";
+    DataTable dt = DatabaseHelper.ExecuteQuery(query);
+
+   foreach (DataRow row in dt.Rows)
+     {
+       cboServiceFilter.Items.Add(row["service_name"].ToString());
+   }
+
+     cboServiceFilter.SelectedIndex = 0;
+   }
+  catch { }
+ }
 
         private DataGridView CreateDataGridView()
         {
-            var dgv = new DataGridView
+        var dgv = new DataGridView
             {
-                Dock = DockStyle.Fill,
-                BackgroundColor = Color.White,
-                AllowUserToAddRows = false,
-                ReadOnly = true,
-                AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
-                SelectionMode = DataGridViewSelectionMode.FullRowSelect,
-                BorderStyle = BorderStyle.None
-            };
-            dgv.CellClick += Dgv_CellClick;
-            return dgv;
-        }
+     Dock = DockStyle.Fill,
+     BackgroundColor = Color.White,
+     AllowUserToAddRows = false,
+   ReadOnly = true,
+     AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
+         SelectionMode = DataGridViewSelectionMode.FullRowSelect,
+    BorderStyle = BorderStyle.None,
+    RowHeadersVisible = false
+    };
+   dgv.CellClick += Dgv_CellClick;
+  return dgv;
+      }
 
-        private void LoadAllAppointments()
+     private void LoadAllAppointments()
         {
-            LoadPendingAppointments();
-            LoadConfirmedAppointments();
-            LoadHistoryAppointments();
+  LoadPendingAppointments();
+         LoadConfirmedAppointments();
+   LoadHistoryAppointments();
+      }
+
+   /// <summary>
+   /// Lấy điều kiện tìm kiếm chung
+        /// </summary>
+  private string GetSearchFilter(out SqlParameter[] extraParams)
+  {
+    string filter = "";
+        var paramList = new System.Collections.Generic.List<SqlParameter>();
+
+   // Search by patient name
+       if (txtSearchPatient != null && !string.IsNullOrWhiteSpace(txtSearchPatient.Text))
+       {
+    filter += " AND (a.patient_name LIKE @search OR u.fullname LIKE @search OR a.phone LIKE @search)";
+     paramList.Add(new SqlParameter("@search", $"%{txtSearchPatient.Text.Trim()}%"));
+    }
+
+     // Filter by service
+     if (cboServiceFilter != null && cboServiceFilter.SelectedIndex > 0)
+  {
+    filter += " AND s.service_name = @serviceName";
+  paramList.Add(new SqlParameter("@serviceName", cboServiceFilter.SelectedItem.ToString()));
+   }
+
+  extraParams = paramList.ToArray();
+   return filter;
         }
 
-        private void LoadPendingAppointments()
+      private void LoadPendingAppointments()
         {
-            try
-            {
-                string query = @"
-                    SELECT
-                        a.appointment_id AS [ID],
-                        CASE 
-                            WHEN p.patient_id IS NOT NULL THEN u.fullname
-                            ELSE a.patient_name
-                        END AS [Bệnh nhân],
-                        a.phone AS [SĐT],
-                        s.service_name AS [Dịch vụ],
-                        FORMAT(a.appointment_date, 'dd/MM/yyyy HH:mm') AS [Thời gian],
-                        ISNULL(a.notes, '') AS [Ghi chú]
-                    FROM Appointment a
-                    LEFT JOIN Service s ON a.service_id = s.service_id
-                    LEFT JOIN Patient p ON a.patient_id = p.patient_id
-                    LEFT JOIN UserAccount u ON p.user_id = u.user_id
-                    WHERE a.assigned_doctor_id = @doctorId
-                    AND a.status = 'pending'
-                    ORDER BY a.appointment_date";
+       try
+  {
+       string searchFilter = GetSearchFilter(out SqlParameter[] extraParams);
 
-                DataTable dt = DatabaseHelper.ExecuteQuery(query, new SqlParameter[] {
-                    new SqlParameter("@doctorId", Auth.CurrentStaffId ?? 0)
-                });
+             string query = $@"
+       SELECT
+    a.appointment_id AS [ID],
+     a.patient_id AS [PatientID],
+          CASE 
+    WHEN p.patient_id IS NOT NULL THEN u.fullname
+       ELSE a.patient_name
+     END AS [Bệnh nhân],
+  a.phone AS [SĐT],
+            ISNULL(s.service_name, 'N/A') AS [Dịch vụ],
+     FORMAT(a.appointment_date, 'dd/MM/yyyy HH:mm') AS [Thời gian],
+   ISNULL(a.notes, '') AS [Ghi chú]
+              FROM Appointment a
+      LEFT JOIN Service s ON a.service_id = s.service_id
+  LEFT JOIN Patient p ON a.patient_id = p.patient_id
+  LEFT JOIN UserAccount u ON p.user_id = u.user_id
+   WHERE a.assigned_doctor_id = @doctorId
+    AND a.status = 'Booked'
+    AND a.appointment_date >= GETDATE()
+  {searchFilter}
+    ORDER BY a.appointment_date";
 
-                // ✅ FIX: Check if DataTable and DataGridView are not null
-                if (dt == null || dgvPending == null)
-                {
-                    MessageBoxHelper.ShowError("Không thể tải dữ liệu lịch hẹn chờ xác nhận!");
-                    return;
-                }
+     var allParams = new System.Collections.Generic.List<SqlParameter>
+       {
+    new SqlParameter("@doctorId", Auth.CurrentStaffId ?? 0)
+     };
+     allParams.AddRange(extraParams);
 
-                dgvPending.DataSource = dt;
-                
-                // ✅ FIX: Check if column exists before accessing
-                if (dgvPending.Columns.Count > 0 && dgvPending.Columns["ID"] != null)
-                {
-                    dgvPending.Columns["ID"].Visible = false;
-                }
+  DataTable dt = DatabaseHelper.ExecuteQuery(query, allParams.ToArray());
 
-                // Add action buttons
-                if (!dgvPending.Columns.Contains("Accept"))
-                {
-                    dgvPending.Columns.Add(new DataGridViewButtonColumn
-                    {
-                        Name = "Accept",
-                        HeaderText = "",
-                        Text = "✅ Đồng ý",
-                        UseColumnTextForButtonValue = true,
-                        Width = 100
-                    });
+      if (dt == null || dgvPending == null) return;
 
-                    dgvPending.Columns.Add(new DataGridViewButtonColumn
-                    {
-                        Name = "Reject",
-                        HeaderText = "",
-                        Text = "❌ Từ chối",
-                        UseColumnTextForButtonValue = true,
-                        Width = 100
-                    });
-                }
+  paginationPending.SetDataSource(dt); // ✅ Use pagination
+      
+  if (dgvPending.Columns.Count > 0)
+     {
+       if (dgvPending.Columns["ID"] != null) dgvPending.Columns["ID"].Visible = false;
+   if (dgvPending.Columns["PatientID"] != null) dgvPending.Columns["PatientID"].Visible = false;
+      }
 
-                // Highlight rows
-                foreach (DataGridViewRow row in dgvPending.Rows)
-                {
-                    if (!row.IsNewRow)
-                        row.DefaultCellStyle.BackColor = ColorTranslator.FromHtml("#FFF3CD");
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBoxHelper.ShowError($"Lỗi tải yêu cầu khám: {ex.Message}");
-            }
-        }
+     // Add action buttons
+     if (!dgvPending.Columns.Contains("StartExam"))
+{
+         dgvPending.Columns.Add(new DataGridViewButtonColumn
+  {
+   Name = "StartExam",
+   HeaderText = "",
+              Text = "🩺 Khám ngay",
+    UseColumnTextForButtonValue = true,
+           Width = 110
+        });
+
+         dgvPending.Columns.Add(new DataGridViewButtonColumn
+  {
+   Name = "Reject",
+    HeaderText = "",
+   Text = "❌ Hủy",
+       UseColumnTextForButtonValue = true,
+         Width = 80
+      });
+       }
+
+    // Highlight rows
+            foreach (DataGridViewRow row in dgvPending.Rows)
+       {
+     if (!row.IsNewRow)
+   row.DefaultCellStyle.BackColor = ColorTranslator.FromHtml("#FFF3CD");
+  }
+
+    // Update notification count
+  UpdateNotificationBadge(dt.Rows.Count);
+  }
+       catch (Exception ex)
+       {
+  MessageBoxHelper.ShowError($"Lỗi tải yêu cầu khám: {ex.Message}");
+    }
+      }
 
         private void LoadConfirmedAppointments()
+      {
+       try
+    {
+    string searchFilter = GetSearchFilter(out SqlParameter[] extraParams);
+
+        string query = $@"
+            SELECT
+    a.appointment_id AS [ID],
+    a.patient_id AS [PatientID],
+             CASE 
+    WHEN p.patient_id IS NOT NULL THEN u.fullname
+   ELSE a.patient_name
+         END AS [Bệnh nhân],
+              a.phone AS [SĐT],
+  ISNULL(s.service_name, 'N/A') AS [Dịch vụ],
+   FORMAT(a.appointment_date, 'HH:mm') AS [Giờ hẹn],
+  ISNULL(a.notes, '') AS [Ghi chú]
+      FROM Appointment a
+   LEFT JOIN Service s ON a.service_id = s.service_id
+    LEFT JOIN Patient p ON a.patient_id = p.patient_id
+       LEFT JOIN UserAccount u ON p.user_id = u.user_id
+       WHERE a.assigned_doctor_id = @doctorId
+       AND a.status = 'Booked'
+         AND CAST(a.appointment_date AS DATE) = @date
+     {searchFilter}
+     ORDER BY a.appointment_date";
+
+  var allParams = new System.Collections.Generic.List<SqlParameter>
         {
-            try
-            {
-                string query = @"
-                    SELECT
-                        a.appointment_id AS [ID],
-                        CASE 
-                            WHEN p.patient_id IS NOT NULL THEN u.fullname
-                            ELSE a.patient_name
-                        END AS [Bệnh nhân],
-                        a.phone AS [SĐT],
-                        s.service_name AS [Dịch vụ],
-                        FORMAT(a.appointment_date, 'dd/MM/yyyy HH:mm') AS [Thời gian],
-                        ISNULL(a.notes, '') AS [Ghi chú]
-                    FROM Appointment a
-                    LEFT JOIN Service s ON a.service_id = s.service_id
-                    LEFT JOIN Patient p ON a.patient_id = p.patient_id
-                    LEFT JOIN UserAccount u ON p.user_id = u.user_id
-                    WHERE a.assigned_doctor_id = @doctorId
-                    AND a.status IN ('confirmed', 'in_progress')
-                    AND CAST(a.appointment_date AS DATE) = @date
-                    ORDER BY a.appointment_date";
+       new SqlParameter("@doctorId", Auth.CurrentStaffId ?? 0),
+  new SqlParameter("@date", dtpDate.Value.Date)
+ };
+   allParams.AddRange(extraParams);
 
-                DataTable dt = DatabaseHelper.ExecuteQuery(query, new SqlParameter[] {
-                    new SqlParameter("@doctorId", Auth.CurrentStaffId ?? 0),
-                    new SqlParameter("@date", dtpDate.Value.Date)
-                });
+   DataTable dt = DatabaseHelper.ExecuteQuery(query, allParams.ToArray());
 
-                // ✅ FIX: Check if DataTable and DataGridView are not null
-                if (dt == null || dgvConfirmed == null)
-                {
-                    MessageBoxHelper.ShowError("Không thể tải dữ liệu lịch hẹn đã xác nhận!");
-                    return;
+   if (dt == null || dgvConfirmed == null) return;
+
+    paginationConfirmed.SetDataSource(dt); // ✅ Use pagination
+   
+if (dgvConfirmed.Columns.Count > 0)
+     {
+         if (dgvConfirmed.Columns["ID"] != null) dgvConfirmed.Columns["ID"].Visible = false;
+if (dgvConfirmed.Columns["PatientID"] != null) dgvConfirmed.Columns["PatientID"].Visible = false;
+      }
+
+     if (!dgvConfirmed.Columns.Contains("StartExam"))
+    {
+dgvConfirmed.Columns.Add(new DataGridViewButtonColumn
+        {
+          Name = "StartExam",
+ HeaderText = "",
+ Text = "🩺 Khám ngay",
+       UseColumnTextForButtonValue = true,
+           Width = 110
+   });
+     }
+
+foreach (DataGridViewRow row in dgvConfirmed.Rows)
+      {
+if (!row.IsNewRow)
+           row.DefaultCellStyle.BackColor = ColorTranslator.FromHtml("#D1ECF1");
                 }
-
-                dgvConfirmed.DataSource = dt;
-                
-                // ✅ FIX: Check if column exists before accessing
-                if (dgvConfirmed.Columns.Count > 0 && dgvConfirmed.Columns["ID"] != null)
-                {
-                    dgvConfirmed.Columns["ID"].Visible = false;
-                }
-
-                if (!dgvConfirmed.Columns.Contains("StartExam"))
-                {
-                    dgvConfirmed.Columns.Add(new DataGridViewButtonColumn
-                    {
-                        Name = "StartExam",
-                        HeaderText = "",
-                        Text = "🩺 Bắt đầu khám",
-                        UseColumnTextForButtonValue = true,
-                        Width = 120
-                    });
-                }
-
-                foreach (DataGridViewRow row in dgvConfirmed.Rows)
-                {
-                    if (!row.IsNewRow)
-                        row.DefaultCellStyle.BackColor = ColorTranslator.FromHtml("#D1ECF1");
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBoxHelper.ShowError($"Lỗi tải lịch đã xác nhận: {ex.Message}");
-            }
-        }
+     }
+   catch (Exception ex)
+       {
+        MessageBoxHelper.ShowError($"Lỗi tải lịch đã xác nhận: {ex.Message}");
+      }
+   }
 
         private void LoadHistoryAppointments()
         {
-            try
+      try
+     {
+             string searchFilter = GetSearchFilter(out SqlParameter[] extraParams);
+
+      string query = $@"
+     SELECT
+   a.appointment_id AS [ID],
+   CASE 
+                 WHEN p.patient_id IS NOT NULL THEN u.fullname
+             ELSE a.patient_name
+           END AS [Bệnh nhân],
+       a.phone AS [SĐT],
+          ISNULL(s.service_name, 'N/A') AS [Dịch vụ],
+    FORMAT(a.appointment_date, 'dd/MM/yyyy HH:mm') AS [Thời gian],
+         CASE 
+       WHEN a.status = 'Completed' THEN N'✅ Hoàn thành'
+   WHEN a.status = 'Cancelled' THEN N'❌ Đã hủy'
+       ELSE a.status
+      END AS [Trạng thái],
+ ISNULL(a.reject_reason, '') AS [Ghi chú]
+       FROM Appointment a
+          LEFT JOIN Service s ON a.service_id = s.service_id
+             LEFT JOIN Patient p ON a.patient_id = p.patient_id
+        LEFT JOIN UserAccount u ON p.user_id = u.user_id
+    WHERE a.assigned_doctor_id = @doctorId
+ AND a.status IN ('Completed', 'Cancelled')
+        AND CAST(a.appointment_date AS DATE) = @date
+   {searchFilter}
+              ORDER BY a.appointment_date DESC";
+
+   var allParams = new System.Collections.Generic.List<SqlParameter>
+   {
+      new SqlParameter("@doctorId", Auth.CurrentStaffId ?? 0),
+         new SqlParameter("@date", dtpDate.Value.Date)
+   };
+      allParams.AddRange(extraParams);
+
+   DataTable dt = DatabaseHelper.ExecuteQuery(query, allParams.ToArray());
+
+      if (dt == null || dgvHistory == null) return;
+
+  paginationHistory.SetDataSource(dt); // ✅ Use pagination
+  
+       if (dgvHistory.Columns.Count > 0 && dgvHistory.Columns["ID"] != null)
+        dgvHistory.Columns["ID"].Visible = false;
+
+       foreach (DataGridViewRow row in dgvHistory.Rows)
+    {
+             if (!row.IsNewRow)
+          {
+ string status = row.Cells["Trạng thái"].Value?.ToString() ?? "";
+       if (status.Contains("Hoàn thành"))
+          row.DefaultCellStyle.BackColor = ColorTranslator.FromHtml("#E8F5E9");
+ else if (status.Contains("Đã hủy"))
+ row.DefaultCellStyle.BackColor = ColorTranslator.FromHtml("#FFEBEE");
+   }
+     }
+  }
+     catch (Exception ex)
             {
-                string query = @"
-                    SELECT
-                        a.appointment_id AS [ID],
-                        CASE 
-                            WHEN p.patient_id IS NOT NULL THEN u.fullname
-                            ELSE a.patient_name
-                        END AS [Bệnh nhân],
-                        a.phone AS [SĐT],
-                        s.service_name AS [Dịch vụ],
-                        FORMAT(a.appointment_date, 'dd/MM/yyyy HH:mm') AS [Thời gian],
-                        CASE 
-                            WHEN a.status = 'completed' THEN N'Hoàn thành'
-                            WHEN a.status = 'rejected' THEN N'Từ chối'
-                            WHEN a.status = 'cancelled' THEN N'Đã hủy'
-                            ELSE a.status
-                        END AS [Trạng thái],
-                        ISNULL(a.reject_reason, '') AS [Lý do từ chối]
-                    FROM Appointment a
-                    LEFT JOIN Service s ON a.service_id = s.service_id
-                    LEFT JOIN Patient p ON a.patient_id = p.patient_id
-                    LEFT JOIN UserAccount u ON p.user_id = u.user_id
-                    WHERE a.assigned_doctor_id = @doctorId
-                    AND a.status IN ('completed', 'rejected', 'cancelled')
-                    AND CAST(a.appointment_date AS DATE) = @date
-                    ORDER BY a.appointment_date DESC";
+     MessageBoxHelper.ShowError($"Lỗi tải lịch sử: {ex.Message}");
+    }
+ }
 
-                DataTable dt = DatabaseHelper.ExecuteQuery(query, new SqlParameter[] {
-                    new SqlParameter("@doctorId", Auth.CurrentStaffId ?? 0),
-                    new SqlParameter("@date", dtpDate.Value.Date)
-                });
-
-                // ✅ FIX: Check if DataTable and DataGridView are not null
-                if (dt == null || dgvHistory == null)
-                {
-                    MessageBoxHelper.ShowError("Không thể tải lịch sử khám!");
-                    return;
-                }
-
-                dgvHistory.DataSource = dt;
-                
-                // ✅ FIX: Check if column exists before accessing
-                if (dgvHistory.Columns.Count > 0 && dgvHistory.Columns["ID"] != null)
-                {
-                    dgvHistory.Columns["ID"].Visible = false;
-                }
-
-                foreach (DataGridViewRow row in dgvHistory.Rows)
-                {
-                    if (!row.IsNewRow)
-                    {
-                        string status = row.Cells["Trạng thái"].Value?.ToString();
-                        if (status == "Hoàn thành")
-                            row.DefaultCellStyle.BackColor = ColorTranslator.FromHtml("#E8F5E9");
-                        else if (status == "Từ chối")
-                            row.DefaultCellStyle.BackColor = ColorTranslator.FromHtml("#FFEBEE");
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBoxHelper.ShowError($"Lỗi tải lịch sử: {ex.Message}");
-            }
-        }
-
-        private void Dgv_CellClick(object sender, DataGridViewCellEventArgs e)
-        {
+      private void Dgv_CellClick(object sender, DataGridViewCellEventArgs e)
+   {
             if (e.RowIndex < 0) return;
 
-            DataGridView dgv = (DataGridView)sender;
-            int appointmentId = Convert.ToInt32(dgv.Rows[e.RowIndex].Cells["ID"].Value);
-            string columnName = dgv.Columns[e.ColumnIndex].Name;
+     DataGridView dgv = (DataGridView)sender;
+       
+  if (!dgv.Columns.Contains("ID") || dgv.Rows[e.RowIndex].Cells["ID"].Value == null)
+            return;
+      
+    int appointmentId = Convert.ToInt32(dgv.Rows[e.RowIndex].Cells["ID"].Value);
+     
+            // Lấy PatientID nếu có
+   int? patientId = null;
+   if (dgv.Columns.Contains("PatientID") && dgv.Rows[e.RowIndex].Cells["PatientID"].Value != DBNull.Value)
+ {
+    patientId = Convert.ToInt32(dgv.Rows[e.RowIndex].Cells["PatientID"].Value);
+            }
+  
+       string columnName = dgv.Columns[e.ColumnIndex].Name;
 
-            if (columnName == "Accept")
-            {
-                AcceptAppointment(appointmentId);
-            }
-            else if (columnName == "Reject")
-            {
-                RejectAppointment(appointmentId);
-            }
-            else if (columnName == "StartExam")
-            {
-                StartExamination(appointmentId);
-            }
+          if (columnName == "Reject")
+     {
+             RejectAppointment(appointmentId);
+  }
+          else if (columnName == "StartExam")
+   {
+  // ✅ TÍNH NĂNG 6: Link trực tiếp đến DoctorExamine với data
+     StartExaminationWithPatient(appointmentId, patientId);
+        }
         }
 
-        private void AcceptAppointment(int appointmentId)
+   /// <summary>
+   /// ✅ TÍNH NĂNG 6: Mở DoctorExamine và tự động chọn bệnh nhân
+       /// </summary>
+        private void StartExaminationWithPatient(int appointmentId, int? patientId)
         {
-            if (!MessageBoxHelper.ShowConfirm("Xác nhận đồng ý khám bệnh nhân này?"))
-                return;
+            if (!patientId.HasValue)
+ {
+           MessageBoxHelper.ShowWarning(
+    "Bệnh nhân này chưa được đăng ký trong hệ thống.\n\n" +
+   "Vui lòng yêu cầu nhân viên lễ tân kê khai thông tin trước khi khám.");
+           return;
+      }
 
-            try
+            // Lưu thông tin appointment đang xử lý vào context
+   DoctorExamineContext.CurrentAppointmentId = appointmentId;
+DoctorExamineContext.CurrentPatientId = patientId.Value;
+            DoctorExamineContext.ShouldAutoSelect = true;
+            
+            // Tìm frmMain và chuyển sang tab Khám bệnh
+            Form mainForm = this.FindForm();
+            if (mainForm != null && mainForm is frmMain frmMain)
             {
-                string query = @"UPDATE Appointment 
-                               SET status = 'confirmed',
-                                   reject_reason = NULL
-                               WHERE appointment_id = @id";
-
-                int result = DatabaseHelper.ExecuteNonQuery(query, new SqlParameter[] {
-                    new SqlParameter("@id", appointmentId)
-                });
-
-                if (result > 0)
-                {
-                    MessageBoxHelper.ShowSuccess("Đã xác nhận lịch hẹn!");
-                    Logger.LogAction("ACCEPT_APPOINTMENT", $"Bác sĩ đồng ý khám #{appointmentId}");
-                    LoadAllAppointments();
-                }
+                frmMain.NavigateToExamine();
             }
-            catch (Exception ex)
+            else
             {
-                MessageBoxHelper.ShowError($"Lỗi: {ex.Message}");
+                MessageBoxHelper.ShowInfo(
+                    $"📋 Lịch hẹn #{appointmentId}\n\n" +
+                    "Vui lòng chuyển sang tab 'Khám bệnh' để tiếp tục.\n" +
+                    "Bệnh nhân sẽ được chọn tự động.");
             }
-        }
+     
+  Logger.LogAction("START_EXAMINATION", $"Doctor starting exam for appointment #{appointmentId}, patient #{patientId}");
+   }
 
-        private void RejectAppointment(int appointmentId)
+        /// <summary>
+     /// Event để yêu cầu navigate đến trang khám bệnh
+        /// </summary>
+        public static event EventHandler<int> OnNavigateToExamine;
+
+  private void RejectAppointment(int appointmentId)
+    {
+    using (Form form = new Form())
+     {
+     form.Text = "Lý do hủy lịch";
+               form.Size = new Size(450, 250);
+   form.StartPosition = FormStartPosition.CenterParent;
+      form.FormBorderStyle = FormBorderStyle.FixedDialog;
+       form.MaximizeBox = false;
+         form.MinimizeBox = false;
+
+          Label lbl = new Label
+ {
+    Text = "Vui lòng nhập lý do hủy lịch hẹn:",
+     Location = new Point(20, 20),
+        AutoSize = true,
+    Font = new Font("Segoe UI", 10)
+         };
+
+     TextBox txtReason = new TextBox
+   {
+     Location = new Point(20, 50),
+      Size = new Size(390, 80),
+      Multiline = true,
+        Font = new Font("Segoe UI", 10)
+   };
+
+       Button btnConfirm = new Button
+          {
+        Text = "Xác nhận hủy",
+   Location = new Point(155, 150),
+        Size = new Size(140, 35),
+    BackColor = ColorTranslator.FromHtml("#DC3545"),
+        ForeColor = Color.White,
+           FlatStyle = FlatStyle.Flat,
+               Font = new Font("Segoe UI", 9, FontStyle.Bold)
+    };
+
+      btnConfirm.Click += (s, ev) =>
+       {
+         string reason = txtReason.Text.Trim();
+        if (string.IsNullOrWhiteSpace(reason))
         {
-            // Show dialog to input reject reason
-            using (Form form = new Form())
-            {
-                form.Text = "Lý do từ chối";
-                form.Size = new Size(450, 250);
-                form.StartPosition = FormStartPosition.CenterParent;
-                form.FormBorderStyle = FormBorderStyle.FixedDialog;
-                form.MaximizeBox = false;
-                form.MinimizeBox = false;
+     MessageBoxHelper.ShowValidationError("Vui lòng nhập lý do!");
+         return;
+  }
 
-                Label lbl = new Label
-                {
-                    Text = "Vui lòng nhập lý do từ chối:",
-                    Location = new Point(20, 20),
-                    AutoSize = true,
-                    Font = new Font("Segoe UI", 10)
-                };
+  try
+           {
+            // Lấy email bệnh nhân để gửi thông báo
+               string getEmailQuery = @"SELECT a.email, a.patient_name, a.appointment_date 
+           FROM Appointment a WHERE a.appointment_id = @id";
+    DataTable dtEmail = DatabaseHelper.ExecuteQuery(getEmailQuery, new SqlParameter[] {
+        new SqlParameter("@id", appointmentId)
+     });
 
-                TextBox txtReason = new TextBox
-                {
-                    Location = new Point(20, 50),
-                    Size = new Size(390, 80),
-                    Multiline = true,
-                    Font = new Font("Segoe UI", 10)
-                };
+  string query = @"UPDATE Appointment 
+       SET status = 'Cancelled', reject_reason = @reason
+      WHERE appointment_id = @id";
 
-                Button btnConfirm = new Button
-                {
-                    Text = "Xác nhận từ chối",
-                    Location = new Point(155, 150),
-                    Size = new Size(140, 35),
-                    BackColor = ColorTranslator.FromHtml("#DC3545"),
-                    ForeColor = Color.White,
-                    FlatStyle = FlatStyle.Flat,
-                    Font = new Font("Segoe UI", 9, FontStyle.Bold)
-                };
+      int result = DatabaseHelper.ExecuteNonQuery(query, new SqlParameter[] {
+   new SqlParameter("@id", appointmentId),
+      new SqlParameter("@reason", reason)
+        });
 
-                btnConfirm.Click += (s, ev) =>
-                {
-                    string reason = txtReason.Text.Trim();
-                    if (string.IsNullOrWhiteSpace(reason))
-                    {
-                        MessageBoxHelper.ShowValidationError("Vui lòng nhập lý do từ chối!");
-                        return;
-                    }
+   if (result > 0)
+          {
+   // ✅ TÍNH NĂNG 5: Gửi email thông báo hủy lịch
+         if (dtEmail.Rows.Count > 0)
+   {
+          string email = dtEmail.Rows[0]["email"]?.ToString();
+           string patientName = dtEmail.Rows[0]["patient_name"]?.ToString();
+   DateTime appointmentDate = Convert.ToDateTime(dtEmail.Rows[0]["appointment_date"]);
 
-                    try
-                    {
-                        string query = @"UPDATE Appointment 
-                                       SET status = 'rejected',
-                                           reject_reason = @reason
-                                       WHERE appointment_id = @id";
+      if (!string.IsNullOrEmpty(email))
+          {
+   // Gửi email async
+         _ = EmailService.SendAppointmentCancellationAsync(
+  email, patientName, appointmentDate, reason);
+         }
+}
 
-                        int result = DatabaseHelper.ExecuteNonQuery(query, new SqlParameter[] {
-                            new SqlParameter("@id", appointmentId),
-                            new SqlParameter("@reason", reason)
-                        });
+          MessageBoxHelper.ShowSuccess("Đã hủy lịch hẹn!");
+            Logger.LogAction("CANCEL_APPOINTMENT", $"Doctor cancelled appointment #{appointmentId}: {reason}");
+        form.Close();
+       LoadAllAppointments();
+  }
+ }
+   catch (Exception ex)
+   {
+       MessageBoxHelper.ShowError($"Lỗi: {ex.Message}");
+       }
+          };
 
-                        if (result > 0)
-                        {
-                            MessageBoxHelper.ShowSuccess("Đã từ chối lịch hẹn!");
-                            Logger.LogAction("REJECT_APPOINTMENT", $"Bác sĩ từ chối #{appointmentId}: {reason}");
-                            form.Close();
-                            LoadAllAppointments();
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBoxHelper.ShowError($"Lỗi: {ex.Message}");
-                    }
-                };
-
-                form.Controls.AddRange(new Control[] { lbl, txtReason, btnConfirm });
-                form.ShowDialog();
-            }
-        }
-
-        private void StartExamination(int appointmentId)
-        {
-            // Update status to in_progress
-            try
-            {
-                string query = "UPDATE Appointment SET status = 'in_progress' WHERE appointment_id = @id";
-                DatabaseHelper.ExecuteNonQuery(query, new SqlParameter[] {
-                    new SqlParameter("@id", appointmentId)
-                });
-
-                MessageBoxHelper.ShowInfo("Vui lòng chuyển sang tab 'Khám bệnh' để tiếp tục!");
-                Logger.LogAction("START_EXAMINATION", $"Bắt đầu khám #{appointmentId}");
-                LoadAllAppointments();
-            }
-            catch (Exception ex)
-            {
-                MessageBoxHelper.ShowError($"Lỗi: {ex.Message}");
+     form.Controls.AddRange(new Control[] { lbl, txtReason, btnConfirm });
+           form.ShowDialog(this.FindForm());
             }
         }
 
         // Event handlers
-        private void dtpDate_ValueChanged(object sender, EventArgs e) => LoadAllAppointments();
+    private void dtpDate_ValueChanged(object sender, EventArgs e) => LoadAllAppointments();
 
-        private void btnToday_Click(object sender, EventArgs e)
-        {
-            dtpDate.Value = DateTime.Today;
-            LoadAllAppointments();
+    private void btnToday_Click(object sender, EventArgs e)
+  {
+       dtpDate.Value = DateTime.Today;
+     LoadAllAppointments();
         }
+    }
+
+    /// <summary>
+    /// Context để truyền dữ liệu giữa DoctorAppointments và DoctorExamine
+    /// </summary>
+    public static class DoctorExamineContext
+    {
+        public static int? CurrentAppointmentId { get; set; }
+  public static int? CurrentPatientId { get; set; }
+        public static bool ShouldAutoSelect { get; set; }
+
+  public static void Clear()
+        {
+      CurrentAppointmentId = null;
+            CurrentPatientId = null;
+ ShouldAutoSelect = false;
+}
     }
 }

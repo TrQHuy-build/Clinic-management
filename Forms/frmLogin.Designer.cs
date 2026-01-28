@@ -177,7 +177,7 @@ namespace DentalClinicManagement.Forms
             this.txtEmail.Name = "txtEmail";
             this.txtEmail.Size = new System.Drawing.Size(290, 50);
             this.txtEmail.TabIndex = 2;
-            this.txtEmail.Text = "admin@clinic.com";
+            this.txtEmail.Text = "doctor1@clinic.com";
             // 
             // lblPassword
             // 
@@ -200,7 +200,7 @@ namespace DentalClinicManagement.Forms
             this.txtPassword.Name = "txtPassword";
             this.txtPassword.Size = new System.Drawing.Size(290, 48);
             this.txtPassword.TabIndex = 4;
-            this.txtPassword.Text = "hash_admin";
+            this.txtPassword.Text = "hash_doctor1";
             // 
             // btnLogin
             // 

@@ -73,9 +73,6 @@ namespace DentalClinicManagement.Pages.Doctor
             // dgvShifts
             // 
             this.dgvShifts.AllowUserToAddRows = false;
-            this.dgvShifts.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
             this.dgvShifts.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
             this.dgvShifts.BackgroundColor = System.Drawing.Color.White;
             this.dgvShifts.BorderStyle = System.Windows.Forms.BorderStyle.None;
@@ -95,7 +92,7 @@ namespace DentalClinicManagement.Pages.Doctor
             this.dgvShifts.RowHeadersWidth = 51;
             this.dgvShifts.RowTemplate.Height = 35;
             this.dgvShifts.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.dgvShifts.Size = new System.Drawing.Size(924, 489);
+            this.dgvShifts.Size = new System.Drawing.Size(400, 450);
             this.dgvShifts.TabIndex = 2;
             // 
             // DoctorShifts
