@@ -10,28 +10,44 @@ namespace DentalClinicManagement.Forms
 {
     public partial class frmLogin : Form
     {
+        private string actualPassword = "";  // Lưu mật khẩu thực tế
+
         public frmLogin()
         {
             InitializeComponent();
             btnTogglePassword.FlatStyle = FlatStyle.Flat; 
             btnTogglePassword.FlatAppearance.BorderSize = 0; 
             btnTogglePassword.Cursor = Cursors.Hand;
-            txtPassword.UseSystemPasswordChar = true;
-            btnTogglePassword.Text = "👁";
-
-              
-
+            txtPassword.UseSystemPasswordChar = false;
+            btnTogglePassword.Text = "🙈";
         }
+
         private void btnTogglePassword_Click(object sender, EventArgs e)
         {
             txtPassword.UseSystemPasswordChar = !txtPassword.UseSystemPasswordChar;
 
             if (txtPassword.UseSystemPasswordChar)
-                btnTogglePassword.Text = "🙈";   // Đang ẩn
+            {
+                // Đang ẩn - hiển thị dấu *
+                actualPassword = txtPassword.Text;
+                btnTogglePassword.Text = "🙈";
+            }
             else
-                btnTogglePassword.Text = "👁";  // Đang hiện
+            {
+                // Đang hiện - hiển thị ký tự thực tế
+                actualPassword = txtPassword.Text;
+                btnTogglePassword.Text = "👁";
+            }
         }
 
+        private void txtPassword_TextChanged(object sender, EventArgs e)
+        {
+            // Cập nhật mật khẩu thực tế khi người dùng nhập
+            if (txtPassword.UseSystemPasswordChar)
+            {
+                actualPassword = txtPassword.Text;
+            }
+        }
 
         private void BtnLogin_Click(object sender, EventArgs e)
         {
@@ -63,10 +79,17 @@ namespace DentalClinicManagement.Forms
                     return;
                 }
 
-                // Query đăng nhập - CHỈ LẤY USER THEO EMAIL
+                // ✅ Query với alias rõ ràng để tránh ambiguous column
                 string query = @"
-                    SELECT u.user_id, u.fullname, u.role, u.email, u.status, u.password_hash,
-                           s.staff_id, p.patient_id
+                    SELECT 
+                        u.user_id AS user_id, 
+                        u.fullname AS fullname, 
+                        u.role AS role, 
+                        u.email AS email, 
+                        u.status AS user_status, 
+                        u.password_hash AS password_hash,
+                        s.staff_id AS staff_id, 
+                        p.patient_id AS patient_id
                     FROM UserAccount u
                     LEFT JOIN Staff s ON u.user_id = s.user_id
                     LEFT JOIN Patient p ON u.user_id = p.user_id
@@ -86,46 +109,22 @@ namespace DentalClinicManagement.Forms
                 }
 
                 DataRow row = dt.Rows[0];
-                string storedHash = row["password_hash"].ToString();
-
-                // VERIFY PASSWORD VỚI HASH
-                if (!PasswordHasher.VerifyPassword(password, storedHash))
-                {
-                    // Nếu verify failed và là format cũ, thử so sánh plain text (backward compatibility)
-                    if (PasswordHasher.IsOldFormat(storedHash) && storedHash == password)
-                    {
-                        // Password đúng nhưng là format cũ - cần update
-                        MessageBox.Show(
-                            "Mật khẩu của bạn đang dùng định dạng cũ (không an toàn).\n\n" +
-                            "Hệ thống sẽ tự động cập nhật sang định dạng mới sau khi đăng nhập.\n\n" +
-                            "Lần đăng nhập tiếp theo bạn sẽ dùng mật khẩu này nhưng đã được mã hóa an toàn.",
-                            "Cảnh báo bảo mật",
-                            MessageBoxButtons.OK,
-                            MessageBoxIcon.Warning);
-
-                        // Update password sang format mới
-                        int updateUserId = Convert.ToInt32(row["user_id"]);
-                        string newHash = PasswordHasher.HashPassword(password);
-                        string updateQuery = "UPDATE UserAccount SET password_hash = @newHash WHERE user_id = @userId";
-                        SqlParameter[] updateParams = {
-                            new SqlParameter("@newHash", newHash),
-                            new SqlParameter("@userId", updateUserId)
-                        };
-                        DatabaseHelper.ExecuteNonQuery(updateQuery, updateParams);
-                    }
-                    else
-                    {
-                        MessageBox.Show("Email hoặc mật khẩu không đúng!", "Đăng nhập thất bại",
-                            MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        return;
-                    }
-                }
-
-                string status = row["status"].ToString();
+                string status = row["user_status"].ToString();
 
                 if (status.ToLower() != "active")
                 {
                     MessageBox.Show("Tài khoản đã bị khóa!", "Đăng nhập thất bại",
+                        MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }   
+
+                // ✅ Xác minh mật khẩu bằng PasswordHasher
+                string passwordHash = row["password_hash"].ToString();
+                bool isPasswordValid = PasswordHasher.VerifyPassword(password, passwordHash);
+
+                if (!isPasswordValid)
+                {
+                    MessageBox.Show("Email hoặc mật khẩu không đúng!", "Đăng nhập thất bại",
                         MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;
                 }
@@ -165,42 +164,26 @@ namespace DentalClinicManagement.Forms
 
         private void BtnClose_Click(object sender, EventArgs e)
         {
-            
             Application.Exit();
         }
 
+        private void lblSubtitle_Click(object sender, EventArgs e) { }
+        private void rightPanel_Paint(object sender, PaintEventArgs e) { }
+        private void lblWelcome_Click(object sender, EventArgs e) { }
+        private void label1_Click(object sender, EventArgs e) { }
+        private void pictureBox1_Click(object sender, EventArgs e) { }
 
-        private void lblSubtitle_Click(object sender, EventArgs e)
+        // Thêm method mới
+        private void LinkForgotPassword_Click(object sender, EventArgs e)
         {
-
+            frmQuenMatKhau forgotForm = new frmQuenMatKhau();
+            forgotForm.ShowDialog();
         }
 
-
-
-        private void txtPassword_TextChanged(object sender, EventArgs e)
-
+        private void BtnQmk_Click(object sender, EventArgs e)
         {
-
-        }
-
-        private void rightPanel_Paint(object sender, PaintEventArgs e)
-        {
-           
-        }
-
-        private void lblWelcome_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void label1_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void pictureBox1_Click(object sender, EventArgs e)
-        {
-
+            frmQuenMatKhau forgotForm = new frmQuenMatKhau();
+            forgotForm.ShowDialog();
         }
     }
 }

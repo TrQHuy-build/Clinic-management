@@ -114,5 +114,10 @@ namespace DentalClinicManagement.Pages.Patient
                     valueLabel.Text = value;
             }
         }
+
+        private void cardRecords_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
     }
 }

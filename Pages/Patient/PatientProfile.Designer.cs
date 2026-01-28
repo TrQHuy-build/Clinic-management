@@ -54,7 +54,7 @@ namespace DentalClinicManagement.Pages.Patient
             this.lblTitle.AutoSize = true;
             this.lblTitle.Font = new System.Drawing.Font("Segoe UI", 22F, System.Drawing.FontStyle.Bold);
             this.lblTitle.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(122)))), ((int)(((byte)(204)))));
-            this.lblTitle.Location = new System.Drawing.Point(14, 11);
+            this.lblTitle.Location = new System.Drawing.Point(14, 30);
             this.lblTitle.Name = "lblTitle";
             this.lblTitle.Size = new System.Drawing.Size(335, 50);
             this.lblTitle.TabIndex = 0;
@@ -64,6 +64,7 @@ namespace DentalClinicManagement.Pages.Patient
             // 
             this.panel.BackColor = System.Drawing.Color.White;
             this.panel.Controls.Add(this.lblFullname);
+            this.panel.Controls.Add(this.lblTitle);
             this.panel.Controls.Add(this.txtFullname);
             this.panel.Controls.Add(this.lblPhone);
             this.panel.Controls.Add(this.txtPhone);
@@ -76,17 +77,18 @@ namespace DentalClinicManagement.Pages.Patient
             this.panel.Controls.Add(this.lblInsurance);
             this.panel.Controls.Add(this.txtInsurance);
             this.panel.Controls.Add(this.btnSave);
-            this.panel.Location = new System.Drawing.Point(23, 76);
+            this.panel.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.panel.Location = new System.Drawing.Point(20, 20);
             this.panel.Name = "panel";
             this.panel.Padding = new System.Windows.Forms.Padding(30);
-            this.panel.Size = new System.Drawing.Size(700, 400);
+            this.panel.Size = new System.Drawing.Size(1191, 794);
             this.panel.TabIndex = 1;
             // 
             // lblFullname
             // 
             this.lblFullname.AutoSize = true;
             this.lblFullname.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblFullname.Location = new System.Drawing.Point(30, 33);
+            this.lblFullname.Location = new System.Drawing.Point(81, 134);
             this.lblFullname.Name = "lblFullname";
             this.lblFullname.Size = new System.Drawing.Size(64, 20);
             this.lblFullname.TabIndex = 0;
@@ -94,7 +96,8 @@ namespace DentalClinicManagement.Pages.Patient
             // 
             // txtFullname
             // 
-            this.txtFullname.Location = new System.Drawing.Point(150, 30);
+            this.txtFullname.Location = new System.Drawing.Point(236, 132);
+            this.txtFullname.Multiline = true;
             this.txtFullname.Name = "txtFullname";
             this.txtFullname.Size = new System.Drawing.Size(400, 22);
             this.txtFullname.TabIndex = 1;
@@ -103,7 +106,7 @@ namespace DentalClinicManagement.Pages.Patient
             // 
             this.lblPhone.AutoSize = true;
             this.lblPhone.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblPhone.Location = new System.Drawing.Point(30, 78);
+            this.lblPhone.Location = new System.Drawing.Point(81, 179);
             this.lblPhone.Name = "lblPhone";
             this.lblPhone.Size = new System.Drawing.Size(47, 20);
             this.lblPhone.TabIndex = 2;
@@ -111,7 +114,8 @@ namespace DentalClinicManagement.Pages.Patient
             // 
             // txtPhone
             // 
-            this.txtPhone.Location = new System.Drawing.Point(150, 75);
+            this.txtPhone.Location = new System.Drawing.Point(236, 177);
+            this.txtPhone.Multiline = true;
             this.txtPhone.Name = "txtPhone";
             this.txtPhone.Size = new System.Drawing.Size(400, 22);
             this.txtPhone.TabIndex = 3;
@@ -120,7 +124,7 @@ namespace DentalClinicManagement.Pages.Patient
             // 
             this.lblDOB.AutoSize = true;
             this.lblDOB.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblDOB.Location = new System.Drawing.Point(30, 123);
+            this.lblDOB.Location = new System.Drawing.Point(81, 224);
             this.lblDOB.Name = "lblDOB";
             this.lblDOB.Size = new System.Drawing.Size(88, 20);
             this.lblDOB.TabIndex = 4;
@@ -129,7 +133,7 @@ namespace DentalClinicManagement.Pages.Patient
             // dtpDOB
             // 
             this.dtpDOB.Format = System.Windows.Forms.DateTimePickerFormat.Short;
-            this.dtpDOB.Location = new System.Drawing.Point(150, 120);
+            this.dtpDOB.Location = new System.Drawing.Point(236, 222);
             this.dtpDOB.Name = "dtpDOB";
             this.dtpDOB.Size = new System.Drawing.Size(200, 22);
             this.dtpDOB.TabIndex = 5;
@@ -138,7 +142,7 @@ namespace DentalClinicManagement.Pages.Patient
             // 
             this.lblGender.AutoSize = true;
             this.lblGender.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblGender.Location = new System.Drawing.Point(30, 168);
+            this.lblGender.Location = new System.Drawing.Point(81, 269);
             this.lblGender.Name = "lblGender";
             this.lblGender.Size = new System.Drawing.Size(76, 20);
             this.lblGender.TabIndex = 6;
@@ -152,7 +156,7 @@ namespace DentalClinicManagement.Pages.Patient
             "Male",
             "Female",
             "Other"});
-            this.cboGender.Location = new System.Drawing.Point(150, 165);
+            this.cboGender.Location = new System.Drawing.Point(236, 267);
             this.cboGender.Name = "cboGender";
             this.cboGender.Size = new System.Drawing.Size(150, 24);
             this.cboGender.TabIndex = 7;
@@ -161,7 +165,7 @@ namespace DentalClinicManagement.Pages.Patient
             // 
             this.lblAddress.AutoSize = true;
             this.lblAddress.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblAddress.Location = new System.Drawing.Point(30, 213);
+            this.lblAddress.Location = new System.Drawing.Point(81, 314);
             this.lblAddress.Name = "lblAddress";
             this.lblAddress.Size = new System.Drawing.Size(66, 20);
             this.lblAddress.TabIndex = 8;
@@ -169,7 +173,7 @@ namespace DentalClinicManagement.Pages.Patient
             // 
             // txtAddress
             // 
-            this.txtAddress.Location = new System.Drawing.Point(150, 210);
+            this.txtAddress.Location = new System.Drawing.Point(236, 312);
             this.txtAddress.Multiline = true;
             this.txtAddress.Name = "txtAddress";
             this.txtAddress.Size = new System.Drawing.Size(400, 60);
@@ -179,15 +183,15 @@ namespace DentalClinicManagement.Pages.Patient
             // 
             this.lblInsurance.AutoSize = true;
             this.lblInsurance.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblInsurance.Location = new System.Drawing.Point(30, 293);
+            this.lblInsurance.Location = new System.Drawing.Point(81, 391);
             this.lblInsurance.Name = "lblInsurance";
-            this.lblInsurance.Size = new System.Drawing.Size(85, 20);
+            this.lblInsurance.Size = new System.Drawing.Size(107, 20);
             this.lblInsurance.TabIndex = 10;
-            this.lblInsurance.Text = "Bảo hiểm:";
+            this.lblInsurance.Text = "Số bảo hiểm:";
             // 
             // txtInsurance
             // 
-            this.txtInsurance.Location = new System.Drawing.Point(150, 290);
+            this.txtInsurance.Location = new System.Drawing.Point(236, 392);
             this.txtInsurance.Name = "txtInsurance";
             this.txtInsurance.Size = new System.Drawing.Size(400, 22);
             this.txtInsurance.TabIndex = 11;
@@ -200,7 +204,7 @@ namespace DentalClinicManagement.Pages.Patient
             this.btnSave.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnSave.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnSave.ForeColor = System.Drawing.Color.White;
-            this.btnSave.Location = new System.Drawing.Point(150, 340);
+            this.btnSave.Location = new System.Drawing.Point(486, 475);
             this.btnSave.Name = "btnSave";
             this.btnSave.Size = new System.Drawing.Size(150, 40);
             this.btnSave.TabIndex = 12;
@@ -214,14 +218,12 @@ namespace DentalClinicManagement.Pages.Patient
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(240)))), ((int)(((byte)(242)))), ((int)(((byte)(245)))));
             this.Controls.Add(this.panel);
-            this.Controls.Add(this.lblTitle);
             this.Name = "PatientProfile";
             this.Padding = new System.Windows.Forms.Padding(20);
             this.Size = new System.Drawing.Size(1231, 834);
             this.panel.ResumeLayout(false);
             this.panel.PerformLayout();
             this.ResumeLayout(false);
-            this.PerformLayout();
 
         }
 
