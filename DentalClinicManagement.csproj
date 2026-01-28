@@ -279,6 +279,7 @@
     <Compile Include="Utils\Auth.cs" />
     <Compile Include="Utils\ConfigHelper.cs" />
     <Compile Include="Utils\CsvExporter.cs" />
+    <Compile Include="Utils\DatabaseMigration.cs" />
     <Compile Include="Utils\ErrorHandler.cs" />
     <Compile Include="Utils\Formatter.cs" />
     <Compile Include="Utils\Logger.cs" />
@@ -287,6 +288,9 @@
     <Compile Include="Utils\Session.cs" />
     <Compile Include="Utils\ValidationHelper.cs" />
     <Compile Include="Utils\Validator.cs" />
+    <None Include="Database\README_Fix_RejectReason.md" />
+    <None Include="FIX_SUMMARY.md" />
+    <None Include="FIX_SUMMARY_ISSUE2.md" />
     <None Include="Resources\Gemini_Generated_Image_xxupk4xxupk4xxup.png" />
     <None Include="Resources\Gemini_Generated_Image_y6pjdry6pjdry6pj1.png" />
     <None Include="Resources\Gemini_Generated_Image_y6pjdry6pjdry6pj.png" />
@@ -386,6 +390,8 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
+    <Content Include="COMMIT_MESSAGE.txt" />
+    <Content Include="Database\Migration_AddRejectReason.sql" />
     <Content Include="fonts\fontawesome-webfont.eot" />
     <Content Include="fonts\fontawesome-webfont.ttf" />
     <Content Include="fonts\fontawesome-webfont.woff" />
@@ -401,6 +407,7 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+    <None Include="TESTING_CHECKLIST.md" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

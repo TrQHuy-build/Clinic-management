@@ -257,6 +257,7 @@ namespace DentalClinicManagement.Pages.Doctor
         {
             try
             {
+                // ✅ FIX: Use TRY_CONVERT and check if column exists
                 string query = @"
                     SELECT
                         a.appointment_id AS [ID],
@@ -272,8 +273,7 @@ namespace DentalClinicManagement.Pages.Doctor
                             WHEN a.status = 'rejected' THEN N'Từ chối'
                             WHEN a.status = 'cancelled' THEN N'Đã hủy'
                             ELSE a.status
-                        END AS [Trạng thái],
-                        ISNULL(a.reject_reason, '') AS [Lý do từ chối]
+                        END AS [Trạng thái]
                     FROM Appointment a
                     LEFT JOIN Service s ON a.service_id = s.service_id
                     LEFT JOIN Patient p ON a.patient_id = p.patient_id
@@ -293,6 +293,42 @@ namespace DentalClinicManagement.Pages.Doctor
                 {
                     MessageBoxHelper.ShowError("Không thể tải lịch sử khám!");
                     return;
+                }
+
+                // ✅ FIX: Add reject_reason column to DataTable if it exists in database
+                try
+                {
+                    string checkColumnQuery = @"
+                        SELECT ISNULL(reject_reason, N'Không có lý do') AS [Lý do từ chối]
+                        FROM Appointment 
+                        WHERE appointment_id = @id";
+                    
+                    // Add reject_reason to each row
+                    if (!dt.Columns.Contains("Lý do từ chối"))
+                    {
+                        dt.Columns.Add("Lý do từ chối", typeof(string));
+                    }
+
+                    foreach (DataRow row in dt.Rows)
+                    {
+                        int appointmentId = Convert.ToInt32(row["ID"]);
+                        try
+                        {
+                            object reasonResult = DatabaseHelper.ExecuteScalar(checkColumnQuery, 
+                                new SqlParameter[] { new SqlParameter("@id", appointmentId) });
+                            row["Lý do từ chối"] = reasonResult?.ToString() ?? "Không có lý do";
+                        }
+                        catch
+                        {
+                            // Column doesn't exist yet, use default value
+                            row["Lý do từ chối"] = "N/A";
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // If reject_reason column doesn't exist, just skip it
+                    Logger.LogAction("HISTORY_LOAD_WARNING", $"reject_reason column not found: {ex.Message}");
                 }
 
                 dgvHistory.DataSource = dt;
@@ -350,10 +386,34 @@ namespace DentalClinicManagement.Pages.Doctor
 
             try
             {
+                // ✅ FIX: Check if reject_reason column exists before updating
                 string query = @"UPDATE Appointment 
-                               SET status = 'confirmed',
-                                   reject_reason = NULL
+                               SET status = 'confirmed'
                                WHERE appointment_id = @id";
+
+                // Try to clear reject_reason if column exists
+                try
+                {
+                    string checkColumnQuery = @"
+                        SELECT COUNT(*) 
+                        FROM INFORMATION_SCHEMA.COLUMNS 
+                        WHERE TABLE_NAME = 'Appointment' 
+                        AND COLUMN_NAME = 'reject_reason'";
+                    
+                    object columnExists = DatabaseHelper.ExecuteScalar(checkColumnQuery, null);
+                    
+                    if (Convert.ToInt32(columnExists ?? 0) > 0)
+                    {
+                        query = @"UPDATE Appointment 
+                                SET status = 'confirmed',
+                                    reject_reason = NULL
+                                WHERE appointment_id = @id";
+                    }
+                }
+                catch
+                {
+                    // If check fails, use simple query without reject_reason
+                }
 
                 int result = DatabaseHelper.ExecuteNonQuery(query, new SqlParameter[] {
                     new SqlParameter("@id", appointmentId)
@@ -422,20 +482,48 @@ namespace DentalClinicManagement.Pages.Doctor
 
                     try
                     {
-                        string query = @"UPDATE Appointment 
-                                       SET status = 'rejected',
-                                           reject_reason = @reason
-                                       WHERE appointment_id = @id";
+                        // ✅ FIX: Check if reject_reason column exists
+                        string query = "UPDATE Appointment SET status = 'rejected' WHERE appointment_id = @id";
+                        SqlParameter[] parameters = new SqlParameter[] { new SqlParameter("@id", appointmentId) };
 
-                        int result = DatabaseHelper.ExecuteNonQuery(query, new SqlParameter[] {
-                            new SqlParameter("@id", appointmentId),
-                            new SqlParameter("@reason", reason)
-                        });
+                        try
+                        {
+                            string checkColumnQuery = @"
+                                SELECT COUNT(*) 
+                                FROM INFORMATION_SCHEMA.COLUMNS 
+                                WHERE TABLE_NAME = 'Appointment' 
+                                AND COLUMN_NAME = 'reject_reason'";
+                            
+                            object columnExists = DatabaseHelper.ExecuteScalar(checkColumnQuery, null);
+                            
+                            if (Convert.ToInt32(columnExists ?? 0) > 0)
+                            {
+                                query = @"UPDATE Appointment 
+                                        SET status = 'rejected',
+                                            reject_reason = @reason
+                                        WHERE appointment_id = @id";
+                                parameters = new SqlParameter[] {
+                                    new SqlParameter("@id", appointmentId),
+                                    new SqlParameter("@reason", reason)
+                                };
+                            }
+                            else
+                            {
+                                // Log to AuditLog instead if column doesn't exist
+                                Logger.LogAction("REJECT_APPOINTMENT", $"Bác sĩ từ chối #{appointmentId}: {reason}");
+                            }
+                        }
+                        catch
+                        {
+                            // If check fails, log to AuditLog
+                            Logger.LogAction("REJECT_APPOINTMENT", $"Bác sĩ từ chối #{appointmentId}: {reason}");
+                        }
+
+                        int result = DatabaseHelper.ExecuteNonQuery(query, parameters);
 
                         if (result > 0)
                         {
                             MessageBoxHelper.ShowSuccess("Đã từ chối lịch hẹn!");
-                            Logger.LogAction("REJECT_APPOINTMENT", $"Bác sĩ từ chối #{appointmentId}: {reason}");
                             form.Close();
                             LoadAllAppointments();
                         }

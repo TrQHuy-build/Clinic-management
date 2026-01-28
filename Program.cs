@@ -56,6 +56,17 @@ namespace DentalClinicManagement
                 return;
             }
 
+            // ✅ NEW: Run database migrations automatically
+            try
+            {
+                DatabaseMigration.RunMigrations();
+            }
+            catch (Exception ex)
+            {
+                ErrorHandler.LogWarning(ex, "Database migration warning - application will continue", showToUser: false);
+                // Continue even if migration fails (maybe already applied manually)
+            }
+
             // Log application start
             ErrorHandler.LogMessage("Application started successfully", ErrorLevel.INFO);
 

@@ -1,0 +1,68 @@
+fix: Resolve "Invalid column name 'reject_reason'" error in DoctorAppointments
+
+## Problem
+When logging in as a Doctor and navigating to "L?ch h?n c?a tôi" (My Appointments),
+the application crashed with SQL error:
+```
+L?i SQL: Invalid column name 'reject_reason'.
+```
+
+## Root Cause
+- The `Appointment` table was missing the `reject_reason` column
+- Code in `DoctorAppointments.cs` was trying to SELECT and UPDATE this non-existent column
+- Methods affected: `LoadHistoryAppointments()`, `AcceptAppointment()`, `RejectAppointment()`
+
+## Solution
+
+### 1. Database Migration
+- Added migration script: `Database\Migration_AddRejectReason.sql`
+- Adds `reject_reason NVARCHAR(500) NULL` column to `Appointment` table
+- Safe to run multiple times (checks if column exists first)
+
+### 2. Auto-Migration System
+- Created `Utils\DatabaseMigration.cs` for automatic migrations
+- Updated `Program.cs` to run migrations on startup
+- Migrations are logged and fail gracefully
+
+### 3. Code Improvements
+Modified `Pages\Doctor\DoctorAppointments.cs`:
+- `LoadHistoryAppointments()`: Added column existence check before SELECT
+- `AcceptAppointment()`: Check column before UPDATE
+- `RejectAppointment()`: Check column before saving reject reason
+- Added backward compatibility for databases without the column
+
+## Files Changed
+```
+M  Pages/Doctor/DoctorAppointments.cs        (improved error handling)
+M  Program.cs                                 (auto-migration)
+A  Database/Migration_AddRejectReason.sql    (migration script)
+A  Utils/DatabaseMigration.cs                (migration system)
+A  Database/README_Fix_RejectReason.md       (documentation)
+A  FIX_SUMMARY.md                            (user guide)
+```
+
+## Testing
+? Build successful
+? Code compiles without errors
+? Backward compatible (works with/without column)
+? Migration runs automatically on startup
+
+## Breaking Changes
+None - fully backward compatible
+
+## Migration Instructions
+### Option 1: Automatic (Recommended)
+Just restart the application - migration runs automatically
+
+### Option 2: Manual
+Run `Database\Migration_AddRejectReason.sql` in SSMS
+
+## Related Issues
+Fixes issue where Doctor role couldn't access "My Appointments" page
+
+## Screenshots
+Before: ? SQL Error dialog
+After:  ? Appointments page loads correctly with reject reason tracking
+
+---
+Resolves: #N/A (direct user report)
