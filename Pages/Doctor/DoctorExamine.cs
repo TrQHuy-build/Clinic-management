@@ -531,7 +531,7 @@ namespace DentalClinicManagement.Pages.Doctor
                                 return;
                             }
 
-                            // 2. Lưu Prescriptions (Đơn thuốc)
+                            // 2. Lưu Prescriptions (Đơn thuốc) và tính giá thuốc
                             decimal medicineTotal = 0M;
                             System.Collections.Generic.List<int> prescriptionIds = new System.Collections.Generic.List<int>();
 
@@ -584,22 +584,12 @@ namespace DentalClinicManagement.Pages.Doctor
                                 medicineTotal += price * quantity;
                             }
 
-                            // 3. Lưu TreatmentService (Dịch vụ đã sử dụng) - MỚI
+                            // 3. Tính tổng giá dịch vụ (chưa lưu vào ServiceUsage - sẽ lưu sau khi có Invoice)
                             decimal serviceTotal = 0M;
                             foreach (DataGridViewRow row in dgvServices.Rows)
                             {
                                 if (row.IsNewRow || !IsCellChecked(row.Cells["Selected"])) continue;
                                 if (!TryGetIntFromObject(row.Cells["ID"].Value, out int serviceId)) continue;
-
-                                // Lưu vào TreatmentService
-                                string insertTreatmentService = @"
-                            INSERT INTO TreatmentService (record_id, service_id, quantity, notes)
-                            VALUES (@recordId, @serviceId, 1, NULL)";
-
-                                SqlCommand cmdTreatment = new SqlCommand(insertTreatmentService, conn, tran);
-                                cmdTreatment.Parameters.AddWithValue("@recordId", recordId);
-                                cmdTreatment.Parameters.AddWithValue("@serviceId", serviceId);
-                                cmdTreatment.ExecuteNonQuery();
 
                                 // Tính giá dịch vụ
                                 if (!TryGetDecimalFromObject(row.Cells["Price"].Value, out decimal servicePrice))
@@ -645,7 +635,7 @@ namespace DentalClinicManagement.Pages.Doctor
                                 cmdUsage.ExecuteNonQuery();
                             }
 
-                            // 5.5. Lưu InvoicePrescription (link Invoice với Prescription) - THÊM MỚI
+                            // 6. Lưu InvoicePrescription (link Invoice với Prescription)
                             foreach (int prescriptionId in prescriptionIds)
                             {
                                 string insertInvPres = "INSERT INTO InvoicePrescription (invoice_id, prescription_id) VALUES (@invId, @presId)";
@@ -655,7 +645,7 @@ namespace DentalClinicManagement.Pages.Doctor
                                 cmdInvPres.ExecuteNonQuery();
                             }
 
-                            // 6. Cập nhật status Appointment thành completed
+                            // 7. Cập nhật status Appointment thành completed (nếu có)
                             string updateAppointment = @"
                         UPDATE Appointment 
                         SET status = N'completed' 
