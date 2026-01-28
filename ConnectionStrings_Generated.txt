@@ -1,0 +1,47 @@
+﻿========================================
+DENTAL CLINIC DATABASE CONNECTION INFO
+========================================
+
+SERVER IP: 10.128.43.222
+SQL Server Instance: SQLEXPRESS
+Database Name: DentalClinicDB
+Username: ClinicUser
+Password: Clinic@User2026
+
+========================================
+CONNECTION STRING FOR SERVER
+========================================
+Data Source=localhost\SQLEXPRESS;Initial Catalog=DentalClinicDB;User ID=ClinicUser;Password=Clinic@User2026;TrustServerCertificate=True
+
+========================================
+CONNECTION STRING FOR CLIENT
+========================================
+Data Source=10.128.43.222\SQLEXPRESS,1433;Initial Catalog=DentalClinicDB;User ID=ClinicUser;Password=Clinic@User2026;TrustServerCertificate=True
+
+========================================
+HOW TO USE IN APP.CONFIG
+========================================
+<connectionStrings>
+    <add name="DentalClinicDB" 
+         connectionString="Data Source=10.128.43.222\SQLEXPRESS,1433;Initial Catalog=DentalClinicDB;User ID=ClinicUser;Password=Clinic@User2026;TrustServerCertificate=True" 
+         providerName="System.Data.SqlClient" />
+</connectionStrings>
+
+========================================
+NEXT STEPS
+========================================
+1. Restore database vÃ o SQL Server Express:
+   - Má»Ÿ SQL Server Management Studio (SSMS)
+   - Connect tá»›i localhost\SQLEXPRESS
+   - Right-click Databases â†’ Restore Database
+   - Chá»n file: D:\DatabaseBackup\DentalClinicDB.bak
+
+2. Táº¡o SQL Login:
+   - Cháº¡y script: Setup-SQLUser.sql
+
+3. Test connection tá»« mÃ¡y khÃ¡c:
+   sqlcmd -S 10.128.43.222\SQLEXPRESS -U ClinicUser -P Clinic@User2026 -Q "SELECT @@VERSION"
+
+4. Copy Application tá»›i mÃ¡y Client vÃ  update App.config
+
+========================================

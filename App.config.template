@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<configuration>
+    <configSections>
+    </configSections>
+    
+    <!-- ========================================
+         CONNECTION STRINGS - CHỌN 1 TRONG 3 CẤU HÌNH
+         ======================================== -->
+    <connectionStrings>
+        
+        <!-- 📌 CẤU HÌNH 1: LocalDB (Chỉ máy này) -->
+        <!-- Dùng khi chạy độc lập trên 1 máy -->
+        <!--
+        <add name="DentalClinicDB" 
+             connectionString="Data Source=(localdb)\MSSQLLocalDB;Initial Catalog=DentalClinicDB;Integrated Security=True;TrustServerCertificate=True" 
+             providerName="System.Data.SqlClient" />
+        -->
+        
+        <!-- 📌 CẤU HÌNH 2: SQL Server Express - SERVER (Máy chủ) -->
+        <!-- Dùng trên máy có SQL Server Express đang chạy -->
+        <add name="DentalClinicDB" 
+             connectionString="Data Source=localhost\SQLEXPRESS;Initial Catalog=DentalClinicDB;User ID=ClinicUser;Password=Clinic@User2026;TrustServerCertificate=True" 
+             providerName="System.Data.SqlClient" />
+        
+        <!-- 📌 CẤU HÌNH 3: SQL Server Express - CLIENT (Máy khác) -->
+        <!-- Dùng trên máy muốn kết nối tới máy chủ qua mạng LAN -->
+        <!-- THAY ĐỔI IP ADDRESS thành IP của máy server -->
+        <!--
+        <add name="DentalClinicDB" 
+             connectionString="Data Source=192.168.1.100\SQLEXPRESS,1433;Initial Catalog=DentalClinicDB;User ID=ClinicUser;Password=Clinic@User2026;TrustServerCertificate=True" 
+             providerName="System.Data.SqlClient" />
+        -->
+        
+        <!-- 📌 CẤU HÌNH 4: Cloud Database (Azure SQL) -->
+        <!-- Dùng khi database đặt trên cloud -->
+        <!--
+        <add name="DentalClinicDB" 
+             connectionString="Server=yourserver.database.windows.net,1433;Initial Catalog=DentalClinicDB;User ID=yourusername;Password=yourpassword;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;" 
+             providerName="System.Data.SqlClient" />
+        -->
+        
+    </connectionStrings>
+    
+    <!-- ========================================
+         APPLICATION SETTINGS
+         ======================================== -->
+    <appSettings>
+        <!-- Environment: Development, Staging, Production -->
+        <add key="Environment" value="Development" />
+        
+        <!-- Database connection name to use -->
+        <add key="ActiveConnectionString" value="DentalClinicDB" />
+        
+        <!-- Enable/Disable logging -->
+        <add key="EnableLogging" value="true" />
+        
+        <!-- Log file path -->
+        <add key="LogFilePath" value="Logs\application.log" />
+        
+        <!-- Session timeout (minutes) -->
+        <add key="SessionTimeout" value="30" />
+        
+        <!-- ========================================
+             EMAIL CONFIGURATION (SMTP)
+             ======================================== -->
+        
+        <!-- SMTP Server Settings -->
+        <add key="SmtpHost" value="smtp.gmail.com" />
+        <add key="SmtpPort" value="587" />
+        <add key="SmtpEnableSsl" value="true" />
+        <add key="SmtpUsername" value="your-email@gmail.com" />
+        <add key="SmtpPassword" value="your-app-password" />
+        <add key="SmtpFromEmail" value="your-email@gmail.com" />
+        <add key="SmtpFromName" value="Dental Clinic Management" />
+        
+        <!-- ========================================
+             SYSTEM SETTINGS
+             ======================================== -->
+        
+        <!-- Default page size for data grids -->
+        <add key="DefaultPageSize" value="50" />
+        
+        <!-- Max file upload size (MB) -->
+        <add key="MaxFileUploadSizeMB" value="10" />
+        
+        <!-- Date format -->
+        <add key="DateFormat" value="dd/MM/yyyy" />
+        
+        <!-- Time format -->
+        <add key="TimeFormat" value="HH:mm" />
+        
+        <!-- Currency format -->
+        <add key="CurrencySymbol" value="VNĐ" />
+        
+        <!-- ========================================
+             BUSINESS RULES
+             ======================================== -->
+        
+        <!-- Working hours -->
+        <add key="WorkingHoursStart" value="08:00" />
+        <add key="WorkingHoursEnd" value="18:00" />
+        
+        <!-- Appointment duration (minutes) -->
+        <add key="DefaultAppointmentDuration" value="30" />
+        
+        <!-- Max appointments per day -->
+        <add key="MaxAppointmentsPerDay" value="20" />
+        
+        <!-- Low stock threshold -->
+        <add key="DefaultLowStockThreshold" value="10" />
+        
+    </appSettings>
+    
+    <startup> 
+        <supportedRuntime version="v4.0" sku=".NETFramework,Version=v4.7.2" />
+    </startup>
+</configuration>
